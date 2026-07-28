@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KU-Emotion | Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        
+        /* Sol Menyū (Sidebar) */
+        .sidebar {
+            width: 260px;
+            background-color: #1e1e1e;
+            height: 100vh;
+            padding: 25px 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #2d2d2d;
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            color: #bb86fc;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+        .nav-menu {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .nav-item {
+            padding: 12px 15px;
+            background-color: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+        }
+        .nav-item:hover {
+            background-color: #2d2d2d;
+            color: #bb86fc;
+        }
+        .nav-item.active {
+            background-color: #bb86fc;
+            color: #121212;
+            font-weight: bold;
+        }
+        .btn-logout {
+            background-color: #cf6679;
+            color: #121212;
+            font-weight: bold;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        .btn-logout:hover {
+            background-color: #e57373;
+        }
+
+        /* Əsas Məzmun Sahəsi */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        
+        /* Hissələr (Sections) */
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            margin-top: 20px;
+            border: 1px solid #2d2d2d;
+        }
+
+        /* Duyğu Analizi Elementləri */
+        .textarea-mood {
+            width: 100%;
+            height: 150px;
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            padding: 15px;
+            box-sizing: border-box;
+            font-size: 16px;
+            resize: none;
+            margin-top: 15px;
+        }
+        .textarea-mood:focus {
+            outline: none;
+            border-color: #bb86fc;
+        }
+        .btn-analyze {
+            background-color: #03dac6;
+            color: #121212;
+            font-weight: bold;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn-analyze:hover {
+            background-color: #66fff6;
+        }
+
+        /* Tarixçə Siyahısı Elementləri */
+        .history-item {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 📂 SOL MENYÜ -->
+    <div class="sidebar">
+        <h2>KU-Emotion</h2>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchTab('home', this)">📊 Ana Səhifə</div>
+            <div class="nav-item" onclick="switchTab('analysis', this)">🧠 Duyğu Analizi</div>
+            <div class="nav-item" onclick="switchTab('settings', this)">⚙️ Tənzimləmələr</div>
+        </div>
+        <button class="btn-logout" onclick="logout()">❌ Çıxış Et</button>
+    </div>
+
+    <!-- 📝 ƏSAS MƏZMUN -->
+    <div class="main-content">
+        
+        <!-- 🏠 1. ANA SƏHİFƏ HİSSƏSİ -->
+        <div id="home-section" class="content-section active">
+            <h1>Xoş gəldiniz, <span id="username">Tələbə</span>! 👋</h1>
+            <p>Tələbə portalları və emosional vəziyyətinizin analitikası panelinə daxil oldunuz.</p>
+
+            <div class="card">
+                <h3>📜 Keçmiş Analiz Tarixçəniz</h3>
+                <div id="history-container">Hələ ki, heç bir analiz tarixçəsi yoxdur.</div>
+            </div>
+        </div>
+
+        <!-- 🧠 2. DUYĞU ANALİZİ HİSSƏSİ -->
+        <div id="analysis-section" class="content-section">
+            <h1>🧠 Süni İntellekt ilə Duyğu Analizi</h1>
+            <p>Bugün özünüzü necə hiss edirsiniz? Universitet həyatı, dərslər və ya yataqxana mühiti haqqında düşüncələrinizi yazın.</p>
+            
+            <div class="card">
+                <h3>Duyğularınızı bura qeyd edin:</h3>
+                <textarea class="textarea-mood" id="mood-text" placeholder="Məsələn: Bugün riyazi analiz imtahanım əla keçdi, çox xoşbəxtəm! Amma yataqxanadakı internet bir az zəifdir..."></textarea>
+                <button class="btn-analyze" onclick="startAnalysis()">Analiz Et 🚀</button>
+            </div>
+        </div>
+
+        <!-- ⚙️ 3. TƏNZİMLƏMƏLƏR HİSSƏSİ -->
+        <div id="settings-section" class="content-section">
+            <h1>⚙️ Tənzimləmələr</h1>
+            <p>Hesab parametrləri və bildiriş tənzimləmələri tezliklə bura əlavə olunacaq.</p>
+        </div>
+
+    </div>
+
+    <!-- 🧠 JAVASCRIPT MƏNTİQİ -->
+    <script>
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('username').innerText = userData.name;
+        }
+
+        // Səhifə ilk dəfə açılanda tarixçəni ekrana yükləyirik
+        document.addEventListener('DOMContentLoaded', renderHistory);
+
+        function switchTab(sectionId, element) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId + '-section').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Əgər Ana Səhifəyə keçid edilibsə, tarixçəni yenidən render et
+            if(sectionId === 'home') {
+                renderHistory();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('userToken');
+            localStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }
+
+        // Brauzer yaddaşındakı analizləri oxuyub Ana Səhifədə göstərən funksiya
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            const history = JSON.parse(localStorage.getItem('moodHistory')) || [];
+
+            if(history.length === 0) {
+                container.innerHTML = "<p style='color: #aaa;'>Hələ ki, heç bir analiz tarixçəsi yoxdur. İlk analizinizi edin!</p>";
+                return;
+            }
+
+            // Siyahını tərs çeviririk ki, ən son edilən analiz ən üstdə görünsün
+            container.innerHTML = history.reverse().map(item => `
+                <div class="history-item" style="border-left: 5px solid ${item.color}">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <b>Duyğu: <span style="color: ${item.color}">${item.emotion}</span></b>
+                        <small style="color: #888;">${item.date}</small>
+                    </div>
+                    <p style="margin: 5px 0; color: #ddd;">"${item.text}"</p>
+                    <small style="color: #aaa;">💡 <b>AI Məsləhəti:</b> ${item.advice}</small>
+                </div>
+            `).join('');
+        }
+
+        async function startAnalysis() {
+            const textInput = document.getElementById('mood-text');
+            const text = textInput.value;
+            const btn = document.querySelector('.btn-analyze');
+            
+            if(!text.trim()) {
+                alert("Zəhmət olmasa, öncə nəsə yazın!");
+                return;
+            }
+
+            btn.innerText = "Analiz edilir... ⏳";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5050/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 1. Yeni analizi lokal tarixçəyə əlavə edirik
+                    let history = JSON.parse(localStorage.getItem('moodHistory')) || [];
+                    const now = new Date();
+                    const timeString = now.toLocaleDateString() + " " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    history.push({
+                        text: text,
+                        emotion: data.emotion,
+                        color: data.color,
+                        advice: data.advice,
+                        date: timeString
+                    });
+                    localStorage.setItem('moodHistory', JSON.stringify(history));
+
+                    // 2. Mətn qutusunu təmizləyirik
+                    textInput.value = "";
+
+                    // 3. İstifadəçini vizual olaraq dərhal nəticəni görməsi üçün Ana Səhifəyə yönləndiririk
+                    alert("Analiz uğurla tamamlandı! Tarixçəyə baxmaq üçün Ana Səhifəyə yönləndirilirsiniz.");
+                    const homeNavItem = document.querySelector('.nav-item'); // İlk menyu obyekti (Ana Səhifə)
+                    switchTab('home', homeNavItem);
+
+                } else {
+                    alert(`Xəta: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('Analiz xətası:', error);
+                alert('Backend serveri ilə əlaqə kəsildi.');
+            } finally {
+                btn.innerText = "Analiz Et 🚀";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

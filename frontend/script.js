@@ -4,8 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const toLoginLink = document.getElementById('to-login');
     const toRegisterLink = document.getElementById('to-register');
 
-    // Backend API URL (Bayaq Flask serverinin başladığı ünvan)
+    // Backend API URL (Flask serverinin başladığı ünvan)
     const API_BASE_URL = 'http://127.0.0.1:5050/api';
+
     // --- EKRANLAR ARASI KEÇİD MƏNTİQİ ---
     toLoginLink.addEventListener('click', (e) => {
         e.preventDefault();
@@ -28,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
 
-        // DIQQƏT: Brauzer konsolunda göndərilən datanı görmək üçün bu sətri əlavə etdik
         console.log("Backend-ə göndərilən data:", { username, email, password });
 
         try {
@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 alert(`Uğurlu: ${data.message}\nİndi daxil ola bilərsiniz.`);
                 registerForm.reset();
-                // Avtomatik Giriş ekranına yönləndiririk
                 registerBox.style.display = 'none';
                 loginBox.style.display = 'block';
             } else {
@@ -77,9 +76,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert(`Xoş gəldiniz! Token: ${data.token}`);
+                // 1. Backend-dən gələn tokeni təhlükəsiz şəkildə yaddaşa yazırıq
+                localStorage.setItem('userToken', data.token);
+                
+                // 2. İstifadəçi məlumatını obyekt halında yazırıq (ad yoxdursa e-poçtdan çıxarır)
+                const userObj = data.user || { name: data.name || email.split('@')[0] };
+                localStorage.setItem('userData', JSON.stringify(userObj));
+
                 loginForm.reset();
-                // Bura gələcəkdə istifadəçinin yönləndiriləcəyi əsas səhifə (Dashboard) linki gələcək
+                
+                // 3. İstifadəçini avtomatik olaraq əsas səhifəyə (Dashboard) uçururuq
+                window.location.href = 'dashboard.html';
             } else {
                 alert(`Xəta: ${data.message || 'Giriş uğursuz oldu.'}`);
             }

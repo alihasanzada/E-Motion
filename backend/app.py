@@ -126,7 +126,37 @@ def login():
         }), 200
 
     return jsonify({"message": "E-poçt və ya şifrə yanlışdır."}), 401
+    
 
+@app.route('/api/analyze', methods=['POST'])
+def analyze_emotion():
+    data = request.get_json()
+    text = data.get('text', '')
+
+    if not text.strip():
+        return jsonify({"message": "Mətn boş ola bilməz!"}), 400
+
+    text_lower = text.lower()
+    
+    if any(word in text_lower for word in ["əla", "xoşbəxt", "yaxşı", "super", "uğurlu", "sevin"]):
+        emotion = "Müsbət (Positive) 😊"
+        color = "#03dac6" # Yaşılımtıl-mavi
+        advice = "Hər şey əla gedir! Bu enerjini qoru və komanda yoldaşlarınla bölüş."
+    elif any(word in text_lower for word in ["zəif", "pis", "yorğun", "çətin", "kədər", "stres"]):
+        emotion = "Mənfi (Negative) 😢"
+        color = "#cf6679" # Açıq qırmızı/çəhrayı
+        advice = "Görünür, bir az yorulmusunuz. Unutmayın, Holberton final layihəsi bir marafondur. Bir az fasilə verin."
+    else:
+        emotion = "Neytral (Neutral) 😐"
+        color = "#bb86fc" # Bənövşəyi
+        advice = "Stabil və balanslı bir gün. Dərslərə və layihəyə eyni tempdə davam!"
+
+    return jsonify({
+        "status": "success",
+        "emotion": emotion,
+        "color": color,
+        "advice": advice
+    }), 200
 
 if __name__ == '__main__':
     # host '127.0.0.1' və use_reloader=False Arch Linux/CachyOS mühitində ən stabil formadır
