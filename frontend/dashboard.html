@@ -3,143 +3,529 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KU-Emotion | Dashboard</title>
+    <title>E-MOTION | Tələbə Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* ☀️ AÇIQ REJİM (DEFAULT VƏZİYYƏT) */
+        :root {
+            --primary-green: #0b664d;
+            --primary-hover: #084d3a;
+            --accent-mint: #03dac6;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --input-bg: #f8fafc;
+            --item-hover: #f8fafc;
+            --dot-bg: #f1f5f9;
+        }
+
+        /* 🌙 ULTRA-TÜND VƏ GÖZ YORMAYAN REJİM (CYBERPUNK STEALTH) */
+        body.dark-theme {
+            --primary-green: #34d399; /* Parlaq neon yox, gözü yormayan yumşaq zümrüd yaşılı */
+            --primary-hover: #059669;
+            --bg-color: #090d16;      /* Dərin, mat kosmik qara */
+            --card-bg: #111827;        /* Kartlar üçün yumşaq obsidian tonu */
+            --text-main: #e2e8f0;      /* Gözü qamaşdırmayan solğun gümüşü-ağ */
+            --text-muted: #94a3b8;    /* Köməkçi mətnlər üçün sakit boz-mavi */
+            --border-color: #1f2937;  /* Çox diqqət çəkməyən tünd çərçivələr */
+            --input-bg: #1f2937;
+            --item-hover: #1f2937;
+            --dot-bg: #374151;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
             padding: 0;
             display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        /* Sol Menyū (Sidebar) */
+        /* 📂 SOL MENYÜ (SIDEBAR) */
         .sidebar {
-            width: 260px;
-            background-color: #1e1e1e;
+            width: 280px;
+            background-color: var(--card-bg);
             height: 100vh;
-            padding: 25px 20px;
+            padding: 30px 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid #2d2d2d;
+            border-right: 1px solid var(--border-color);
+            z-index: 10;
+            transition: var(--transition);
         }
-        .sidebar h2 {
-            margin-top: 0;
-            color: #bb86fc;
-            font-size: 22px;
-            letter-spacing: 1px;
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 35px;
+        }
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background-color: #0b664d;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        .logo-text h2 {
+            margin: 0;
+            color: var(--primary-green);
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .logo-text p {
+            margin: 0;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
         }
         .nav-menu {
-            margin-top: 30px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
             flex-grow: 1;
         }
         .nav-item {
-            padding: 12px 15px;
+            padding: 12px 16px;
             background-color: transparent;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 15px;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
         }
         .nav-item:hover {
-            background-color: #2d2d2d;
-            color: #bb86fc;
+            background-color: var(--item-hover);
+            color: var(--primary-green);
         }
         .nav-item.active {
-            background-color: #bb86fc;
-            color: #121212;
-            font-weight: bold;
+            background-color: var(--primary-green);
+            color: white;
+            box-shadow: 0 4px 12px rgba(11, 102, 77, 0.15);
         }
         .btn-logout {
-            background-color: #cf6679;
-            color: #121212;
-            font-weight: bold;
+            background-color: #fee2e2;
+            color: #ef4444;
+            font-weight: 700;
             border: none;
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: var(--transition);
             width: 100%;
+            font-size: 14px;
         }
         .btn-logout:hover {
-            background-color: #e57373;
+            background-color: #fca5a5;
         }
 
-        /* Əsas Məzmun Sahəsi */
-        .main-content {
+        /* 📝 MAIN WRAPPER */
+        .wrapper {
             flex-grow: 1;
-            padding: 40px;
+            display: flex;
+            flex-direction: column;
             height: 100vh;
-            box-sizing: border-box;
-            overflow-y: auto;
+            overflow: hidden;
+        }
+
+        /* Yuxarı Header */
+        .header {
+            background-color: var(--card-bg);
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        .search-bar {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 20px;
+            width: 320px;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .search-bar:focus {
+            background-color: var(--card-bg);
+            border-color: var(--primary-green);
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        .header-icons {
+            display: flex;
+            gap: 18px;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-muted);
+            align-items: center;
+        }
+        .header-icons span:hover {
+            color: var(--primary-green);
+        }
+        /* Gecə Rejimi Xüsusi Düyməsi */
+        .theme-btn {
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            user-select: none;
+        }
+        .theme-btn:hover {
+            transform: scale(1.2);
         }
         
-        /* Hissələr (Sections) */
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .profile-img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0b664d 0%, #10b981 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .profile-info h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .profile-info p {
+            margin: 0;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Əsas Kontent Sahəsi */
+        .main-content {
+            padding: 30px 40px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
         .content-section {
             display: none;
         }
         .content-section.active {
             display: block;
+            animation: fadeIn 0.4s ease;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 30px;
+        }
+
+        /* Möhtəşəm Banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, #0b664d 0%, #042f24 100%), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1000') center/cover;
+            background-blend-mode: overlay;
+            color: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(11, 102, 77, 0.15);
+            margin-bottom: 30px;
+        }
+        .welcome-banner h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .welcome-banner p {
+            margin: 0 0 24px 0;
+            font-size: 14px;
+            opacity: 0.85;
+            line-height: 1.6;
+        }
+        .btn-banner {
+            background-color: #ffffff;
+            color: #0b664d;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-banner:hover {
+            background-color: var(--accent-mint);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        /* Premium Kartlar */
         .card {
-            background-color: #1e1e1e;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            margin-top: 20px;
-            border: 1px solid #2d2d2d;
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+        .card h3 {
+            margin-top: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
         }
 
-        /* Duyğu Analizi Elementləri */
+        /* İndikatörlər Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background-color: var(--card-bg);
+            padding: 20px 15px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .metric-icon {
+            font-size: 20px;
+            padding: 8px;
+            border-radius: 10px;
+            background-color: var(--dot-bg);
+        }
+        .metric-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 5px 0 2px 0;
+        }
+        .metric-card .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--dot-bg);
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-green);
+            border-radius: 3px;
+        }
+
+        /* 💧 SU İÇMƏ İZLƏYİCİSİ */
+        .water-tracker-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .water-cups {
+            display: flex;
+            gap: 6px;
+        }
+        .cup {
+            font-size: 22px;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 0.3;
+        }
+        .cup.active {
+            opacity: 1;
+            transform: scale(1.15);
+        }
+
+        /* 📅 GELECEK TEDBIRLER */
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+        .event-item:hover {
+            background-color: var(--item-hover);
+        }
+        .event-date {
+            width: 45px;
+            height: 45px;
+            background-color: var(--dot-bg);
+            color: var(--primary-green);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .event-date span {
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .event-info h5 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .event-info p {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Analiz Mətni Sahəsi */
         .textarea-mood {
             width: 100%;
-            height: 150px;
-            background-color: #2d2d2d;
-            border: 1px solid #444;
-            border-radius: 6px;
-            color: white;
-            padding: 15px;
+            height: 140px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 12px;
+            padding: 16px;
             box-sizing: border-box;
-            font-size: 16px;
+            font-size: 14px;
+            font-family: inherit;
             resize: none;
-            margin-top: 15px;
+            transition: var(--transition);
         }
         .textarea-mood:focus {
             outline: none;
-            border-color: #bb86fc;
+            border-color: var(--primary-green);
         }
         .btn-analyze {
-            background-color: #03dac6;
-            color: #121212;
-            font-weight: bold;
+            background-color: var(--primary-green);
+            color: white;
+            font-weight: 600;
             border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
+            padding: 12px 28px;
+            border-radius: 10px;
             cursor: pointer;
             margin-top: 15px;
-            font-size: 16px;
-            transition: background 0.3s;
+            font-size: 14px;
+            transition: var(--transition);
         }
         .btn-analyze:hover {
-            background-color: #66fff6;
+            background-color: var(--primary-hover);
         }
 
-        /* Tarixçə Siyahısı Elementləri */
         .history-item {
-            background-color: #2d2d2d;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 10px;
+            background-color: var(--input-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 12px;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Sağ tərəf widget qutuları */
+        .widget-box {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .widget-box h4 {
+            margin: 0 0 15px 0;
             font-size: 14px;
+            font-weight: 700;
+        }
+        .streak-dots {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        .dot {
+            width: 28px;
+            height: 28px;
+            background-color: var(--dot-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .dot.checked {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+        .health-service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background-color: var(--input-bg);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .health-service-item:hover {
+            background-color: var(--item-hover);
+            color: var(--primary-green);
         }
     </style>
 </head>
@@ -147,72 +533,216 @@
 
     <!-- 📂 SOL MENYÜ -->
     <div class="sidebar">
-        <h2>KU-Emotion</h2>
+        <div class="logo-area">
+            <div class="logo-icon">🌿</div>
+            <div class="logo-text">
+                <h2>E-MOTION</h2>
+                <p>Move. Feel. Live Well.</p>
+            </div>
+        </div>
         <div class="nav-menu">
-            <div class="nav-item active" onclick="switchTab('home', this)">📊 Ana Səhifə</div>
-            <div class="nav-item" onclick="switchTab('analysis', this)">🧠 Duyğu Analizi</div>
+            <div class="nav-item active" onclick="switchTab('home', this)">📊 İdarə paneli</div>
+            <div class="nav-item" onclick="switchTab('analysis', this)">🧠 Mental Wellbeing</div>
             <div class="nav-item" onclick="switchTab('settings', this)">⚙️ Tənzimləmələr</div>
         </div>
         <button class="btn-logout" onclick="logout()">❌ Çıxış Et</button>
     </div>
 
-    <!-- 📝 ƏSAS MƏZMUN -->
-    <div class="main-content">
+    <!-- 📝 MAIN WRAPPER -->
+    <div class="wrapper">
         
-        <!-- 🏠 1. ANA SƏHİFƏ HİSSƏSİ -->
-        <div id="home-section" class="content-section active">
-            <h1>Xoş gəldiniz, <span id="username">Tələbə</span>! 👋</h1>
-            <p>Tələbə portalları və emosional vəziyyətinizin analitikası panelinə daxil oldunuz.</p>
-
-            <div class="card">
-                <h3>📜 Keçmiş Analiz Tarixçəniz</h3>
-                <div id="history-container">Hələ ki, heç bir analiz tarixçəsi yoxdur.</div>
+        <!-- Yuxarı Header -->
+        <div class="header">
+            <input type="text" class="search-bar" placeholder="Axtarış edin...">
+            <div class="header-right">
+                <div class="header-icons">
+                    <!-- Gecə rejimi keçid düyməsi bura yerləşdirildi -->
+                    <div id="theme-toggle" class="theme-btn" onclick="toggleTheme()">🌙</div>
+                    <span>🔔</span> <span>📅</span> <span>💬</span>
+                </div>
+                <div class="profile-card">
+                    <div class="profile-img" id="avatar-letter">T</div>
+                    <div class="profile-info">
+                        <h4 id="profile-name">Tələbə Adı</h4>
+                        <p>Kompüter Mühəndisliyi, 2-ci kurs</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 🧠 2. DUYĞU ANALİZİ HİSSƏSİ -->
-        <div id="analysis-section" class="content-section">
-            <h1>🧠 Süni İntellekt ilə Duyğu Analizi</h1>
-            <p>Bugün özünüzü necə hiss edirsiniz? Universitet həyatı, dərslər və ya yataqxana mühiti haqqında düşüncələrinizi yazın.</p>
+        <!-- Əsas Kontent -->
+        <div class="main-content">
             
-            <div class="card">
-                <h3>Duyğularınızı bura qeyd edin:</h3>
-                <textarea class="textarea-mood" id="mood-text" placeholder="Məsələn: Bugün riyazi analiz imtahanım əla keçdi, çox xoşbəxtəm! Amma yataqxanadakı internet bir az zəifdir..."></textarea>
-                <button class="btn-analyze" onclick="startAnalysis()">Analiz Et 🚀</button>
+            <!-- 🏠 1. DASHBOARD -->
+            <div id="home-section" class="content-section active">
+                <div class="dashboard-layout">
+                    
+                    <!-- Sol Sütun -->
+                    <div>
+                        <div class="welcome-banner">
+                            <h1>Xoş gəlmisiniz, <span id="username">Tələbə</span>! 🌿</h1>
+                            <p>Sağlam seçimlər, daha güclü gələcək.<br>Bu gün üçün hədəfinizə bir addım daha yakınlaşın.</p>
+                            <button class="btn-banner" onclick="switchTab('analysis', document.querySelectorAll('.nav-item')[1])">Bugünkü planıma bax →</button>
+                        </div>
+
+                        <h3 style="margin-bottom: 15px;">Bugünkü fəaliyyət xülasəsi</h3>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-header"><span class="metric-icon">👣</span> <span style="font-size:11px; color:#10b981; font-weight:600;">68%</span></div>
+                                <div class="value">6,842</div>
+                                <div class="label">Addımlar / 10k</div>
+                                <div class="progress-container"><div class="progress-bar" style="width: 68%; background-color: #10b981;"></div></div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header"><span class="metric-icon">⚡</span> <span style="font-size:11px; color:#3b82f6; font-weight:600;">75%</span></div>
+                                <div class="value">45 dəq</div>
+                                <div class="label">Aktivlik / 60dq</div>
+                                <div class="progress-container"><div class="progress-bar" style="width: 75%; background-color: #3b82f6;"></div></div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header"><span class="metric-icon">🔥</span> <span style="font-size:11px; color:#8b5cf6; font-weight:600;">70%</span></div>
+                                <div class="value">420 kcal</div>
+                                <div class="label">Kalori / 600</div>
+                                <div class="progress-container"><div class="progress-bar" style="width: 70%; background-color: #8b5cf6;"></div></div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header"><span class="metric-icon">🌙</span> <span style="font-size:11px; color:#f59e0b; font-weight:600;">90%</span></div>
+                                <div class="value">7s 20d</div>
+                                <div class="label">Yuxu / 8saat</div>
+                                <div class="progress-container"><div class="progress-bar" style="width: 90%; background-color: #f59e0b;"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>📜 Emosional Vəziyyət Tarixçəniz</h3>
+                            <div id="history-container">Hələ ki, heç bir analiz tarixçəsi yoxdur.</div>
+                        </div>
+                    </div>
+
+                    <!-- Sağ Widget Sütunu -->
+                    <div>
+                        <div class="widget-box">
+                            <h4>Ardıcıl gün (Streak)</h4>
+                            <div style="font-size: 26px; font-weight: 700;">7 gün 🔥</div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0;">Mükəmməl! Davam et!</p>
+                            <div class="streak-dots">
+                                <div class="dot checked">B</div>
+                                <div class="dot checked">E</div>
+                                <div class="dot checked">Ç</div>
+                                <div class="dot checked">A</div>
+                                <div class="dot checked">C</div>
+                                <div class="dot checked">Ş</div>
+                                <div class="dot checked">B</div>
+                            </div>
+                        </div>
+
+                        <div class="widget-box">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>Su içmə izləyicisi</h4>
+                                <span id="water-count" style="font-size: 12px; font-weight: 700; color: var(--primary-green);">0/8 stəkan</span>
+                            </div>
+                            <div class="water-tracker-box">
+                                <div class="water-cups" id="cups-wrapper">
+                                    <span class="cup" onclick="toggleCup(1)">💧</span>
+                                    <span class="cup" onclick="toggleCup(2)">💧</span>
+                                    <span class="cup" onclick="toggleCup(3)">💧</span>
+                                    <span class="cup" onclick="toggleCup(4)">💧</span>
+                                    <span class="cup" onclick="toggleCup(5)">💧</span>
+                                    <span class="cup" onclick="toggleCup(6)">💧</span>
+                                    <span class="cup" onclick="toggleCup(7)">💧</span>
+                                    <span class="cup" onclick="toggleCup(8)">💧</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-box">
+                            <h4>🎯 Sağlamlıq Xidmətləri</h4>
+                            <div class="health-service-item">🩺 Həkim qəbulu <span>→</span></div>
+                            <div class="health-service-item">🧠 Psixoloq görüşü <span>→</span></div>
+                            <div class="health-service-item">📋 Tibbi məlumatlar <span>→</span></div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-        </div>
 
-        <!-- ⚙️ 3. TƏNZİMLƏMƏLƏR HİSSƏSİ -->
-        <div id="settings-section" class="content-section">
-            <h1>⚙️ Tənzimləmələr</h1>
-            <p>Hesab parametrləri və bildiriş tənzimləmələri tezliklə bura əlavə olunacaq.</p>
-        </div>
+            <!-- 🧠 2. MENTAL WELLBEING -->
+            <div id="analysis-section" class="content-section">
+                <h1>🧠 Mental Wellbeing & Duyğu Analizi</h1>
+                <p style="color: var(--text-muted);">Bugün özünüzü necə hiss edirsiniz?</p>
+                <div class="card">
+                    <h3>Duyğularınızı bura yazın:</h3>
+                    <textarea class="textarea-mood" id="mood-text" placeholder="Məsələn: Bugün dərslərim çox maraqlı keçdi..."></textarea>
+                    <button class="btn-analyze" onclick="startAnalysis()">Analiz Et 🚀</button>
+                </div>
+            </div>
 
+            <!-- ⚙️ 3. SETTINGS -->
+            <div id="settings-section" class="content-section">
+                <h1>⚙️ Tənzimləmələr</h1>
+                <p style="color: var(--text-muted);">Hesab parametrləri tezliklə bura əlavə olunacaq.</p>
+            </div>
+
+        </div>
     </div>
 
-    <!-- 🧠 JAVASCRIPT MƏNTİQİ -->
+    <!-- 🧠 JAVASCRIPT LOGIC -->
     <script>
         const userData = JSON.parse(localStorage.getItem('userData'));
         if (!userData) {
             window.location.href = 'index.html';
         } else {
             document.getElementById('username').innerText = userData.name;
+            document.getElementById('profile-name').innerText = userData.name;
+            document.getElementById('avatar-letter').innerText = userData.name.charAt(0).toUpperCase();
         }
 
-        // Səhifə ilk dəfə açılanda tarixçəni ekrana yükləyirik
-        document.addEventListener('DOMContentLoaded', renderHistory);
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHistory();
+            loadWaterTracker();
+            loadTheme(); 
+        });
+
+        // 🌗 GECƏ REJİMİ FUNKSİYALARI
+        function toggleTheme() {
+            const body = document.body;
+            const toggleIcon = document.getElementById('theme-toggle');
+            
+            body.classList.toggle('dark-theme');
+            
+            if (body.classList.contains('dark-theme')) {
+                toggleIcon.innerText = '☀️'; 
+                localStorage.setItem('themePreference', 'dark');
+            } else {
+                toggleIcon.innerText = '🌙'; 
+                localStorage.setItem('themePreference', 'light');
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('themePreference');
+            const toggleIcon = document.getElementById('theme-toggle');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                toggleIcon.innerText = '☀️';
+            } else {
+                document.body.classList.remove('dark-theme');
+                toggleIcon.innerText = '🌙';
+            }
+        }
 
         function switchTab(sectionId, element) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
             document.getElementById(sectionId + '-section').classList.add('active');
+            
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             element.classList.add('active');
 
-            // Əgər Ana Səhifəyə keçid edilibsə, tarixçəni yenidən render et
             if(sectionId === 'home') {
                 renderHistory();
             }
@@ -224,25 +754,55 @@
             window.location.href = 'index.html';
         }
 
-        // Brauzer yaddaşındakı analizləri oxuyub Ana Səhifədə göstərən funksiya
+        // 💧 Su izləyicisi
+        let currentCups = 0;
+        function toggleCup(index) {
+            if (index === currentCups) {
+                currentCups = index - 1;
+            } else {
+                currentCups = index;
+            }
+            updateCupsUI();
+            localStorage.setItem('waterTarget', currentCups);
+        }
+
+        function updateCupsUI() {
+            const cups = document.querySelectorAll('.cup');
+            cups.forEach((cup, idx) => {
+                if (idx < currentCups) {
+                    cup.classList.add('active');
+                } else {
+                    cup.classList.remove('active');
+                }
+            });
+            document.getElementById('water-count').innerText = `${currentCups}/8 stəkan`;
+        }
+
+        function loadWaterTracker() {
+            currentCups = parseInt(localStorage.getItem('waterTarget')) || 0;
+            updateCupsUI();
+        }
+
+        // Tarixçə renderi
         function renderHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('moodHistory')) || [];
 
             if(history.length === 0) {
-                container.innerHTML = "<p style='color: #aaa;'>Hələ ki, heç bir analiz tarixçəsi yoxdur. İlk analizinizi edin!</p>";
+                container.innerHTML = "<p style='color: var(--text-muted); font-size: 13px; margin:0;'>Hələ ki, heç bir analiz tarixçəsi yoxdur. İlk analizinizi edin!</p>";
                 return;
             }
 
-            // Siyahını tərs çeviririk ki, ən son edilən analiz ən üstdə görünsün
-            container.innerHTML = history.reverse().map(item => `
-                <div class="history-item" style="border-left: 5px solid ${item.color}">
+            container.innerHTML = history.slice().reverse().map(item => `
+                <div class="history-item" style="border-left: 4px solid ${item.color || '#34d399'}; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <b>Duyğu: <span style="color: ${item.color}">${item.emotion}</span></b>
-                        <small style="color: #888;">${item.date}</small>
+                        <b>Status: <span style="color: ${item.color || 'inherit'}">${item.emotion}</span></b>
+                        <small style="color: var(--text-muted); font-weight:500;">${item.date}</small>
                     </div>
-                    <p style="margin: 5px 0; color: #ddd;">"${item.text}"</p>
-                    <small style="color: #aaa;">💡 <b>AI Məsləhəti:</b> ${item.advice}</small>
+                    <p style="margin: 6px 0; color: var(--text-main); font-weight:500;">"${item.text}"</p>
+                    <div style="background-color: var(--card-bg); padding:8px 12px; border-radius:8px; border:1px dashed var(--border-color); margin-top:8px;">
+                        <small style="color: var(--text-muted);">💡 <b>AI Məsləhəti:</b> ${item.advice}</small>
+                    </div>
                 </div>
             `).join('');
         }
@@ -270,7 +830,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // 1. Yeni analizi lokal tarixçəyə əlavə edirik
                     let history = JSON.parse(localStorage.getItem('moodHistory')) || [];
                     const now = new Date();
                     const timeString = now.toLocaleDateString() + " " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -284,12 +843,10 @@
                     });
                     localStorage.setItem('moodHistory', JSON.stringify(history));
 
-                    // 2. Mətn qutusunu təmizləyirik
                     textInput.value = "";
-
-                    // 3. İstifadəçini vizual olaraq dərhal nəticəni görməsi üçün Ana Səhifəyə yönləndiririk
-                    alert("Analiz uğurla tamamlandı! Tarixçəyə baxmaq üçün Ana Səhifəyə yönləndirilirsiniz.");
-                    const homeNavItem = document.querySelector('.nav-item'); // İlk menyu obyekti (Ana Səhifə)
+                    alert("Analiz uğurla tamamlandı!");
+                    
+                    const homeNavItem = document.querySelector('.nav-item');
                     switchTab('home', homeNavItem);
 
                 } else {
