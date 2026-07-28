@@ -3,137 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-MOTION | Tələbə Paneli</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>E-MOTION | Qarabağ Universiteti</title>
+    <!-- KUDS Primary Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- KUDS Approved Icons: Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* ☀️ AÇIQ REJİM (DEFAULT VƏZİYYƏT) */
         :root {
-            --primary-green: #0b664d;
-            --primary-hover: #084d3a;
-            --accent-mint: #03dac6;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --input-bg: #f8fafc;
-            --item-hover: #f8fafc;
-            --dot-bg: #f1f5f9;
-        }
+            /* KUDS Rəsmi Brend Palitrası */
+            --ku-green: #44766C;
+            --dark-green: #16423C;
+            --soft-green: #D3E8BF;
+            --light-blue: #CAEAF1;
+            --cream: #F0F3BF;
+            
+            --bg-color: #F8FAFC;
+            --surface: #FFFFFF;
+            --border-color: #E2E8F0;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
 
-        /* 🌙 ULTRA-TÜND VƏ GÖZ YORMAYAN REJİM (CYBERPUNK STEALTH) */
-        body.dark-theme {
-            --primary-green: #34d399; /* Parlaq neon yox, gözü yormayan yumşaq zümrüd yaşılı */
-            --primary-hover: #059669;
-            --bg-color: #090d16;      /* Dərin, mat kosmik qara */
-            --card-bg: #111827;        /* Kartlar üçün yumşaq obsidian tonu */
-            --text-main: #e2e8f0;      /* Gözü qamaşdırmayan solğun gümüşü-ağ */
-            --text-muted: #94a3b8;    /* Köməkçi mətnlər üçün sakit boz-mavi */
-            --border-color: #1f2937;  /* Çox diqqət çəkməyən tünd çərçivələr */
-            --input-bg: #1f2937;
-            --item-hover: #1f2937;
-            --dot-bg: #374151;
+            --shadow-sm: 0 2px 6px rgba(0,0,0,.06);
+            --shadow-md: 0 8px 20px rgba(0,0,0,.08);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Poppins', 'Tahoma', sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-main);
+            color: var(--text-primary);
             margin: 0;
             padding: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 150%;
         }
-        
-        /* 📂 SOL MENYÜ (SIDEBAR) */
+
+        /* 📂 SOL MENYÜ */
         .sidebar {
             width: 280px;
-            background-color: var(--card-bg);
+            background-color: var(--surface);
             height: 100vh;
-            padding: 30px 20px;
+            padding: 24px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--border-color);
-            z-index: 10;
-            transition: var(--transition);
+            overflow-y: auto;
         }
         .logo-area {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 35px;
+            margin-bottom: 24px;
         }
         .logo-icon {
-            width: 38px;
-            height: 38px;
-            background-color: #0b664d;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            background-color: var(--ku-green);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 20px;
         }
         .logo-text h2 {
             margin: 0;
-            color: var(--primary-green);
-            font-size: 18px;
+            color: var(--dark-green);
+            font-size: 20px;
             font-weight: 700;
+            letter-spacing: -0.5px;
         }
         .logo-text p {
             margin: 0;
             font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 500;
+            color: var(--text-secondary);
         }
         .nav-menu {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
             flex-grow: 1;
         }
         .nav-item {
-            padding: 12px 16px;
-            background-color: transparent;
-            border-radius: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
         }
         .nav-item:hover {
-            background-color: var(--item-hover);
-            color: var(--primary-green);
+            background-color: #F1F5F9;
+            color: var(--text-primary);
         }
         .nav-item.active {
-            background-color: var(--primary-green);
+            background-color: var(--ku-green);
             color: white;
-            box-shadow: 0 4px 12px rgba(11, 102, 77, 0.15);
+            font-weight: 600;
         }
-        .btn-logout {
-            background-color: #fee2e2;
-            color: #ef4444;
-            font-weight: 700;
+        .nav-item i {
+            width: 18px;
+            height: 18px;
+        }
+
+        .sidebar-promo {
+            background-color: rgba(68, 118, 108, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .sidebar-promo p {
+            font-size: 12px;
+            margin: 0 0 12px 0;
+            color: var(--text-secondary);
+        }
+        .btn-promo {
+            background-color: var(--ku-green);
+            color: white;
             border: none;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
             width: 100%;
-            font-size: 14px;
-        }
-        .btn-logout:hover {
-            background-color: #fca5a5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         /* 📝 MAIN WRAPPER */
@@ -145,720 +153,634 @@
             overflow: hidden;
         }
 
-        /* Yuxarı Header */
+        /* TOP HEADER */
         .header {
-            background-color: var(--card-bg);
-            padding: 16px 40px;
+            height: 72px;
+            background-color: var(--surface);
+            padding: 0 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border-color);
-            transition: var(--transition);
+            box-sizing: border-box;
+        }
+        .search-container {
+            position: relative;
+        }
+        .search-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            width: 16px;
         }
         .search-bar {
-            background-color: var(--input-bg);
+            background-color: #F8FAFC;
             border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 10px 20px;
-            border-radius: 20px;
-            width: 320px;
-            font-size: 14px;
+            padding: 8px 12px 8px 36px;
+            border-radius: 8px;
+            width: 280px;
+            font-size: 13px;
             outline: none;
-            transition: var(--transition);
-        }
-        .search-bar:focus {
-            background-color: var(--card-bg);
-            border-color: var(--primary-green);
         }
         .header-right {
             display: flex;
             align-items: center;
-            gap: 25px;
+            gap: 20px;
         }
         .header-icons {
             display: flex;
-            gap: 18px;
-            font-size: 18px;
+            gap: 16px;
+            color: var(--text-secondary);
             cursor: pointer;
-            color: var(--text-muted);
-            align-items: center;
         }
-        .header-icons span:hover {
-            color: var(--primary-green);
-        }
-        /* Gecə Rejimi Xüsusi Düyməsi */
-        .theme-btn {
-            font-size: 20px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            user-select: none;
-        }
-        .theme-btn:hover {
-            transform: scale(1.2);
-        }
-        
         .profile-card {
             display: flex;
             align-items: center;
             gap: 12px;
-            border-left: 1px solid var(--border-color);
-            padding-left: 20px;
         }
         .profile-img {
-            width: 42px;
-            height: 42px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0b664d 0%, #10b981 100%);
+            background-color: var(--ku-green);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
+            font-size: 14px;
         }
         .profile-info h4 {
             margin: 0;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
         }
         .profile-info p {
             margin: 0;
             font-size: 11px;
-            color: var(--text-muted);
+            color: var(--text-secondary);
         }
 
-        /* Əsas Kontent Sahəsi */
+        /* LAYOUT MAIN GRID */
         .main-content {
-            padding: 30px 40px;
+            padding: 24px;
             box-sizing: border-box;
             overflow-y: auto;
             flex-grow: 1;
-        }
-        
-        .content-section {
-            display: none;
-        }
-        .content-section.active {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .dashboard-layout {
             display: grid;
-            grid-template-columns: 2.2fr 1fr;
-            gap: 30px;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
         }
 
-        /* Möhtəşəm Banner */
+        /* WELCOME BANNER */
         .welcome-banner {
-            background: linear-gradient(135deg, #0b664d 0%, #042f24 100%), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1000') center/cover;
-            background-blend-mode: overlay;
+            background: linear-gradient(to right, rgba(22, 66, 60, 0.95), rgba(68, 118, 108, 0.85)), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
             color: white;
-            padding: 35px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(11, 102, 77, 0.15);
-            margin-bottom: 30px;
-        }
-        .welcome-banner h1 {
-            margin: 0 0 8px 0;
-            font-size: 28px;
-            font-weight: 700;
-        }
-        .welcome-banner p {
-            margin: 0 0 24px 0;
-            font-size: 14px;
-            opacity: 0.85;
-            line-height: 1.6;
-        }
-        .btn-banner {
-            background-color: #ffffff;
-            color: #0b664d;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .btn-banner:hover {
-            background-color: var(--accent-mint);
-            color: #000;
-            transform: translateY(-2px);
-        }
-
-        /* Premium Kartlar */
-        .card {
-            background-color: var(--card-bg);
-            padding: 24px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
+            padding: 28px;
+            border-radius: 12px;
             box-shadow: var(--shadow-sm);
-            margin-bottom: 30px;
-            transition: var(--transition);
-        }
-        .card h3 {
-            margin-top: 0;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 20px;
-        }
-
-        /* İndikatörlər Grid */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 30px;
-        }
-        .metric-card {
-            background-color: var(--card-bg);
-            padding: 20px 15px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-        }
-        .metric-header {
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
         }
-        .metric-icon {
-            font-size: 20px;
-            padding: 8px;
-            border-radius: 10px;
-            background-color: var(--dot-bg);
-        }
-        .metric-card .value {
-            font-size: 20px;
+        .welcome-left h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
             font-weight: 700;
-            margin: 5px 0 2px 0;
         }
-        .metric-card .label {
+        .welcome-left p {
+            margin: 0 0 20px 0;
+            font-size: 13px;
+            opacity: 0.85;
+        }
+        .btn-banner {
+            background-color: var(--ku-green);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .welcome-quote {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            padding: 14px;
+            border-radius: 8px;
+            max-width: 220px;
+            font-size: 11px;
+            border-left: 3px solid var(--soft-green);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .section-header h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .section-header a {
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--ku-green);
+            text-decoration: none;
             font-weight: 500;
         }
+
+        /* SUMMARY METRICS GRID */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .summary-card {
+            background-color: var(--surface);
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .summary-title {
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .summary-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .summary-sub {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
         .progress-container {
-            width: 100%;
-            height: 6px;
-            background-color: var(--dot-bg);
-            border-radius: 3px;
-            margin-top: 12px;
+            background-color: #F1F5F9;
+            border-radius: 999px;
+            height: 4px;
             overflow: hidden;
+            margin-top: 4px;
         }
         .progress-bar {
             height: 100%;
-            background-color: var(--primary-green);
-            border-radius: 3px;
+            background-color: var(--ku-green);
+            border-radius: 999px;
         }
 
-        /* 💧 SU İÇMƏ İZLƏYİCİSİ */
-        .water-tracker-box {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
+        .dual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
         }
-        .water-cups {
-            display: flex;
-            gap: 6px;
+        .sub-card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 16px;
         }
-        .cup {
-            font-size: 22px;
+
+        .challenge-box {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .challenge-img {
+            height: 100px;
+            background: url('https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=1470&auto=format&fit=crop') center;
+            background-size: cover;
+            position: relative;
+            padding: 8px;
+        }
+        .badge-active {
+            background-color: var(--ku-green);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .mental-box-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .mental-item {
+            padding: 12px 6px;
+            border-radius: 8px;
+            text-align: center;
             cursor: pointer;
             transition: var(--transition);
-            opacity: 0.3;
         }
-        .cup.active {
-            opacity: 1;
-            transform: scale(1.15);
-        }
+        .mental-item p { margin: 6px 0 2px 0; font-size: 11px; font-weight: 600; }
+        .mental-item span { font-size: 9px; color: var(--text-secondary); }
 
-        /* 📅 GELECEK TEDBIRLER */
-        .event-list {
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .event-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-top: 15px;
-        }
-        .event-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 10px;
-            border-radius: 10px;
-            transition: var(--transition);
-        }
-        .event-item:hover {
-            background-color: var(--item-hover);
+            justify-content: space-between;
         }
         .event-date {
-            width: 45px;
-            height: 45px;
-            background-color: var(--dot-bg);
-            color: var(--primary-green);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            font-size: 16px;
             font-weight: 700;
-            font-size: 12px;
+            color: var(--text-primary);
         }
         .event-date span {
-            font-size: 10px;
-            font-weight: 500;
+            font-size: 9px;
             text-transform: uppercase;
-        }
-        .event-info h5 {
-            margin: 0;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .event-info p {
-            margin: 2px 0 0 0;
-            font-size: 11px;
-            color: var(--text-muted);
+            color: var(--text-secondary);
+            display: block;
         }
 
-        /* Analiz Mətni Sahəsi */
-        .textarea-mood {
-            width: 100%;
-            height: 140px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 12px;
-            padding: 16px;
-            box-sizing: border-box;
-            font-size: 14px;
-            font-family: inherit;
-            resize: none;
-            transition: var(--transition);
-        }
-        .textarea-mood:focus {
-            outline: none;
-            border-color: var(--primary-green);
-        }
-        .btn-analyze {
-            background-color: var(--primary-green);
-            color: white;
-            font-weight: 600;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-size: 14px;
-            transition: var(--transition);
-        }
-        .btn-analyze:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .history-item {
-            background-color: var(--input-bg);
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 12px;
-            font-size: 13px;
-            border: 1px solid var(--border-color);
-        }
-
-        /* Sağ tərəf widget qutuları */
-        .widget-box {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-        }
-        .widget-box h4 {
-            margin: 0 0 15px 0;
-            font-size: 14px;
-            font-weight: 700;
-        }
-        .streak-dots {
+        .right-sidebar {
             display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
+            flex-direction: column;
+            gap: 20px;
         }
-        .dot {
-            width: 28px;
-            height: 28px;
-            background-color: var(--dot-bg);
+        .right-card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+        }
+        .right-card h4 {
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .streak-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .streak-fire {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(245, 158, 11, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
+            color: var(--warning);
+            font-size: 20px;
         }
-        .dot.checked {
-            background-color: var(--primary-green);
-            color: white;
-        }
-
-        .health-service-item {
+        .week-days {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background-color: var(--input-bg);
-            border-radius: 10px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 10px;
         }
-        .health-service-item:hover {
-            background-color: var(--item-hover);
-            color: var(--primary-green);
+        .day-dot {
+            width: 14px;
+            height: 14px;
+            background-color: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .water-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            margin: 12px 0;
+        }
+        .water-glass {
+            height: 30px;
+            background-color: rgba(202, 234, 241, 0.5);
+            border: 1px solid var(--light-blue);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .water-glass.filled {
+            background-color: #38BDF8;
+        }
+
+        .motivation-card {
+            background: linear-gradient(135deg, var(--dark-green) 0%, var(--ku-green) 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .footer-line {
+            grid-column: span 2;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 📂 SOL MENYÜ -->
+    <!-- 📂 SOL MENYÜ (Full Azərbaycan Dilində) -->
     <div class="sidebar">
         <div class="logo-area">
-            <div class="logo-icon">🌿</div>
+            <div class="logo-icon">
+                <i data-lucide="sprout" style="color: white; width: 24px; height: 24px;"></i>
+            </div>
             <div class="logo-text">
                 <h2>E-MOTION</h2>
-                <p>Move. Feel. Live Well.</p>
+                <p>Qarabağ Universiteti</p>
             </div>
         </div>
+        
         <div class="nav-menu">
-            <div class="nav-item active" onclick="switchTab('home', this)">📊 İdarə paneli</div>
-            <div class="nav-item" onclick="switchTab('analysis', this)">🧠 Mental Wellbeing</div>
-            <div class="nav-item" onclick="switchTab('settings', this)">⚙️ Tənzimləmələr</div>
+            <div class="nav-item active"><i data-lucide="layout-dashboard"></i> İdarə paneli</div>
+            <div class="nav-item"><i data-lucide="activity"></i> Fiziki Aktivlik</div>
+            <div class="nav-item"><i data-lucide="heart"></i> Mental Sağlamlıq</div>
+            <div class="nav-item"><i data-lucide="shield-plus"></i> Sağlamlıq Xidmətləri</div>
+            <div class="nav-item"><i data-lucide="trophy"></i> Sağlamlıq Çağırışları</div>
+            <div class="nav-item"><i data-lucide="calendar"></i> Tədbirlər</div>
+            <div class="nav-item"><i data-lucide="apple"></i> Qidalanma</div>
+            <div class="nav-item"><i data-lucide="folder-open"></i> Resurslar</div>
+            <div class="nav-item"><i data-lucide="trending-up"></i> Mənim İrəliləyişim</div>
+            <div class="nav-item"><i data-lucide="bar-chart-3"></i> Statistikam</div>
         </div>
-        <button class="btn-logout" onclick="logout()">❌ Çıxış Et</button>
+
+        <div class="sidebar-promo">
+            <p><b>Nəfəs al. Rahatla.</b><br>Özünə vaxt ayır.</p>
+            <button class="btn-promo"><i data-lucide="play" style="width:12px;"></i> Meditasiyaya başla</button>
+        </div>
     </div>
 
     <!-- 📝 MAIN WRAPPER -->
     <div class="wrapper">
         
-        <!-- Yuxarı Header -->
+        <!-- TOP HEADER -->
         <div class="header">
-            <input type="text" class="search-bar" placeholder="Axtarış edin...">
+            <div class="search-container">
+                <i data-lucide="search"></i>
+                <input type="text" class="search-bar" placeholder="Sistemdə axtarış...">
+            </div>
             <div class="header-right">
                 <div class="header-icons">
-                    <!-- Gecə rejimi keçid düyməsi bura yerləşdirildi -->
-                    <div id="theme-toggle" class="theme-btn" onclick="toggleTheme()">🌙</div>
-                    <span>🔔</span> <span>📅</span> <span>💬</span>
+                    <i data-lucide="bell"></i>
+                    <i data-lucide="calendar-days"></i>
+                    <i data-lucide="message-square"></i>
                 </div>
                 <div class="profile-card">
-                    <div class="profile-img" id="avatar-letter">T</div>
+                    <div class="profile-img" id="profile-avatar">T</div>
                     <div class="profile-info">
                         <h4 id="profile-name">Tələbə Adı</h4>
-                        <p>Kompüter Mühəndisliyi, 2-ci kurs</p>
+                        <p id="profile-major">Kompüter Mühəndisliyi, 1-ci kurs</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Əsas Kontent -->
+        <!-- LAYOUT CONTENT GRID -->
         <div class="main-content">
             
-            <!-- 🏠 1. DASHBOARD -->
-            <div id="home-section" class="content-section active">
-                <div class="dashboard-layout">
-                    
-                    <!-- Sol Sütun -->
-                    <div>
-                        <div class="welcome-banner">
-                            <h1>Xoş gəlmisiniz, <span id="username">Tələbə</span>! 🌿</h1>
-                            <p>Sağlam seçimlər, daha güclü gələcək.<br>Bu gün üçün hədəfinizə bir addım daha yakınlaşın.</p>
-                            <button class="btn-banner" onclick="switchTab('analysis', document.querySelectorAll('.nav-item')[1])">Bugünkü planıma bax →</button>
-                        </div>
+            <!-- SOL TƏRƏF (ƏSAS PANEL) -->
+            <div>
+                <!-- 1. Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-left">
+                        <h1>Xoş gəlmisiniz, <span id="welcome-name">Tələbə</span>! 🌿</h1>
+                        <p>Sağlam seçimlər, daha güclü gələcək.<br>Bu gün üçün hədəfinizə bir addım daha yaxınlaşın.</p>
+                        <button class="btn-banner">Bugünkü planıma bax <i data-lucide="arrow-right" style="width:14px;"></i></button>
+                    </div>
+                    <div class="welcome-quote">
+                        <b>Günün mesajı:</b><br>
+                        "Kiçik addımlar böyük dəyişikliklər yaradır."<br>
+                        <span style="opacity:0.7;">— James Clear</span>
+                    </div>
+                </div>
 
-                        <h3 style="margin-bottom: 15px;">Bugünkü fəaliyyət xülasəsi</h3>
+                <!-- 2. Bugünkü fəaliyyət xülasəsi -->
+                <div class="section-header">
+                    <h3>Bugünkü fəaliyyət xülasəsi</h3>
+                    <a href="#">Həftəlik baxış <i data-lucide="chevron-right" style="width:12px; display:inline-block; vertical-align:middle;"></i></a>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-title"><i data-lucide="footprints" style="color:var(--ku-green);"></i> Addımlar</div>
+                        <div class="summary-value">6,842</div>
+                        <div class="summary-sub">/ 10,000 addım</div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 68%;"></div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-title"><i data-lucide="clock" style="color:#3B82F6;"></i> Aktivlik</div>
+                        <div class="summary-value">45 dəq</div>
+                        <div class="summary-sub">/ 60 dəq</div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 75%; background-color:#3B82F6;"></div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-title"><i data-lucide="flame" style="color:var(--warning);"></i> Kalori</div>
+                        <div class="summary-value">420 kkal</div>
+                        <div class="summary-sub">/ 600 kkal</div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 70%; background-color:var(--warning);"></div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-title"><i data-lucide="droplet" style="color:#0EA5E9;"></i> Su qəbulu</div>
+                        <div class="summary-value">6 stəkan</div>
+                        <div class="summary-sub">/ 8 stəkan</div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 75%; background-color:#0EA5E9;"></div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-title"><i data-lucide="moon" style="color:#6366F1;"></i> Yuxu</div>
+                        <div class="summary-value">7s 20d</div>
+                        <div class="summary-sub">/ 8 saat</div>
+                        <div class="progress-container"><div class="progress-bar" style="width: 90%; background-color:#6366F1;"></div></div>
+                    </div>
+                </div>
+
+                <!-- 3. İki sütunlu alt vidcetlər -->
+                <div class="dual-grid">
+                    <!-- Aktiv çağırış -->
+                    <div class="sub-card">
+                        <div class="section-header" style="margin-bottom:10px;">
+                            <h3>Aktiv çağırış</h3>
+                            <a href="#">Hamısına bax</a>
+                        </div>
+                        <div class="challenge-box">
+                            <div class="challenge-img">
+                                <span class="badge-active">Aktiv</span>
+                            </div>
+                            <div style="padding:12px;">
+                                <b style="font-size:13px; display:block;">10.000 Addım Çağırışı</b>
+                                <span style="font-size:11px; color:var(--text-secondary);">21 gün ərzində hər gün 10.000 addım at!</span>
+                                <div class="progress-container" style="margin:10px 0 4px 0;"><div class="progress-bar" style="width: 68%;"></div></div>
+                                <span style="font-size:10px; color:var(--text-secondary);">Gedişatınız: 68%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mental Sağlamlıq -->
+                    <div class="sub-card">
+                        <div class="section-header" style="margin-bottom:10px;">
+                            <h3>Mental Sağlamlıq</h3>
+                            <a href="#">Hamısına bax</a>
+                        </div>
+                        <div class="mental-box-grid">
+                            <div class="mental-item" style="background-color:rgba(99,102,241,0.08); color:#6366F1;">
+                                <i data-lucide="flower2"></i><p>Meditasiya</p><span>10 dəq</span>
+                            </div>
+                            <div class="mental-item" style="background-color:rgba(14,165,233,0.08); color:#0EA5E9;">
+                                <i data-lucide="wind"></i><p>Nəfəs dərsi</p><span>5 dəq</span>
+                            </div>
+                            <div class="mental-item" style="background-color:rgba(245,158,11,0.08); color:var(--warning);">
+                                <i data-lucide="book-open"></i><p>Gündəlik</p><span>10 dəq</span>
+                            </div>
+                            <div class="mental-item" style="background-color:rgba(16,185,129,0.08); color:var(--success);">
+                                <i data-lucide="smile"></i><p>Özünü yoxla</p><span>5 dəq</span>
+                            </div>
+                        </div>
                         
-                        <div class="metrics-grid">
-                            <div class="metric-card">
-                                <div class="metric-header"><span class="metric-icon">👣</span> <span style="font-size:11px; color:#10b981; font-weight:600;">68%</span></div>
-                                <div class="value">6,842</div>
-                                <div class="label">Addımlar / 10k</div>
-                                <div class="progress-container"><div class="progress-bar" style="width: 68%; background-color: #10b981;"></div></div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-header"><span class="metric-icon">⚡</span> <span style="font-size:11px; color:#3b82f6; font-weight:600;">75%</span></div>
-                                <div class="value">45 dəq</div>
-                                <div class="label">Aktivlik / 60dq</div>
-                                <div class="progress-container"><div class="progress-bar" style="width: 75%; background-color: #3b82f6;"></div></div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-header"><span class="metric-icon">🔥</span> <span style="font-size:11px; color:#8b5cf6; font-weight:600;">70%</span></div>
-                                <div class="value">420 kcal</div>
-                                <div class="label">Kalori / 600</div>
-                                <div class="progress-container"><div class="progress-bar" style="width: 70%; background-color: #8b5cf6;"></div></div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-header"><span class="metric-icon">🌙</span> <span style="font-size:11px; color:#f59e0b; font-weight:600;">90%</span></div>
-                                <div class="value">7s 20d</div>
-                                <div class="label">Yuxu / 8saat</div>
-                                <div class="progress-container"><div class="progress-bar" style="width: 90%; background-color: #f59e0b;"></div></div>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <h3>📜 Emosional Vəziyyət Tarixçəniz</h3>
-                            <div id="history-container">Hələ ki, heç bir analiz tarixçəsi yoxdur.</div>
+                        <div style="margin-top:12px;">
+                            <input type="text" id="db-mood-input" placeholder="Bu gün necə hiss edirsən? Baza yaz..." style="width:100%; padding:8px; font-size:12px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; outline:none;">
                         </div>
                     </div>
+                </div>
 
-                    <!-- Sağ Widget Sütunu -->
-                    <div>
-                        <div class="widget-box">
-                            <h4>Ardıcıl gün (Streak)</h4>
-                            <div style="font-size: 26px; font-weight: 700;">7 gün 🔥</div>
-                            <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0;">Mükəmməl! Davam et!</p>
-                            <div class="streak-dots">
-                                <div class="dot checked">B</div>
-                                <div class="dot checked">E</div>
-                                <div class="dot checked">Ç</div>
-                                <div class="dot checked">A</div>
-                                <div class="dot checked">C</div>
-                                <div class="dot checked">Ş</div>
-                                <div class="dot checked">B</div>
-                            </div>
-                        </div>
+                <!-- 4. Gələcək Tədbirlər -->
+                <div class="section-header">
+                    <h3>Gələcək tədbirlər</h3>
+                    <a href="#">Hamısına bax</a>
+                </div>
+                <div class="events-grid">
+                    <div class="event-card">
+                        <div class="event-date">22 <span>May</span></div>
+                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Yoga sessiyası</div>
+                        <span style="font-size:9px; color:var(--text-secondary);">📍 Qeydiyyat açıqdır</span>
+                    </div>
+                    <div class="event-card">
+                        <div class="event-date">25 <span>May</span></div>
+                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Sağlamlıq Həftəsi</div>
+                        <span style="font-size:9px; color:var(--text-secondary);">📍 Tədbir meydanı</span>
+                    </div>
+                    <div class="event-card">
+                        <div class="event-date">28 <span>May</span></div>
+                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Stress Seminarı</div>
+                        <span style="font-size:9px; color:var(--text-secondary);">📍 TUP Mərkəzi</span>
+                    </div>
+                    <div class="event-card">
+                        <div class="event-date">31 <span>May</span></div>
+                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Velosiped Yarışı</div>
+                        <span style="font-size:9px; color:var(--text-secondary);">📍 Kampus daxili</span>
+                    </div>
+                </div>
 
-                        <div class="widget-box">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h4>Su içmə izləyicisi</h4>
-                                <span id="water-count" style="font-size: 12px; font-weight: 700; color: var(--primary-green);">0/8 stəkan</span>
-                            </div>
-                            <div class="water-tracker-box">
-                                <div class="water-cups" id="cups-wrapper">
-                                    <span class="cup" onclick="toggleCup(1)">💧</span>
-                                    <span class="cup" onclick="toggleCup(2)">💧</span>
-                                    <span class="cup" onclick="toggleCup(3)">💧</span>
-                                    <span class="cup" onclick="toggleCup(4)">💧</span>
-                                    <span class="cup" onclick="toggleCup(5)">💧</span>
-                                    <span class="cup" onclick="toggleCup(6)">💧</span>
-                                    <span class="cup" onclick="toggleCup(7)">💧</span>
-                                    <span class="cup" onclick="toggleCup(8)">💧</span>
-                                </div>
-                            </div>
-                        </div>
+            </div>
 
-                        <div class="widget-box">
-                            <h4>🎯 Sağlamlıq Xidmətləri</h4>
-                            <div class="health-service-item">🩺 Həkim qəbulu <span>→</span></div>
-                            <div class="health-service-item">🧠 Psixoloq görüşü <span>→</span></div>
-                            <div class="health-service-item">📋 Tibbi məlumatlar <span>→</span></div>
+            <!-- ⚡ SAĞ VİDCETLƏR SÜTUNU -->
+            <div class="right-sidebar">
+                
+                <div class="right-card">
+                    <h4>Ardıcıl gün</h4>
+                    <div class="streak-container">
+                        <div class="streak-fire">🔥</div>
+                        <div>
+                            <span style="font-size:22px; font-weight:700;">7 gün</span>
+                            <p style="margin:0; font-size:11px; color:var(--text-secondary);">Mükəmməl! Davam et!</p>
                         </div>
                     </div>
-
+                    <div class="week-days">
+                        <div>Bət<br><span class="day-dot"></span></div>
+                        <div>B.e<br><span class="day-dot"></span></div>
+                        <div>Çər<br><span class="day-dot"></span></div>
+                        <div>C.ax<br><span class="day-dot"></span></div>
+                        <div>Cüm<br><span class="day-dot"></span></div>
+                        <div>Şəb<br><span class="day-dot"></span></div>
+                        <div>Baz<br><span class="day-dot" style="background-color:#CBD5E1;"></span></div>
+                    </div>
                 </div>
+
+                <div class="right-card">
+                    <div class="section-header" style="margin-bottom:10px;">
+                        <h4>Sağlamlıq xidmətləri</h4>
+                        <a href="#" style="font-size:10px;">Hamısına bax</a>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px;">
+                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px;"><i data-lucide="stethoscope" style="width:14px; color:var(--ku-green);"></i> Həkim qəbulu</div>
+                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px;"><i data-lucide="brain" style="width:14px; color:#6366F1;"></i> Psixoloq</div>
+                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px;"><i data-lucide="file-text" style="width:14px; color:var(--success);"></i> Tibbi məlumat</div>
+                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px; color:var(--danger); border-color:rgba(239,68,68,0.2);"><i data-lucide="phone-call" style="width:14px;"></i> Təcili yardım</div>
+                    </div>
+                </div>
+
+                <div class="right-card">
+                    <div class="section-header" style="margin-bottom:4px;">
+                        <h4>Su içmə izləyicisi</h4>
+                        <a href="#" style="font-size:10px;">Redaktə et</a>
+                    </div>
+                    <div class="water-grid">
+                        <div class="water-glass filled"></div>
+                        <div class="water-glass filled"></div>
+                        <div class="water-glass filled"></div>
+                        <div class="water-glass filled"></div>
+                        <div class="water-glass filled"></div>
+                        <div class="water-glass filled"></div>
+                        <div class="water-glass"></div>
+                        <div class="water-glass"></div>
+                    </div>
+                    <span style="font-size:11px; color:var(--text-secondary);">Gündəlik hədəf: 8 stəkan <b style="float:right; color:var(--text-primary);">6/8 stəkan</b></span>
+                </div>
+
+                <div class="motivation-card">
+                    <p style="font-size:12px; margin:0 0 10px 0; font-style:italic;">"Bədəninə qulluq et, çünki orada yaşamaq məcburiyyətindəsən."</p>
+                    <small style="font-size:10px; opacity:0.8;">— Jim Rohn</small>
+                </div>
+
             </div>
 
-            <!-- 🧠 2. MENTAL WELLBEING -->
-            <div id="analysis-section" class="content-section">
-                <h1>🧠 Mental Wellbeing & Duyğu Analizi</h1>
-                <p style="color: var(--text-muted);">Bugün özünüzü necə hiss edirsiniz?</p>
-                <div class="card">
-                    <h3>Duyğularınızı bura yazın:</h3>
-                    <textarea class="textarea-mood" id="mood-text" placeholder="Məsələn: Bugün dərslərim çox maraqlı keçdi..."></textarea>
-                    <button class="btn-analyze" onclick="startAnalysis()">Analiz Et 🚀</button>
-                </div>
-            </div>
-
-            <!-- ⚙️ 3. SETTINGS -->
-            <div id="settings-section" class="content-section">
-                <h1>⚙️ Tənzimləmələr</h1>
-                <p style="color: var(--text-muted);">Hesab parametrləri tezliklə bura əlavə olunacaq.</p>
+            <!-- FOOTER -->
+            <div class="footer-line">
+                © 2026 Qarabağ Universiteti. Bütün hüquqlar qorunur. | Haqqımızda | Qaydalar | Məxfilik Siyasəti
             </div>
 
         </div>
     </div>
 
-    <!-- 🧠 JAVASCRIPT LOGIC -->
     <script>
+        lucide.createIcons();
+
+        // Dinamik İstifadəçi Məlumatlarının Yüklənməsi (Kompüter Mühəndisliyi ixtisası ilə)
         const userData = JSON.parse(localStorage.getItem('userData'));
-        if (!userData) {
-            window.location.href = 'index.html';
-        } else {
-            document.getElementById('username').innerText = userData.name;
+        if (userData) {
             document.getElementById('profile-name').innerText = userData.name;
-            document.getElementById('avatar-letter').innerText = userData.name.charAt(0).toUpperCase();
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderHistory();
-            loadWaterTracker();
-            loadTheme(); 
-        });
-
-        // 🌗 GECƏ REJİMİ FUNKSİYALARI
-        function toggleTheme() {
-            const body = document.body;
-            const toggleIcon = document.getElementById('theme-toggle');
+            document.getElementById('welcome-name').innerText = userData.name;
+            document.getElementById('profile-avatar').innerText = userData.name.charAt(0).toUpperCase();
             
-            body.classList.toggle('dark-theme');
-            
-            if (body.classList.contains('dark-theme')) {
-                toggleIcon.innerText = '☀️'; 
-                localStorage.setItem('themePreference', 'dark');
-            } else {
-                toggleIcon.innerText = '🌙'; 
-                localStorage.setItem('themePreference', 'light');
-            }
-        }
-
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('themePreference');
-            const toggleIcon = document.getElementById('theme-toggle');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-theme');
-                toggleIcon.innerText = '☀️';
-            } else {
-                document.body.classList.remove('dark-theme');
-                toggleIcon.innerText = '🌙';
-            }
-        }
-
-        function switchTab(sectionId, element) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionId + '-section').classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            element.classList.add('active');
-
-            if(sectionId === 'home') {
-                renderHistory();
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('userToken');
-            localStorage.removeItem('userData');
-            window.location.href = 'index.html';
-        }
-
-        // 💧 Su izləyicisi
-        let currentCups = 0;
-        function toggleCup(index) {
-            if (index === currentCups) {
-                currentCups = index - 1;
-            } else {
-                currentCups = index;
-            }
-            updateCupsUI();
-            localStorage.setItem('waterTarget', currentCups);
-        }
-
-        function updateCupsUI() {
-            const cups = document.querySelectorAll('.cup');
-            cups.forEach((cup, idx) => {
-                if (idx < currentCups) {
-                    cup.classList.add('active');
-                } else {
-                    cup.classList.remove('active');
-                }
-            });
-            document.getElementById('water-count').innerText = `${currentCups}/8 stəkan`;
-        }
-
-        function loadWaterTracker() {
-            currentCups = parseInt(localStorage.getItem('waterTarget')) || 0;
-            updateCupsUI();
-        }
-
-        // Tarixçə renderi
-        function renderHistory() {
-            const container = document.getElementById('history-container');
-            const history = JSON.parse(localStorage.getItem('moodHistory')) || [];
-
-            if(history.length === 0) {
-                container.innerHTML = "<p style='color: var(--text-muted); font-size: 13px; margin:0;'>Hələ ki, heç bir analiz tarixçəsi yoxdur. İlk analizinizi edin!</p>";
-                return;
-            }
-
-            container.innerHTML = history.slice().reverse().map(item => `
-                <div class="history-item" style="border-left: 4px solid ${item.color || '#34d399'}; margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <b>Status: <span style="color: ${item.color || 'inherit'}">${item.emotion}</span></b>
-                        <small style="color: var(--text-muted); font-weight:500;">${item.date}</small>
-                    </div>
-                    <p style="margin: 6px 0; color: var(--text-main); font-weight:500;">"${item.text}"</p>
-                    <div style="background-color: var(--card-bg); padding:8px 12px; border-radius:8px; border:1px dashed var(--border-color); margin-top:8px;">
-                        <small style="color: var(--text-muted);">💡 <b>AI Məsləhəti:</b> ${item.advice}</small>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function startAnalysis() {
-            const textInput = document.getElementById('mood-text');
-            const text = textInput.value;
-            const btn = document.querySelector('.btn-analyze');
-            
-            if(!text.trim()) {
-                alert("Zəhmət olmasa, öncə nəsə yazın!");
-                return;
-            }
-
-            btn.innerText = "Analiz edilir... ⏳";
-            btn.disabled = true;
-
-            try {
-                const response = await fetch('http://127.0.0.1:5050/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    let history = JSON.parse(localStorage.getItem('moodHistory')) || [];
-                    const now = new Date();
-                    const timeString = now.toLocaleDateString() + " " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    
-                    history.push({
-                        text: text,
-                        emotion: data.emotion,
-                        color: data.color,
-                        advice: data.advice,
-                        date: timeString
-                    });
-                    localStorage.setItem('moodHistory', JSON.stringify(history));
-
-                    textInput.value = "";
-                    alert("Analiz uğurla tamamlandı!");
-                    
-                    const homeNavItem = document.querySelector('.nav-item');
-                    switchTab('home', homeNavItem);
-
-                } else {
-                    alert(`Xəta: ${data.message}`);
-                }
-            } catch (error) {
-                console.error('Analiz xətası:', error);
-                alert('Backend serveri ilə əlaqə kəsildi.');
-            } finally {
-                btn.innerText = "Analiz Et 🚀";
-                btn.disabled = false;
-            }
+            // Əgər spesifik ixtisas qeyd olunubsa onu yazırıq, yoxsa default olaraq Kompüter Mühəndisliyi
+            const major = userData.major || "Kompüter Mühəndisliyi, 2-ci kurs";
+            document.getElementById('profile-major').innerText = major;
         }
     </script>
 </body>
