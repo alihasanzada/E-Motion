@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KU-Emotion - Giriş və Qeydiyyat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Qeydiyyat Formu -->
+        <div class="form-box" id="register-box">
+            <h2>Hesab Yarat</h2>
+            <form id="register-form">
+                <input type="text" id="reg-username" placeholder="İstifadəçi adı" required>
+                <input type="email" id="reg-email" placeholder="E-poçt ünvanı" required>
+                <input type="password" id="reg-password" placeholder="Şifrə" required>
+                <button type="submit">Qeydiyyatdan Keç</button>
+            </form>
+            <p>Artıq hesabınız var? <a href="#" id="to-login">Daxil olun</a></p>
+        </div>
+
+        <!-- Giriş Formu (İlkin olaraq gizli saxlanıla bilər) -->
+        <div class="form-box" id="login-box" style="display: none;">
+            <h2>Daxil Ol</h2>
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="E-poçt ünvanı" required>
+                <input type="password" id="login-password" placeholder="Şifrə" required>
+                <button type="submit">Giriş Et</button>
+            </form>
+            <p>Hesabınız yoxdur? <a href="#" id="to-register">Qeydiyyatdan keçin</a></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

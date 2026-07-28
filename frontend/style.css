@@ -1,0 +1,139 @@
+/* KUDS Standartları - Qlobal Dəyişənlər və Sıfırlama */
+:root {
+    --bg-color: #0a0a0c;          /* Dərin all-black arxa fon */
+    --card-bg: #121216;           /* Form qutusunun tünd rəngi */
+    --accent-color: #00ff66;      /* Kiber yaşıl (Offensive Security / Red Team tonu) */
+    --text-main: #ffffff;         /* Əsas ağ mətn */
+    --text-muted: #88889b;        /* Köməkçi boz mətn */
+    --input-bg: #1a1a22;          /* Giriş xanalarının fonu */
+    --input-border: #2a2a35;      /* Xanaların çərçivəsi */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Arxa fondakı yüngül kiber kursor/işıq effekti */
+body::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(0, 255, 102, 0.05) 0%, transparent 70%);
+    top: 10%;
+    left: 10%;
+    pointer-events: none;
+}
+
+/* Giriş/Qeydiyyat Konteyneri */
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+/* Minimalist Form Qutusu */
+.form-box {
+    background-color: var(--card-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    padding: 40px 30px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+/* Kiber vurğu xətti */
+.form-box:hover {
+    border-color: rgba(0, 255, 102, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 255, 102, 0.05);
+}
+
+.form-box h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+/* Giriş Xanaları */
+form input {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 15px;
+    margin-bottom: 16px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+form input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(0, 255, 102, 0.1);
+}
+
+form input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Müasir Düymə (Button) */
+form button {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--accent-color);
+    color: #000000; /* All-black üzərində yaşıl fonda qara yazı oxunaqlıdır */
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+form button:hover {
+    background-color: #00dd55;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 255, 102, 0.2);
+}
+
+form button:active {
+    transform: translateY(0);
+}
+
+/* Keçid Linkləri */
+p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+p a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+p a:hover {
+    text-decoration: underline;
+    color: #00dd55;
+}

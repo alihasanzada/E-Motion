@@ -9,7 +9,7 @@ from flask_cors import CORS
 from flasgger import Swagger
 
 app = Flask(__name__)
-CORS(app) # Frontend inteqrasiyası üçün CORS xətalarının qarşısını alır
+CORS(app, resources={r"/api/*": {"origins": "*"}}) # Frontend inteqrasiyası üçün CORS xətalarının qarşısını alır
 
 # Swagger Konfiqurasiyası
 app.config['SWAGGER'] = {
@@ -22,6 +22,7 @@ swagger = Swagger(app)
 users_db = []
 
 @app.route('/api/auth/signup', methods=['POST'])
+@app.route('/api/register', methods=['POST']) # Frontend ilə tam uyğunluq üçün əlavə olundu
 def signup():
     """
     Yeni istifadəçi qeydiyyatı (Sign Up)
@@ -74,6 +75,7 @@ def signup():
 
 
 @app.route('/api/auth/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     """
     İstifadəçi girişi (Login)
@@ -106,7 +108,16 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    # MVP yoxlaması üçün statik tələbə məlumatı
+    # 1. Yeni qeydiyyatdan keçən dinamik istifadəçiləri yoxlayırıq
+    for user in users_db:
+        if user['email'] == email and user['password'] == password:
+            return jsonify({
+                "success": True,
+                "token": "mock-python-jwt-token-dynamic",
+                "user": {"name": user['name'], "email": email, "role": "Student"}
+            }), 200
+
+    # 2. MVP yoxlaması üçün statik tələbə məlumatı (Zəmanət variantı)
     if email == "aylin.aliyeva@karabakh.edu.az" and password == "P@ssword123":
         return jsonify({
             "success": True,
@@ -118,7 +129,5 @@ def login():
 
 
 if __name__ == '__main__':
-    # Serveri 5000 portunda başladırıq
-    print("🚀 Python Flask Serveri aktivdir!")
-    print("📄 Swagger sənədləşməsi ünvanı: http://127.0.0.1:5000/apidocs/")
-    app.run(debug=True, port=5000)
+    # host '127.0.0.1' və use_reloader=False Arch Linux/CachyOS mühitində ən stabil formadır
+    app.run(host='127.0.0.1', port=5050, debug=True, use_reloader=False)
