@@ -1,3 +1,9 @@
+"""
+KU-Emotion Backend API
+Bu modul layihənin əsas Flask serverini və Swagger sənədləşməsini işlədir.
+Müəllif: Ali Hasanov
+Tarix: 2026
+"""
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flasgger import Swagger
