@@ -600,7 +600,7 @@
                     <div>
                         <div class="welcome-banner">
                             <div class="welcome-left">
-                                <h1>Xoş gəlmisiniz, <span id="welcome-name">Əli</span>! 🌿</h1>
+                                <h1>Xoş gəlmisiniz, <span id="user-name">İstifadəçi</span>! 🌿</h1>
                                 <p>Sağlamlıq göstəriciləriniz tam şəkildə SQLite verilənlər bazasına inteqrasiya olunub.</p>
                                 <button class="btn-banner" onclick="switchTab('activity', document.querySelectorAll('.nav-menu .nav-item')[1])">Göstəriciləri yenilə <i data-lucide="arrow-right" style="width:14px;"></i></button>
                             </div>
@@ -1070,5 +1070,26 @@
             } catch(e) {}
         }
     </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // localStorage-dan istifadəçi məlumatlarını oxuyuruq
+        const userDataString = localStorage.getItem('userData');
+        
+        if (userDataString) {
+            const userData = JSON.parse(userDataString);
+            // Əgər ad varsa, HTML-dəki müvafiq elementə yazırıq
+            if (userData && userData.name) {
+                document.getElementById('user-name').textContent = userData.name;
+            }
+        } else {
+            // TƏHLÜKƏSİZLİK: Əgər istifadəçi login olmadan birbaşa bu linki yazıb giribsə,
+            // onu dərhal giriş səhifəsinə geri atırıq.
+            alert("Zəhmət olmasa əvvəlcə giriş edin!");
+            window.location.href = 'index.html';
+        }
+    });
+</script>
+
 </body>
 </html>

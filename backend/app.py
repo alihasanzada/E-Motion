@@ -1,8 +1,12 @@
 from flask import Flask, jsonify, request
+from flasgger import Swagger
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
+swagger = Swagger(app)
+
 DATABASE = 'kuds_database.db'
 
 # Frontend və Backend fərqli portlarda işləyərsə CORS probleminin qarşısını almaq üçün
@@ -17,6 +21,34 @@ def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row  # Nəticələrin dictionary formatında oxunması üçün
     return conn
+
+def init_db():
+    try:
+        conn = get_db_connection()
+        # İstifadəçilər cədvəli
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
+            )
+        ''')
+        # Emosiyalar cədvəli
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS emotions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                emotion TEXT NOT NULL,
+                note TEXT,
+                date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("Baza yaradılarkən xəta:", e)
+
+init_db()
 
 def init_db():
     """KUDS standartlarına uyğun verilənlər bazası cədvəllərinin yaradılması və ilkin nizamlanması"""
@@ -228,6 +260,118 @@ def update_retake_grade():
     conn.close()
     
     return jsonify({"success": True, "new_total": new_total, "letter": new_letter}), 200
+
+# 1. Proqram işə düşəndə avtomatik 'users' cədvəlini yaradan funksiya
+def init_user_db():
+    try:
+        conn = get_db_connection()
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("Baza yaradılarkən xəta:", e)
+
+# Funksiyanı işə salırıq
+init_user_db()
+
+# 2. QEYDİYYAT (Sign Up) ÜÇÜN API
+@app.route('/api/signup', methods=['POST'])
+def signup():
+    """
+    Yeni istifadəçi qeydiyyatı
+    ---
+    tags:
+      - Autentifikasiya
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+              example: alik_user
+            password:
+              type: string
+              example: secret123
+    responses:
+      201:
+        description: Qeydiyyat uğurla tamamlandı
+      400:
+        description: Xəta baş verdi (məsələn, məlumatlar əskikdir)
+    """
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({"success": False, "error": "Məlumatlar tam daxil edilmədi"}), 400
+        
+    hashed_password = generate_password_hash(password)
+    
+    try:
+        conn = get_db_connection()
+        conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Qeydiyyat uğurla tamamlandı"}), 201
+    except Exception as e:
+        print("\n [BAZADA REAL XƏTA]:", str(e), "\n")
+        return jsonify({"success": False, "error": "Bu istifadəçi adı artıq mövcuddur!"}), 400
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """
+    İstifadəçi girişi (Login)
+    ---
+    tags:
+      - Autentifikasiya
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+              example: alik_user
+            password:
+              type: string
+              example: secret123
+    responses:
+      200:
+        description: Giriş uğurludur
+      401:
+        description: Yanlış istifadəçi adı və ya şifrə
+    """
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({"success": False, "error": "İstifadəçi adı və şifrə daxil edilməlidir"}), 400
+        
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+    conn.close()
+    
+    if user and check_password_hash(user['password'], password):
+        return jsonify({
+            "success": True, 
+            "message": "Giriş uğurludur", 
+            "username": user['username']
+        }), 200
+    else:
+        return jsonify({"success": False, "error": "Yanlış istifadəçi adı və ya şifrə"}), 401
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
