@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-MOTION | Qarabağ Universiteti</title>
-    <!-- KUDS Primary Font -->
+    <!-- Premium Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- KUDS Approved Icons: Lucide -->
+    <!-- Lucide İkon Kitabxanası -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            /* KUDS Rəsmi Brend Palitrası */
+            /* Rəsmi Brend Palitrası */
             --ku-green: #44766C;
             --dark-green: #16423C;
             --soft-green: #D3E8BF;
@@ -44,7 +44,7 @@
             line-height: 150%;
         }
 
-        /* 📂 SOL MENYÜ */
+        /* 📂 SOL MENYÜ (SIDEBAR) */
         .sidebar {
             width: 280px;
             background-color: var(--surface);
@@ -54,13 +54,12 @@
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--border-color);
-            overflow-y: auto;
         }
         .logo-area {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
         .logo-icon {
             width: 44px;
@@ -87,11 +86,13 @@
         .nav-menu {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 4px;
         }
         .nav-item {
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-radius: 8px;
             cursor: pointer;
             transition: var(--transition);
@@ -110,18 +111,19 @@
             background-color: var(--ku-green);
             color: white;
             font-weight: 600;
+            box-shadow: 0 4px 12px rgba(68, 118, 108, 0.2);
         }
         .nav-item i {
             width: 18px;
             height: 18px;
         }
-
         .sidebar-promo {
             background-color: rgba(68, 118, 108, 0.05);
             border-radius: 12px;
             padding: 16px;
             text-align: center;
-            margin-bottom: 16px;
+            margin-top: 12px;
+            border: 1px dashed rgba(68, 118, 108, 0.15);
         }
         .sidebar-promo p {
             font-size: 12px;
@@ -144,7 +146,7 @@
             gap: 6px;
         }
 
-        /* 📝 MAIN WRAPPER */
+        /* 📝 ƏSAS WRAPPER VƏ HEADER */
         .wrapper {
             flex-grow: 1;
             display: flex;
@@ -152,8 +154,6 @@
             height: 100vh;
             overflow: hidden;
         }
-
-        /* TOP HEADER */
         .header {
             height: 72px;
             background-color: var(--surface);
@@ -183,15 +183,21 @@
             width: 280px;
             font-size: 13px;
             outline: none;
+            transition: var(--transition);
+        }
+        .search-bar:focus {
+            border-color: var(--ku-green);
+            background-color: #fff;
+            width: 320px;
         }
         .header-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 24px;
         }
         .header-icons {
             display: flex;
-            gap: 16px;
+            gap: 18px;
             color: var(--text-secondary);
             cursor: pointer;
         }
@@ -201,8 +207,8 @@
             gap: 12px;
         }
         .profile-img {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background-color: var(--ku-green);
             color: white;
@@ -223,119 +229,129 @@
             color: var(--text-secondary);
         }
 
-        /* LAYOUT MAIN GRID */
+        /* 📊 MAİNC KONTENT VƏ TABLAR */
         .main-content {
-            padding: 24px;
+            padding: 32px;
             box-sizing: border-box;
             overflow-y: auto;
             flex-grow: 1;
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 24px;
+            background-color: var(--bg-color);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* WELCOME BANNER */
+        /* 🏠 İDARƏ PANELİ STRUKTURU */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 28px;
+        }
+
+        /* WELCOME BANNER (Geniş və Şəkilli) */
         .welcome-banner {
             background: linear-gradient(to right, rgba(22, 66, 60, 0.95), rgba(68, 118, 108, 0.85)), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             color: white;
-            padding: 28px;
-            border-radius: 12px;
+            padding: 36px;
+            border-radius: 16px;
             box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
+            margin-bottom: 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .welcome-left h1 {
             margin: 0 0 8px 0;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
         }
         .welcome-left p {
-            margin: 0 0 20px 0;
-            font-size: 13px;
-            opacity: 0.85;
+            margin: 0 0 24px 0;
+            font-size: 14px;
+            opacity: 0.9;
         }
         .btn-banner {
             background-color: var(--ku-green);
             color: white;
             border: none;
-            padding: 10px 18px;
+            padding: 12px 20px;
             border-radius: 8px;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 13px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            transition: var(--transition);
+        }
+        .btn-banner:hover {
+            background-color: var(--dark-green);
+            transform: translateY(-1px);
         }
         .welcome-quote {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(4px);
-            padding: 14px;
-            border-radius: 8px;
-            max-width: 220px;
-            font-size: 11px;
-            border-left: 3px solid var(--soft-green);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .section-header h3 {
-            margin: 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .section-header a {
+            background-color: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(6px);
+            padding: 16px;
+            border-radius: 10px;
+            max-width: 240px;
             font-size: 12px;
-            color: var(--ku-green);
-            text-decoration: none;
-            font-weight: 500;
+            border-left: 4px solid var(--soft-green);
         }
 
-        /* SUMMARY METRICS GRID */
+        /* DİNAMİK XÜLASƏ QAFİYƏSİ (5-Lİ KARTLAR) */
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 16px;
+            margin-bottom: 28px;
         }
         .summary-card {
             background-color: var(--surface);
-            padding: 14px;
-            border-radius: 12px;
+            padding: 18px;
+            border-radius: 14px;
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         .summary-title {
-            font-size: 11px;
+            font-size: 12px;
+            font-weight: 600;
             color: var(--text-secondary);
             display: flex;
             align-items: center;
             gap: 6px;
         }
         .summary-value {
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--text-primary);
+            margin-top: 2px;
         }
         .summary-sub {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-secondary);
         }
         .progress-container {
-            background-color: #F1F5F9;
+            background-color: #E2E8F0;
             border-radius: 999px;
-            height: 4px;
+            height: 6px;
             overflow: hidden;
             margin-top: 4px;
         }
@@ -343,444 +359,715 @@
             height: 100%;
             background-color: var(--ku-green);
             border-radius: 999px;
+            width: 0%;
+            transition: width 0.5s ease;
         }
 
+        /* DUAL GRID */
         .dual-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             margin-bottom: 24px;
         }
-        .sub-card {
+        .card {
             background-color: var(--surface);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--border-color);
-            padding: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+        .card h3 {
+            margin: 0 0 16px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
+        /* ÇAĞIRIŞ KUTUSU (Gözəl vizuallı) */
         .challenge-box {
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--border-color);
+            background-color: #F8FAFC;
         }
         .challenge-img {
-            height: 100px;
-            background: url('https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=1470&auto=format&fit=crop') center;
+            height: 120px;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent), url('https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=1470&auto=format&fit=crop') center;
             background-size: cover;
             position: relative;
-            padding: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
         }
         .badge-active {
-            background-color: var(--ku-green);
+            background-color: #10B981;
             color: white;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 999px;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
         }
 
-        .mental-box-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-        .mental-item {
-            padding: 12px 6px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .mental-item p { margin: 6px 0 2px 0; font-size: 11px; font-weight: 600; }
-        .mental-item span { font-size: 9px; color: var(--text-secondary); }
-
-        .events-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        .event-card {
-            background: var(--surface);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .event-date {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        .event-date span {
-            font-size: 9px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            display: block;
-        }
-
+        /* SAĞ SİDEBAR VİDCETLƏRİ */
         .right-sidebar {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
         }
         .right-card {
             background-color: var(--surface);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--border-color);
-            padding: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
         }
         .right-card h4 {
-            margin: 0 0 12px 0;
-            font-size: 13px;
+            margin: 0 0 14px 0;
+            font-size: 14px;
             font-weight: 600;
         }
-
         .streak-container {
             display: flex;
             align-items: center;
             gap: 16px;
-            margin-bottom: 12px;
         }
         .streak-fire {
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             background-color: rgba(245, 158, 11, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--warning);
-            font-size: 20px;
+            font-size: 24px;
         }
-        .week-days {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-top: 10px;
-        }
-        .day-dot {
-            width: 14px;
-            height: 14px;
-            background-color: var(--success);
-            border-radius: 50%;
-            display: inline-block;
-        }
-
         .water-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
-            margin: 12px 0;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 16px 0;
         }
         .water-glass {
-            height: 30px;
-            background-color: rgba(202, 234, 241, 0.5);
-            border: 1px solid var(--light-blue);
-            border-radius: 4px;
+            height: 44px;
+            background-color: rgba(202, 234, 241, 0.3);
+            border: 2px dashed var(--light-blue);
+            border-radius: 8px;
             cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0EA5E9;
+        }
+        .water-glass:hover {
+            transform: scale(1.05);
+            background-color: rgba(202, 234, 241, 0.6);
         }
         .water-glass.filled {
             background-color: #38BDF8;
-        }
-
-        .motivation-card {
-            background: linear-gradient(135deg, var(--dark-green) 0%, var(--ku-green) 100%);
+            border-color: #0EA5E9;
             color: white;
-            border-radius: 12px;
-            padding: 16px;
-            position: relative;
+            animation: splat 0.3s ease;
+        }
+        @keyframes splat {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
+        /* GENİŞ LİST ELEMENTLƏRİ VƏ FORMLAR */
+        .list-item {
+            background-color: #F8FAFC;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            transition: var(--transition);
+        }
+        .list-item:hover {
+            background-color: #F1F5F9;
+            border-color: #CBD5E1;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            font-size: 13px;
+            font-family: inherit;
+            background-color: #F8FAFC;
+            transition: var(--transition);
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--ku-green);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(68, 118, 108, 0.1);
+        }
+        .btn-action {
+            background-color: var(--ku-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            box-shadow: 0 2px 6px rgba(68, 118, 108, 0.2);
+        }
+        .btn-action:hover {
+            background-color: var(--dark-green);
+            transform: translateY(-1px);
+        }
         .footer-line {
-            grid-column: span 2;
             text-align: center;
             font-size: 11px;
             color: var(--text-secondary);
             border-top: 1px solid var(--border-color);
-            padding-top: 12px;
-            margin-top: 12px;
+            padding-top: 16px;
+            margin-top: 32px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 📂 SOL MENYÜ (Full Azərbaycan Dilində) -->
+    <!-- 📂 SOL MENYÜ (SIDEBAR) -->
     <div class="sidebar">
         <div class="logo-area">
-            <div class="logo-icon">
-                <i data-lucide="sprout" style="color: white; width: 24px; height: 24px;"></i>
-            </div>
-            <div class="logo-text">
-                <h2>E-MOTION</h2>
-                <p>Qarabağ Universiteti</p>
-            </div>
+            <div class="logo-icon"><i data-lucide="sprout"></i></div>
+            <div class="logo-text"><h2>E-MOTION</h2><p>Qarabağ Universiteti</p></div>
         </div>
-        
         <div class="nav-menu">
-            <div class="nav-item active"><i data-lucide="layout-dashboard"></i> İdarə paneli</div>
-            <div class="nav-item"><i data-lucide="activity"></i> Fiziki Aktivlik</div>
-            <div class="nav-item"><i data-lucide="heart"></i> Mental Sağlamlıq</div>
-            <div class="nav-item"><i data-lucide="shield-plus"></i> Sağlamlıq Xidmətləri</div>
-            <div class="nav-item"><i data-lucide="trophy"></i> Sağlamlıq Çağırışları</div>
-            <div class="nav-item"><i data-lucide="calendar"></i> Tədbirlər</div>
-            <div class="nav-item"><i data-lucide="apple"></i> Qidalanma</div>
-            <div class="nav-item"><i data-lucide="folder-open"></i> Resurslar</div>
-            <div class="nav-item"><i data-lucide="trending-up"></i> Mənim İrəliləyişim</div>
-            <div class="nav-item"><i data-lucide="bar-chart-3"></i> Statistikam</div>
+            <div class="nav-item active" onclick="switchTab('dashboard', this)"><i data-lucide="layout-dashboard"></i> İdarə paneli</div>
+            <div class="nav-item" onclick="switchTab('activity', this)"><i data-lucide="activity"></i> Fiziki Aktivlik</div>
+            <div class="nav-item" onclick="switchTab('mental', this)"><i data-lucide="heart"></i> Mental Sağlamlıq</div>
+            <div class="nav-item" onclick="switchTab('services', this)"><i data-lucide="shield-plus"></i> Sağlamlıq Xidmətləri</div>
+            <div class="nav-item" onclick="switchTab('challenges', this)"><i data-lucide="trophy"></i> Çağırışlar</div>
+            <div class="nav-item" onclick="switchTab('events', this)"><i data-lucide="calendar"></i> Tədbirlər</div>
+            <div class="nav-item" onclick="switchTab('nutrition', this)"><i data-lucide="apple"></i> Qidalanma</div>
+            <div class="nav-item" onclick="switchTab('resources', this)"><i data-lucide="folder"></i> Resurslar</div>
+            <div class="nav-item" onclick="switchTab('progress', this)"><i data-lucide="trending-up"></i> Mənim İrəliləyişim</div>
+            <div class="nav-item" onclick="switchTab('stats', this)"><i data-lucide="bar-chart-3"></i> Statistikam</div>
         </div>
-
         <div class="sidebar-promo">
             <p><b>Nəfəs al. Rahatla.</b><br>Özünə vaxt ayır.</p>
-            <button class="btn-promo"><i data-lucide="play" style="width:12px;"></i> Meditasiyaya başla</button>
+            <button class="btn-promo" onclick="switchTab('mental', document.querySelectorAll('.nav-menu .nav-item')[2])"><i data-lucide="play" style="width:12px;"></i> Analiz et</button>
         </div>
     </div>
 
-    <!-- 📝 MAIN WRAPPER -->
+    <!-- 📝 ƏSAS STRUKTUR -->
     <div class="wrapper">
-        
-        <!-- TOP HEADER -->
         <div class="header">
-            <div class="search-container">
-                <i data-lucide="search"></i>
-                <input type="text" class="search-bar" placeholder="Sistemdə axtarış...">
-            </div>
+            <div class="search-container"><i data-lucide="search"></i><input type="text" class="search-bar" placeholder="Sistemdə axtarış..."></div>
             <div class="header-right">
-                <div class="header-icons">
-                    <i data-lucide="bell"></i>
-                    <i data-lucide="calendar-days"></i>
-                    <i data-lucide="message-square"></i>
-                </div>
+                <div class="header-icons"><i data-lucide="bell"></i><i data-lucide="message-square"></i></div>
                 <div class="profile-card">
-                    <div class="profile-img" id="profile-avatar">T</div>
-                    <div class="profile-info">
-                        <h4 id="profile-name">Tələbə Adı</h4>
-                        <p id="profile-major">Kompüter Mühəndisliyi, 1-ci kurs</p>
-                    </div>
+                    <div class="profile-img" id="profile-avatar">Ə</div>
+                    <div class="profile-info"><h4 id="profile-name">Əli</h4><p>Kompüter Mühəndisliyi, 2-ci kurs</p></div>
                 </div>
             </div>
         </div>
 
-        <!-- LAYOUT CONTENT GRID -->
         <div class="main-content">
             
-            <!-- SOL TƏRƏF (ƏSAS PANEL) -->
-            <div>
-                <!-- 1. Welcome Banner -->
-                <div class="welcome-banner">
-                    <div class="welcome-left">
-                        <h1>Xoş gəlmisiniz, <span id="welcome-name">Tələbə</span>! 🌿</h1>
-                        <p>Sağlam seçimlər, daha güclü gələcək.<br>Bu gün üçün hədəfinizə bir addım daha yaxınlaşın.</p>
-                        <button class="btn-banner">Bugünkü planıma bax <i data-lucide="arrow-right" style="width:14px;"></i></button>
+            <!-- 🏠 1. İDARƏ PANELİ -->
+            <div id="dashboard-section" class="content-section active">
+                <div class="dashboard-layout">
+                    <div>
+                        <div class="welcome-banner">
+                            <div class="welcome-left">
+                                <h1>Xoş gəlmisiniz, <span id="welcome-name">Əli</span>! 🌿</h1>
+                                <p>Sağlamlıq göstəriciləriniz tam şəkildə SQLite verilənlər bazasına inteqrasiya olunub.</p>
+                                <button class="btn-banner" onclick="switchTab('activity', document.querySelectorAll('.nav-menu .nav-item')[1])">Göstəriciləri yenilə <i data-lucide="arrow-right" style="width:14px;"></i></button>
+                            </div>
+                            <div class="welcome-quote"><b>Günün Mesajı:</b><br>"İntizam hədəflərlə nailiyyətlər arasındakı körpüdür."</div>
+                        </div>
+
+                        <div class="summary-grid">
+                            <div class="summary-card">
+                                <div class="summary-title"><i data-lucide="footprints" style="color:var(--ku-green);"></i> Addımlar</div>
+                                <div class="summary-value" id="dash-steps-val">0</div>
+                                <div class="summary-sub">/ 10,000 hədəf</div>
+                                <div class="progress-container"><div class="progress-bar" id="dash-steps-bar"></div></div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-title"><i data-lucide="clock" style="color:#3B82F6;"></i> Aktivlik</div>
+                                <div class="summary-value" id="dash-activity-val">0 dəq</div>
+                                <div class="summary-sub">/ 60 dəq hədəf</div>
+                                <div class="progress-container"><div class="progress-bar" id="dash-activity-bar" style="background:#3B82F6;"></div></div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-title"><i data-lucide="flame" style="color:var(--warning);"></i> Kalori</div>
+                                <div class="summary-value" id="dash-calories-val">0 kkal</div>
+                                <div class="summary-sub">/ 600 kkal hədəf</div>
+                                <div class="progress-container"><div class="progress-bar" id="dash-calories-bar" style="background:var(--warning);"></div></div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-title"><i data-lucide="droplet" style="color:#0EA5E9;"></i> Su qəbulu</div>
+                                <div class="summary-value" id="dashboard-water-value">0 stəkan</div>
+                                <div class="summary-sub">/ 8 stəkan hədəf</div>
+                                <div class="progress-container"><div class="progress-bar" id="dashboard-water-progress" style="background:#0EA5E9;"></div></div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-title"><i data-lucide="moon" style="color:#6366F1;"></i> Yuxu</div>
+                                <div class="summary-value" id="dash-sleep-val">0 saat</div>
+                                <div class="summary-sub">/ 8 saat hədəf</div>
+                                <div class="progress-container"><div class="progress-bar" id="dash-sleep-bar" style="background:#6366F1;"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="dual-grid">
+                            <div class="card">
+                                <h3>🎯 Aktiv Kampus Çağırışı</h3>
+                                <div class="challenge-box">
+                                    <div class="challenge-img"><span class="badge-active">Aktiv İştirak</span></div>
+                                    <div style="padding:16px;">
+                                        <b style="font-size:14px; display:block; margin-bottom:4px;">Su Balansı Çağırışı</b>
+                                        <span style="font-size:12px; color:var(--text-secondary);">Dehidratasiyanın qarşısını almaq üçün hər gün hüceyrələri yenilə.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <h3>🧠 Son Mental Analiziniz (SQLite)</h3>
+                                <div id="db-history-preview" style="font-size:13px; color:var(--text-secondary); line-height:160%;">Yüklənir...</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="welcome-quote">
-                        <b>Günün mesajı:</b><br>
-                        "Kiçik addımlar böyük dəyişikliklər yaradır."<br>
-                        <span style="opacity:0.7;">— James Clear</span>
+
+                    <!-- Sağ Panel -->
+                    <div class="right-sidebar">
+                        <div class="right-card">
+                            <h4>Ardıcıl Sağlamlıq Günləri</h4>
+                            <div class="streak-container">
+                                <div class="streak-fire">🔥</div>
+                                <div><span style="font-size:24px; font-weight:700;">7 Gün</span><p style="margin:0; font-size:11px; color:var(--text-secondary);">Mükəmməl temp! Qətiyyən dayanma.</p></div>
+                            </div>
+                        </div>
+                        <div class="right-card">
+                            <h4>Tez Su İçmə Vidceti</h4>
+                            <div class="water-grid" id="water-grid-container">
+                                <div class="water-glass" onclick="handleWaterClick(1)"><i data-lucide="droplet"></i></div>
+                                <div class="water-glass" onclick="handleWaterClick(2)"><i data-lucide="droplet"></i></div>
+                                <div class="water-glass" onclick="handleWaterClick(3)"><i data-lucide="droplet"></i></div>
+                                <div class="water-glass" onclick="handleWaterClick(4)"><i data-lucide="droplet"></i></div>
+                                <div class="water-glass" onclick="handleWaterClick(5)"><i data-lucide="droplet"></i></div>
+                                <div class="water-glass" onclick="handleWaterClick(6)"><i data-lucide="droplet"></i></div>
+                                <div class="water-glass" onclick="handleWaterClick(7)"><i data-lucide="droplet"></i></div>
+                                <div class="water-glass" onclick="handleWaterClick(8)"><i data-lucide="droplet"></i></div>
+                            </div>
+                            <span id="water-text-ratio" style="font-size:12px; font-weight:500;">0/8 stəkan</span>
+                        </div>
+                        <div class="right-card">
+                            <h4>Bugünkü Pəhriz Ortalaması</h4>
+                            <div id="dash-nutrition-summary" style="font-size:26px; font-weight:700; color:var(--ku-green);">0 kkal</div>
+                            <p style="margin:2px 0 0 0; font-size:11px; color:var(--text-secondary);">Bu gün qəbul edilən qida enerjisi.</p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 2. Bugünkü fəaliyyət xülasəsi -->
-                <div class="section-header">
-                    <h3>Bugünkü fəaliyyət xülasəsi</h3>
-                    <a href="#">Həftəlik baxış <i data-lucide="chevron-right" style="width:12px; display:inline-block; vertical-align:middle;"></i></a>
+            <!-- 🏃 2. FİZİKİ AKTİVLİK -->
+            <div id="activity-section" class="content-section">
+                <div class="card" style="max-width:650px; margin:0 auto;">
+                    <h3>🏃 Gündəlik İdman və Aktivlik Girişi</h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">Fəaliyyətləri daxil etdiyiniz an dashboard paneli dinamik vizuallarla yenilənəcəkdir.</p>
+                    <div class="form-group"><label>Atılan Addım Sayı</label><input type="number" id="input-steps" placeholder="Məs: 8500"></div>
+                    <div class="form-group"><label>Aktiv Məşq Müddəti (Dəqiqə)</label><input type="number" id="input-activity" placeholder="Məs: 50"></div>
+                    <div class="form-group"><label>Yandırılan Kalori (kkal)</label><input type="number" id="input-calories" placeholder="Məs: 400"></div>
+                    <div class="form-group"><label>Yuxu Müddəti (Saat)</label><input type="number" step="0.1" id="input-sleep" placeholder="Məs: 7.5"></div>
+                    <button class="btn-action" onclick="submitActivity()">Məlumatları Bazaya Yaz ⚡</button>
                 </div>
+            </div>
 
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <div class="summary-title"><i data-lucide="footprints" style="color:var(--ku-green);"></i> Addımlar</div>
-                        <div class="summary-value">6,842</div>
-                        <div class="summary-sub">/ 10,000 addım</div>
-                        <div class="progress-container"><div class="progress-bar" style="width: 68%;"></div></div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-title"><i data-lucide="clock" style="color:#3B82F6;"></i> Aktivlik</div>
-                        <div class="summary-value">45 dəq</div>
-                        <div class="summary-sub">/ 60 dəq</div>
-                        <div class="progress-container"><div class="progress-bar" style="width: 75%; background-color:#3B82F6;"></div></div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-title"><i data-lucide="flame" style="color:var(--warning);"></i> Kalori</div>
-                        <div class="summary-value">420 kkal</div>
-                        <div class="summary-sub">/ 600 kkal</div>
-                        <div class="progress-container"><div class="progress-bar" style="width: 70%; background-color:var(--warning);"></div></div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-title"><i data-lucide="droplet" style="color:#0EA5E9;"></i> Su qəbulu</div>
-                        <div class="summary-value">6 stəkan</div>
-                        <div class="summary-sub">/ 8 stəkan</div>
-                        <div class="progress-container"><div class="progress-bar" style="width: 75%; background-color:#0EA5E9;"></div></div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-title"><i data-lucide="moon" style="color:#6366F1;"></i> Yuxu</div>
-                        <div class="summary-value">7s 20d</div>
-                        <div class="summary-sub">/ 8 saat</div>
-                        <div class="progress-container"><div class="progress-bar" style="width: 90%; background-color:#6366F1;"></div></div>
-                    </div>
+            <!-- 🧠 3. MENTAL SAĞLAMLIQ -->
+            <div id="mental-section" class="content-section">
+                <div class="card" style="max-width:700px; margin:0 auto;">
+                    <h3>🧠 Süni İntellekt Dəstəkli Mental Analiz</h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Bu gün özünüzü necə hiss edirsiniz? Dərslər, imtahanlar və ya ümumi emosional durumunuzu bura qeyd edin.</p>
+                    <div class="form-group"><textarea id="mental-input-text" style="height:120px;" placeholder="Məsələn: İmtahan yaxınlaşır, bir az stresliyəm amma mövzuları çatdırıram..."></textarea></div>
+                    <button class="btn-action" onclick="submitMood()">Mətni Analiz Et və Yadda Saxla 🚀</button>
+                    <h4 style="margin-top:28px; font-size:14px; color:var(--dark-green);">📜 Sizin Keçmiş Qeydləriniz (SQLite Feed)</h4>
+                    <div id="full-history-container">Qeydlər yüklənir...</div>
                 </div>
+            </div>
 
-                <!-- 3. İki sütunlu alt vidcetlər -->
+            <!-- 🩺 4. SAĞLAMLIQ XİDMƏTLƏRİ -->
+            <div id="services-section" class="content-section">
                 <div class="dual-grid">
-                    <!-- Aktiv çağırış -->
-                    <div class="sub-card">
-                        <div class="section-header" style="margin-bottom:10px;">
-                            <h3>Aktiv çağırış</h3>
-                            <a href="#">Hamısına bax</a>
-                        </div>
-                        <div class="challenge-box">
-                            <div class="challenge-img">
-                                <span class="badge-active">Aktiv</span>
-                            </div>
-                            <div style="padding:12px;">
-                                <b style="font-size:13px; display:block;">10.000 Addım Çağırışı</b>
-                                <span style="font-size:11px; color:var(--text-secondary);">21 gün ərzində hər gün 10.000 addım at!</span>
-                                <div class="progress-container" style="margin:10px 0 4px 0;"><div class="progress-bar" style="width: 68%;"></div></div>
-                                <span style="font-size:10px; color:var(--text-secondary);">Gedişatınız: 68%</span>
-                            </div>
-                        </div>
+                    <div class="card">
+                        <h3>🩺 Universitet Klinikasından Görüş Al</h3>
+                        <div class="form-group"><label>Tələb olunan Həkim/Sahə</label><select id="service-type"><option>Psixoloq Konsultasiyası</option><option>Ümumi Terapevt Müayinəsi</option><option>Fizioterapevt Görüşü</option></select></div>
+                        <div class="form-group"><label>İstədiyiniz Mütəxəssis</label><input type="text" id="service-doctor" placeholder="Məs: Dr. Nigar Məmmədova"></div>
+                        <div class="form-group"><label>Görüş Tarixi</label><input type="date" id="service-date"></div>
+                        <div class="form-group"><label>Saat</label><input type="time" id="service-time"></div>
+                        <button class="btn-action" onclick="bookAppointment()">Görüş Qeydiyyatını Tamamla</button>
                     </div>
-
-                    <!-- Mental Sağlamlıq -->
-                    <div class="sub-card">
-                        <div class="section-header" style="margin-bottom:10px;">
-                            <h3>Mental Sağlamlıq</h3>
-                            <a href="#">Hamısına bax</a>
-                        </div>
-                        <div class="mental-box-grid">
-                            <div class="mental-item" style="background-color:rgba(99,102,241,0.08); color:#6366F1;">
-                                <i data-lucide="flower2"></i><p>Meditasiya</p><span>10 dəq</span>
-                            </div>
-                            <div class="mental-item" style="background-color:rgba(14,165,233,0.08); color:#0EA5E9;">
-                                <i data-lucide="wind"></i><p>Nəfəs dərsi</p><span>5 dəq</span>
-                            </div>
-                            <div class="mental-item" style="background-color:rgba(245,158,11,0.08); color:var(--warning);">
-                                <i data-lucide="book-open"></i><p>Gündəlik</p><span>10 dəq</span>
-                            </div>
-                            <div class="mental-item" style="background-color:rgba(16,185,129,0.08); color:var(--success);">
-                                <i data-lucide="smile"></i><p>Özünü yoxla</p><span>5 dəq</span>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top:12px;">
-                            <input type="text" id="db-mood-input" placeholder="Bu gün necə hiss edirsən? Baza yaz..." style="width:100%; padding:8px; font-size:12px; border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; outline:none;">
-                        </div>
+                    <div class="card">
+                        <h3>📋 Təsdiqlənmiş Və Gözləyən Görüşləriniz</h3>
+                        <div id="appointments-list" style="max-height: 350px; overflow-y: auto;">Aktiv görüş qeydiniz tapılmadı.</div>
                     </div>
                 </div>
-
-                <!-- 4. Gələcək Tədbirlər -->
-                <div class="section-header">
-                    <h3>Gələcək tədbirlər</h3>
-                    <a href="#">Hamısına bax</a>
-                </div>
-                <div class="events-grid">
-                    <div class="event-card">
-                        <div class="event-date">22 <span>May</span></div>
-                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Yoga sessiyası</div>
-                        <span style="font-size:9px; color:var(--text-secondary);">📍 Qeydiyyat açıqdır</span>
-                    </div>
-                    <div class="event-card">
-                        <div class="event-date">25 <span>May</span></div>
-                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Sağlamlıq Həftəsi</div>
-                        <span style="font-size:9px; color:var(--text-secondary);">📍 Tədbir meydanı</span>
-                    </div>
-                    <div class="event-card">
-                        <div class="event-date">28 <span>May</span></div>
-                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Stress Seminarı</div>
-                        <span style="font-size:9px; color:var(--text-secondary);">📍 TUP Mərkəzi</span>
-                    </div>
-                    <div class="event-card">
-                        <div class="event-date">31 <span>May</span></div>
-                        <div style="font-size:11px; font-weight:600; margin:4px 0;">Velosiped Yarışı</div>
-                        <span style="font-size:9px; color:var(--text-secondary);">📍 Kampus daxili</span>
-                    </div>
-                </div>
-
             </div>
 
-            <!-- ⚡ SAĞ VİDCETLƏR SÜTUNU -->
-            <div class="right-sidebar">
-                
-                <div class="right-card">
-                    <h4>Ardıcıl gün</h4>
-                    <div class="streak-container">
-                        <div class="streak-fire">🔥</div>
-                        <div>
-                            <span style="font-size:22px; font-weight:700;">7 gün</span>
-                            <p style="margin:0; font-size:11px; color:var(--text-secondary);">Mükəmməl! Davam et!</p>
-                        </div>
-                    </div>
-                    <div class="week-days">
-                        <div>Bət<br><span class="day-dot"></span></div>
-                        <div>B.e<br><span class="day-dot"></span></div>
-                        <div>Çər<br><span class="day-dot"></span></div>
-                        <div>C.ax<br><span class="day-dot"></span></div>
-                        <div>Cüm<br><span class="day-dot"></span></div>
-                        <div>Şəb<br><span class="day-dot"></span></div>
-                        <div>Baz<br><span class="day-dot" style="background-color:#CBD5E1;"></span></div>
-                    </div>
+            <!-- 🏆 5. ÇAĞIRIŞLAR -->
+            <div id="challenges-section" class="content-section">
+                <h3>🏆 Aktiv Sağlamlıq Çağırışları</h3>
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">Universitet üzrə təşkil edilən sağlam marafonlara qoşulun və nişanlar qazanın.</p>
+                <div class="grid-3">
+                    <div class="card"><h4>💧 Hüceyrə Hidratasiyası</h4><p style="font-size:12px; color:var(--text-secondary);">7 gün ərzində hər gün minimum 8 stəkan su qəbul et.</p><button class="btn-action" onclick="joinChallenge('Su_Hidratasiyasi_7Gun')">Çağırışa Qoşul</button></div>
+                    <div class="card"><h4>🏃 Kampus Marafonu</h4><p style="font-size:12px; color:var(--text-secondary);">Bir həftə daxilində ümumi olaraq 60.000 addım hədəfini tamamla.</p><button class="btn-action" onclick="joinChallenge('Kampus_Marafonu_60K')">Çağırışa Qoşul</button></div>
+                    <div class="card"><h4>🌙 Düzgün Yuxu Gigiyenası</h4><p style="font-size:12px; color:var(--text-secondary);">5 gün ərzində gecə yuxusunu 7 saatdan aşağı salma.</p><button class="btn-action" onclick="joinChallenge('Yuxu_Rejimi_5Gun')">Çağırışa Qoşul</button></div>
                 </div>
-
-                <div class="right-card">
-                    <div class="section-header" style="margin-bottom:10px;">
-                        <h4>Sağlamlıq xidmətləri</h4>
-                        <a href="#" style="font-size:10px;">Hamısına bax</a>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px;">
-                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px;"><i data-lucide="stethoscope" style="width:14px; color:var(--ku-green);"></i> Həkim qəbulu</div>
-                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px;"><i data-lucide="brain" style="width:14px; color:#6366F1;"></i> Psixoloq</div>
-                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px;"><i data-lucide="file-text" style="width:14px; color:var(--success);"></i> Tibbi məlumat</div>
-                        <div style="border:1px solid var(--border-color); padding:8px; border-radius:6px; display:flex; align-items:center; gap:6px; color:var(--danger); border-color:rgba(239,68,68,0.2);"><i data-lucide="phone-call" style="width:14px;"></i> Təcili yardım</div>
-                    </div>
+                <div class="card" style="margin-top:24px;">
+                    <h3>🎯 Sizin Qoşulduğunuz Proqramlar</h3>
+                    <div id="user-challenges-list">Hələ ki heç bir çağırış proqramında qeydiyyatınız yoxdur.</div>
                 </div>
-
-                <div class="right-card">
-                    <div class="section-header" style="margin-bottom:4px;">
-                        <h4>Su içmə izləyicisi</h4>
-                        <a href="#" style="font-size:10px;">Redaktə et</a>
-                    </div>
-                    <div class="water-grid">
-                        <div class="water-glass filled"></div>
-                        <div class="water-glass filled"></div>
-                        <div class="water-glass filled"></div>
-                        <div class="water-glass filled"></div>
-                        <div class="water-glass filled"></div>
-                        <div class="water-glass filled"></div>
-                        <div class="water-glass"></div>
-                        <div class="water-glass"></div>
-                    </div>
-                    <span style="font-size:11px; color:var(--text-secondary);">Gündəlik hədəf: 8 stəkan <b style="float:right; color:var(--text-primary);">6/8 stəkan</b></span>
-                </div>
-
-                <div class="motivation-card">
-                    <p style="font-size:12px; margin:0 0 10px 0; font-style:italic;">"Bədəninə qulluq et, çünki orada yaşamaq məcburiyyətindəsən."</p>
-                    <small style="font-size:10px; opacity:0.8;">— Jim Rohn</small>
-                </div>
-
             </div>
 
-            <!-- FOOTER -->
-            <div class="footer-line">
-                © 2026 Qarabağ Universiteti. Bütün hüquqlar qorunur. | Haqqımızda | Qaydalar | Məxfilik Siyasəti
+            <!-- 📅 6. TƏDBİRLƏR -->
+            <div id="events-section" class="content-section">
+                <h3>📅 Qarabağ Universiteti Sağlamlıq Tədbirləri</h3>
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:24px;">Kampus daxilində və onlayn keçirilən seminarlara qoşularaq məlumatlılığınızı artırın.</p>
+                <div id="events-container" class="grid-3">Tədbirlər verilənlər bazasından çəkilir...</div>
             </div>
 
+            <!-- 🍏 7. QIDALANMA -->
+            <div id="nutrition-section" class="content-section">
+                <div class="card" style="max-width:650px; margin:0 auto;">
+                    <h3>🍏 Gündəlik Rasion və Pəhriz Qeydiyyatı</h3>
+                    <div class="form-group"><label>Yemək Vaxtı</label><select id="nut-meal"><option>Səhər Yeməyi</option><option>Nahar</option><option>Şam Yeməyi</option><option>Qəlyanaltı</option></select></div>
+                    <div class="form-group"><label>Qida İnqrediyentləri</label><input type="text" id="nut-food" placeholder="Məs: Yulaf, süd, banan və qoz"></div>
+                    <div class="form-group"><label>Enerji Dəyəri (kkal)</label><input type="number" id="nut-calories" placeholder="Məs: 350"></div>
+                    <button class="btn-action" onclick="submitNutrition()">Qidanı Günlük Siyahıya Əlavə Et</button>
+                    <h4 style="margin-top:24px; font-size:14px;">🍽️ Bugünkü Rasionunuzun Detalları</h4>
+                    <div id="nutrition-list">Bu gün üçün hələ yemək qeyd edilməyib.</div>
+                </div>
+            </div>
+
+            <!-- 📂 8. RESURSLAR -->
+            <div id="resources-section" class="content-section">
+                <h3>📂 Maarifləndirici Rəqəmsal Kitabxana</h3>
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:24px;">Mühəndislər və tələbələr üçün xüsusi hazırlanmış erqonomika, yuxu və sağlamlıq resursları.</p>
+                <div id="resources-container" class="grid-3">Resurs materialları yüklənir...</div>
+            </div>
+
+            <!-- 📈 9. MƏNİM İRƏLİLƏYİŞİM -->
+            <div id="progress-section" class="content-section">
+                <div class="card" style="max-width:700px; margin:0 auto;">
+                    <h3>📈 Ümumi Sağlamlıq Və Nailiyyət Trendiniz</h3>
+                    <p style="font-size:13px; color:var(--text-secondary);">Verilənlər bazasındakı ümumi fəaliyyətlərinizin cəmi statistik xülasəsi.</p>
+                    <div class="list-item" style="border-left: 4px solid var(--ku-green);">🏆 <b>İştirak Edilən Çağırış Sayı:</b> <span id="prog-challenges" style="font-weight:700;">0</span></div>
+                    <div class="list-item" style="border-left: 4px solid #3B82F6;">🩺 <b>Planlaşdırılmış Müayinələr:</b> <span id="prog-apps" style="font-weight:700;">0</span> görüş</div>
+                    <div class="list-item" style="border-left: 4px solid var(--warning);">🏃 <b>Bazada Qeydə Alınan Cəmi Addım:</b> <span id="prog-steps" style="font-weight:700;">0</span> addım</div>
+                </div>
+            </div>
+
+            <!-- 📊 10. STATİSTİKAM -->
+            <div id="stats-section" class="content-section">
+                <div class="card" style="max-width:700px; margin:0 auto;">
+                    <h3>📊 Baza Analitikası (Riyazi Ortalamalar)</h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">Süni intellekt və arka fondakı SQL mühərrikinin hesabladığı orta göstəricilər.</p>
+                    <div class="list-item">💤 <b>Gündəlik Ortalama Yuxu Rejimi:</b> <span id="stat-sleep" style="font-weight:700; color:#6366F1;">0</span> saat</div>
+                    <div class="list-item">🔥 <b>Ümumi Aktivlik Zamanı Yandırılan Enerji:</b> <span id="stat-calories" style="font-weight:700; color:var(--warning);">0</span> kkal</div>
+                    <div class="list-item" style="margin-top:20px; background-color:#EFF6FF; border: 1px dashed #3B82F6;">
+                        ℹ️ <b>Sistem Məlumatı:</b> Hesablamalar SQLite verilənlər bazasındakı log tarixçələrinizin riyazi ortalamasını (AVG) əks etdirir.
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-line">© 2026 Qarabağ Universiteti. Bütün hüquqlar qorunur. | E-MOTION Tələbə Sağlamlıq Platforması</div>
         </div>
     </div>
 
+    <!-- 💡 JAVASCRIPT LOGIC -->
     <script>
         lucide.createIcons();
+        const BACKEND_URL = "http://127.0.0.1:5500";
+        const USERNAME = "Əli";
 
-        // Dinamik İstifadəçi Məlumatlarının Yüklənməsi (Kompüter Mühəndisliyi ixtisası ilə)
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData) {
-            document.getElementById('profile-name').innerText = userData.name;
-            document.getElementById('welcome-name').innerText = userData.name;
-            document.getElementById('profile-avatar').innerText = userData.name.charAt(0).toUpperCase();
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            loadEvents();
+            loadResources();
+        });
+
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`${tabName}-section`).classList.add('active');
             
-            // Əgər spesifik ixtisas qeyd olunubsa onu yazırıq, yoxsa default olaraq Kompüter Mühəndisliyi
-            const major = userData.major || "Kompüter Mühəndisliyi, 2-ci kurs";
-            document.getElementById('profile-major').innerText = major;
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            if(element) element.classList.add('active');
+            
+            if(tabName === 'dashboard') loadDashboard();
+            if(tabName === 'services') loadAppointments();
+            if(tabName === 'challenges') loadUserChallenges();
+            if(tabName === 'nutrition') loadNutrition();
+            if(tabName === 'mental') loadMoodHistory();
+            if(tabName === 'progress' || tabName === 'stats') loadGlobalStats();
+        }
+
+        // --- DASHBOARD VƏ AKTİVLİK YÜKLƏNMƏSİ ---
+        async function loadDashboard() {
+            try {
+                let res = await fetch(`${BACKEND_URL}/api/activity?username=${USERNAME}`);
+                let data = await res.json();
+                
+                document.getElementById('dash-steps-val').innerText = data.steps.toLocaleString();
+                document.getElementById('dash-activity-val').innerText = data.activity_time + " dəq";
+                document.getElementById('dash-calories-val').innerText = data.calories + " kkal";
+                document.getElementById('dash-sleep-val').innerText = data.sleep + " saat";
+
+                document.getElementById('dash-steps-bar').style.width = `${Math.min((data.steps/10000)*100, 100)}%`;
+                document.getElementById('dash-activity-bar').style.width = `${Math.min((data.activity_time/60)*100, 100)}%`;
+                document.getElementById('dash-calories-bar').style.width = `${Math.min((data.calories/600)*100, 100)}%`;
+                document.getElementById('dash-sleep-bar').style.width = `${Math.min((data.sleep/8)*100, 100)}%`;
+
+                let waterRes = await fetch(`${BACKEND_URL}/api/water?username=${USERNAME}`);
+                let waterData = await waterRes.json();
+                updateWaterUI(waterData.count);
+
+                let moodRes = await fetch(`${BACKEND_URL}/api/history?username=${USERNAME}`);
+                let moodData = await moodRes.json();
+                if(moodData.length > 0) {
+                    document.getElementById('db-history-preview').innerHTML = `
+                        Status: <b style="color:${moodData[0].color}">${moodData[0].emotion}</b><br>
+                        <span style="font-size:11px; color:var(--text-secondary);">${moodData[0].date}</span>
+                        <p style="margin:6px 0 0 0; font-style:italic;">"${moodData[0].text.substring(0,80)}..."</p>
+                    `;
+                } else {
+                    document.getElementById('db-history-preview').innerText = "Hələ emosional analiz qeydi tapılmayıb.";
+                }
+
+                let nutRes = await fetch(`${BACKEND_URL}/api/nutrition?username=${USERNAME}`);
+                let nutData = await nutRes.json();
+                let totalCals = 0;
+                nutData.forEach(n => totalCals += n.total_calories);
+                document.getElementById('dash-nutrition-summary').innerText = totalCals + " kkal";
+
+            } catch(e) { console.log("Xəta:", e); }
+        }
+
+        async function submitActivity() {
+            let steps = document.getElementById('input-steps').value || 0;
+            let act = document.getElementById('input-activity').value || 0;
+            let cal = document.getElementById('input-calories').value || 0;
+            let sleep = document.getElementById('input-sleep').value || 0;
+            
+            await fetch(`${BACKEND_URL}/api/activity`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: USERNAME, steps: steps, activity_time: act, calories: cal, sleep: sleep})
+            });
+            alert("Məlumatlar verilənlər bazasında qeyd olundu!");
+            switchTab('dashboard', document.querySelectorAll('.nav-menu .nav-item')[0]);
+        }
+
+        // --- SU İZLƏYİCİSİ MODULU ---
+        async function handleWaterClick(idx) {
+            updateWaterUI(idx);
+            await fetch(`${BACKEND_URL}/api/water`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: USERNAME, count: idx})
+            });
+        }
+        function updateWaterUI(count) {
+            document.querySelectorAll('.water-glass').forEach((g, i) => {
+                if(i < count) g.classList.add('filled'); else g.classList.remove('filled');
+            });
+            document.getElementById('water-text-ratio').innerText = `${count}/8 stəkan`;
+            document.getElementById('dashboard-water-value').innerText = `${count} stəkan`;
+            document.getElementById('dashboard-water-progress').style.width = `${(count/8)*100}%`;
+        }
+
+        // --- MENTAL SAĞLAMLIQ MODULU ---
+        async function submitMood() {
+            let text = document.getElementById('mental-input-text').value.trim();
+            if(!text) return alert("Zəhmət olmasa statusunuzu yazın.");
+            await fetch(`${BACKEND_URL}/api/analyze`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: USERNAME, text: text})
+            });
+            document.getElementById('mental-input-text').value = "";
+            loadMoodHistory();
+        }
+        async function loadMoodHistory() {
+            let res = await fetch(`${BACKEND_URL}/api/history?username=${USERNAME}`);
+            let data = await res.json();
+            if(data.length === 0) {
+                document.getElementById('full-history-container').innerHTML = "<p style='font-size:12px;'>Hələ qeyd yoxdur.</p>";
+                return;
+            }
+            document.getElementById('full-history-container').innerHTML = data.map(item => `
+                <div class="list-item" style="border-left: 4px solid ${item.color}">
+                    <div style="display:flex; justify-content:space-between; font-weight:600;">
+                        <span style="color:${item.color}">${item.emotion}</span>
+                        <span style="color:var(--text-secondary); font-size:11px;">${item.date}</span>
+                    </div>
+                    <p style="margin:6px 0;">"${item.text}"</p>
+                    <small>💡 <b>Məsləhət:</b> ${item.advice}</small>
+                </div>
+            `).join('');
+        }
+
+        // --- SAĞLAMLIQ XİDMƏTLƏRİ MODULU ---
+        async function bookAppointment() {
+            let type = document.getElementById('service-type').value;
+            let doc = document.getElementById('service-doctor').value;
+            let date = document.getElementById('service-date').value;
+            let time = document.getElementById('service-time').value;
+            if(!doc || !date || !time) return alert("Bütün xanaları doldurun!");
+            
+            await fetch(`${BACKEND_URL}/api/appointments`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: USERNAME, service_type: type, doctor: doc, date: date, time: time})
+            });
+            alert("Görüş uğurla qeydiyyata alındı!");
+            loadAppointments();
+        }
+        async function loadAppointments() {
+            let res = await fetch(`${BACKEND_URL}/api/appointments?username=${USERNAME}`);
+            let data = await res.json();
+            if(data.length === 0) return;
+            document.getElementById('appointments-list').innerHTML = data.map(a => `
+                <div class="list-item">
+                    🩺 <b>${a.service_type}</b><br>
+                    <small>Həkim: ${a.doctor} | Tarix: ${a.date} - ${a.time}</small>
+                    <span style="float:right; font-weight:600; color:var(--warning); font-size:11px;">● ${a.status}</span>
+                </div>
+            `).join('');
+        }
+
+        // --- ÇAĞIRIŞLAR MODULU ---
+        async function joinChallenge(cid) {
+            await fetch(`${BACKEND_URL}/api/challenges`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: USERNAME, challenge_id: cid, progress: 0})
+            });
+            alert("Çağırış siyahınıza əlavə edildi!");
+            loadUserChallenges();
+        }
+        async function loadUserChallenges() {
+            let res = await fetch(`${BACKEND_URL}/api/challenges?username=${USERNAME}`);
+            let data = await res.json();
+            if(data.length === 0) return;
+            document.getElementById('user-challenges-list').innerHTML = data.map(c => `
+                <div class="list-item">
+                    🎯 Proqram: <b>${c.challenge_id.replace(/_/g, ' ')}</b> 
+                    <span style="float:right; background:#D1FAE5; color:#065F46; padding:2px 8px; border-radius:4px; font-size:11px;">${c.status}</span>
+                </div>
+            `).join('');
+        }
+
+        // --- TƏDBİRLƏR MODULU ---
+        async function loadEvents() {
+            try {
+                let res = await fetch(`${BACKEND_URL}/api/events`);
+                let data = await res.json();
+                document.getElementById('events-container').innerHTML = data.map(e => `
+                    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <span style="font-size:10px; font-weight:600; background:rgba(68,118,108,0.1); color:var(--ku-green); padding:4px 8px; border-radius:4px;">${e.type}</span>
+                            <h4 style="margin:10px 0 6px 0; font-size:14px;">${e.title}</h4>
+                            <p style="font-size:12px; color:var(--text-secondary); margin:0 0 12px 0;">${e.description}</p>
+                        </div>
+                        <div>
+                            <small style="display:block; margin-bottom:10px; color:var(--text-secondary);">📍 ${e.location} | 📅 ${e.date}</small>
+                            <button class="btn-action" style="padding:8px 14px; font-size:12px;" onclick="registerEvent(${e.id})">Tədbirə Yazıl</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {}
+        }
+        async function registerEvent(eid) {
+            await fetch(`${BACKEND_URL}/api/events`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: USERNAME, event_id: eid})
+            });
+            alert("Tədbir iştirakçı siyahısına əlavə olundunuz!");
+        }
+
+        // --- QIDALANMA MODULU ---
+        async function submitNutrition() {
+            let meal = document.getElementById('nut-meal').value;
+            let food = document.getElementById('nut-food').value;
+            let cals = document.getElementById('nut-calories').value;
+            if(!food || !cals) return alert("Məlumatları tam daxil edin.");
+            
+            await fetch(`${BACKEND_URL}/api/nutrition`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: USERNAME, meal_type: meal, food_items: food, total_calories: cals})
+            });
+            document.getElementById('nut-food').value = "";
+            document.getElementById('nut-calories').value = "";
+            loadNutrition();
+        }
+        async function loadNutrition() {
+            let res = await fetch(`${BACKEND_URL}/api/nutrition?username=${USERNAME}`);
+            let data = await res.json();
+            if(data.length === 0) return;
+            document.getElementById('nutrition-list').innerHTML = data.map(n => `
+                <div class="list-item">
+                    🍽️ <b>${n.meal_type}</b>: ${n.food_items} 
+                    <span style="float:right; font-weight:600; color:var(--ku-green);">${n.total_calories} kkal</span>
+                </div>
+            `).join('');
+            loadDashboard();
+        }
+
+        // --- RESURSLAR KİTABXANASI ---
+        async function loadResources() {
+            try {
+                let res = await fetch(`${BACKEND_URL}/api/resources`);
+                let data = await res.json();
+                document.getElementById('resources-container').innerHTML = data.map(r => `
+                    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <span style="font-size:10px; background:var(--light-blue); color:#0369A1; padding:3px 8px; border-radius:4px; font-weight:600;">${r.category}</span>
+                            <h4 style="margin:12px 0 6px 0; font-size:14px;">${r.title}</h4>
+                            <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">${r.description}</p>
+                        </div>
+                        <a href="${r.link}" style="font-size:12px; color:var(--ku-green); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">Materialı Oxu (${r.read_time}) →</a>
+                    </div>
+                `).join('');
+            } catch(e) {}
+        }
+
+        // --- STATS & PROGRESS ---
+        async function loadGlobalStats() {
+            try {
+                let res = await fetch(`${BACKEND_URL}/api/stats?username=${USERNAME}`);
+                let data = await res.json();
+                
+                document.getElementById('prog-challenges').innerText = data.active_challenges;
+                document.getElementById('prog-apps').innerText = data.appointments_booked;
+                document.getElementById('prog-steps').innerText = data.total_steps.toLocaleString();
+
+                document.getElementById('stat-sleep').innerText = data.avg_sleep;
+                document.getElementById('stat-calories').innerText = data.total_calories_burned.toLocaleString();
+            } catch(e) {}
         }
     </script>
 </body>
