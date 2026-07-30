@@ -150,26 +150,26 @@
 <body>
     <div class="auth-container">
         <!-- Qeydiyyat Formu -->
-        <div class="form-box" id="register-box">
+        <div class="form-box" id="signup-box">
             <h2>Hesab Yarat</h2>
-            <form id="register-form">
-                <input type="text" id="reg-username" placeholder="İstifadəçi adı" required>
-                <input type="email" id="reg-email" placeholder="E-poçt ünvanı" required>
-                <input type="password" id="reg-password" placeholder="Şifrə" required>
+            <form id="signup-form">
+                <input type="text" id="signup-username" placeholder="İstifadəçi adı" required>
+                <input type="email" id="signup-email" placeholder="E-poçt ünvanınız" required>
+                <input type="password" id="signup-password" placeholder="Şifrəniz" required>
                 <button type="submit">Qeydiyyatdan Keç</button>
             </form>
             <p>Artıq hesabınız var? <a href="#" id="to-login">Daxil olun</a></p>
         </div>
 
-        <!-- Giriş Formu (İlkin olaraq gizli saxlanıla bilər) -->
+        <!-- Giriş Formu -->
         <div class="form-box" id="login-box" style="display: none;">
             <h2>Daxil Ol</h2>
             <form id="login-form">
-                <input type="email" id="login-email" placeholder="E-poçt ünvanı" required>
-                <input type="password" id="login-password" placeholder="Şifrə" required>
+                <input type="email" id="login-email" placeholder="E-poçt ünvanınız" required>
+                <input type="password" id="login-password" placeholder="Şifrəniz" required>
                 <button type="submit">Giriş Et</button>
             </form>
-            <p>Hesabınız yoxdur? <a href="#" id="to-register">Qeydiyyatdan keçin</a></p>
+            <p>Hesabınız yoxdur? <a href="#" id="to-signup">Qeydiyyatdan keçin</a></p>
         </div>
     </div>
 

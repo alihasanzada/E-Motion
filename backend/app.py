@@ -1,10 +1,13 @@
+from flask import Flask, jsonify, request
+from flasgger import Swagger
+from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3
 import os
 import re
-import sqlite3
-from flask import Flask, jsonify, request
-from werkzeug.security import check_password_hash, generate_password_hash
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
+swagger = Swagger(app)
+
 DATABASE = 'kuds_database.db'
 
 
@@ -345,6 +348,7 @@ def get_resources():
   resources = conn.execute('SELECT * FROM resources').fetchall()
   conn.close()
   return jsonify([dict(row) for row in resources]), 200
+
 
 
 if __name__ == '__main__':
