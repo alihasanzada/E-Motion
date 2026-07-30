@@ -1,233 +1,351 @@
-from flask import Flask, jsonify, request
-import sqlite3
 import os
+import re
+import sqlite3
+from flask import Flask, jsonify, request
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 DATABASE = 'kuds_database.db'
 
-# Frontend və Backend fərqli portlarda işləyərsə CORS probleminin qarşısını almaq üçün
+
+# CORS idarəetməsi
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-    return response
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add(
+      'Access-Control-Allow-Headers', 'Content-Type,Authorization'
+  )
+  response.headers.add(
+      'Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'
+  )
+  return response
+
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row  # Nəticələrin dictionary formatında oxunması üçün
-    return conn
+  conn = sqlite3.connect(DATABASE)
+  conn.row_factory = sqlite3.Row
+  return conn
+
 
 def init_db():
-    """KUDS standartlarına uyğun verilənlər bazası cədvəllərinin yaradılması və ilkin nizamlanması"""
-    if not os.path.exists(DATABASE):
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # 1. Tələbə məlumatları cədvəli
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS students (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                student_id TEXT UNIQUE NOT NULL,
-                major TEXT NOT NULL,
-                semester INTEGER NOT NULL
-            )
-        ''')
-        
-        # 2. Fənlər cədvəli
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS courses (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                code TEXT UNIQUE NOT NULL,
-                name TEXT NOT NULL,
-                credits INTEGER NOT NULL
-            )
-        ''')
-        
-        # 3. Qiymətləndirmə cədvəli (Kəsrlərin idarə edilməsi daxil olmaqla)
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS grades (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                student_id INTEGER,
-                course_id INTEGER,
-                midterm REAL DEFAULT 0,
-                final REAL DEFAULT 0,
-                retake REAL DEFAULT NULL,
-                total REAL DEFAULT 0,
-                letter TEXT DEFAULT 'F',
-                FOREIGN KEY(student_id) REFERENCES students(id),
-                FOREIGN KEY(course_id) REFERENCES courses(id)
-            )
-        ''')
+  conn = get_db_connection()
+  cursor = conn.cursor()
 
-        # 4. Davamiyyət cədvəli
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS attendance (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                student_id INTEGER,
-                course_id INTEGER,
-                total_hours INTEGER NOT NULL,
-                absent_hours INTEGER DEFAULT 0,
-                FOREIGN KEY(student_id) REFERENCES students(id),
-                FOREIGN KEY(course_id) REFERENCES courses(id)
-            )
-        ''')
-
-        # --- Test Məlumatlarının Əlavə Olunması (Seed Data) ---
-        # Tələbə qeydiyyatı
-        cursor.execute(
-            "INSERT INTO students (name, student_id, major, semester) VALUES (?, ?, ?, ?)",
-            ('Əli', 'KU2026170', 'Computer Engineering', 3)
+  # 1. İstifadəçilər (Users) cədvəli
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
         )
-        student_id = cursor.lastrowid
-        
-        # Fənlərin əlavə edilməsi
-        courses_data = [
-            ('MATH201', 'Mathematical Analysis', 6),
-            ('PHYS201', 'Physics', 4),
-            ('COMP101', 'Programming Fundamentals 1', 5),
-            ('COMP102', 'Programming Fundamentals 2', 5)
-        ]
-        cursor.executemany("INSERT INTO courses (code, name, credits) VALUES (?, ?, ?)", courses_data)
-        
-        # Cari qiymət statusları (Nümunəvi kəsr balları ilə birlikdə)
-        grades_data = [
-            (student_id, 1, 22.0, 18.0, None, 40.0, 'F'),  # Riyazi Analiz (Kəsr statusu)
-            (student_id, 2, 25.0, 17.0, None, 42.0, 'F'),  # Fizika (Kəsr statusu)
-            (student_id, 3, 30.0, 11.0, None, 41.0, 'F'),  # Proqramlaşdırma 1 (Kəsr statusu)
-            (student_id, 4, 0.0, 0.0, None, 0.0, 'FX')     # Proqramlaşdırma 2 (Planlaşdırılan)
-        ]
-        cursor.executemany(
-            "INSERT INTO grades (student_id, course_id, midterm, final, retake, total, letter) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            grades_data
+    """)
+
+  # 2. Tələbələr (Students) cədvəli
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            student_id TEXT UNIQUE NOT NULL,
+            major TEXT NOT NULL,
+            semester INTEGER NOT NULL
         )
+    """)
 
-        # Davamiyyət limitləri üzrə verilənlər
-        attendance_data = [
-            (student_id, 1, 60, 4),
-            (student_id, 2, 45, 6),
-            (student_id, 3, 60, 2),
-            (student_id, 4, 60, 0)
-        ]
-        cursor.executemany(
-            "INSERT INTO attendance (student_id, course_id, total_hours, absent_hours) VALUES (?, ?, ?, ?)",
-            attendance_data
+  # 3. Fənlər (Courses) cədvəli
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS courses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            code TEXT UNIQUE NOT NULL,
+            credits INTEGER NOT NULL
         )
+    """)
 
-        conn.commit()
-        conn.close()
+  # 4. Qiymətlər (Grades) cədvəli
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS grades (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_name TEXT NOT NULL,
+            course_code TEXT NOT NULL,
+            midterm INTEGER NOT NULL,
+            final INTEGER NOT NULL
+        )
+    """)
 
-# Verilənlər bazasını başladırıq
+  # 5. Qayıblar (Attendance) cədvəli
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_name TEXT NOT NULL,
+            course_code TEXT NOT NULL,
+            status TEXT NOT NULL
+        )
+    """)
+
+  # 6. Tədbirlər (Events) cədvəli
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            date TEXT NOT NULL,
+            location TEXT NOT NULL
+        )
+    """)
+
+  # 7. Resurslar (Resources) cədvəli
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS resources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            category TEXT NOT NULL,
+            link TEXT NOT NULL
+        )
+    """)
+
+  conn.commit()
+
+  # Test məlumatlarının əlavə edilməsi (cədvəl boşdursa)
+  cursor.execute('SELECT COUNT(*) FROM students')
+  if cursor.fetchone()[0] == 0:
+    cursor.execute(
+        "INSERT INTO students (name, student_id, major, semester) VALUES ('Əli"
+        " Məmmədov', 'S123456', 'Kompüter Mühəndisliyi', 4)"
+    )
+    cursor.execute(
+        "INSERT INTO students (name, student_id, major, semester) VALUES"
+        " ('Aysel Əliyeva', 'S123457', 'İnformasiya Texnologiyaları', 2)"
+    )
+    cursor.execute(
+        "INSERT INTO courses (title, code, credits) VALUES ('Veb"
+        " Proqramlaşdırma', 'CS301', 6)"
+    )
+    cursor.execute(
+        "INSERT INTO courses (title, code, credits) VALUES ('Verilənlər Bazası"
+        " Sistemləri', 'CS204', 5)"
+    )
+    cursor.execute(
+        "INSERT INTO events (title, date, location) VALUES ('AI və Gələcək"
+        " Seminarı', '2025-04-15', 'Əsas Bina, Zal A')"
+    )
+    cursor.execute(
+        "INSERT INTO resources (title, category, link) VALUES ('Flask"
+        " Sənədləşməsi', 'Dərslik', 'https://flask.palletsprojects.com/')"
+    )
+    conn.commit()
+
+  conn.close()
+
+
+# Server hər başlayanda cədvəllərin olduğundan əmin oluruq
 init_db()
 
-# --- API ENDPOINTS ---
 
-@app.route('/api/profile', methods=['GET'])
-def get_profile():
-    """Tələbənin profil məlumatlarını qaytarır"""
-    conn = get_db_connection()
-    student = conn.execute('SELECT * FROM students LIMIT 1').fetchone()
-    conn.close()
-    
-    if student:
-        return jsonify(dict(student)), 200
-    return jsonify({"error": "Tələbə tapılmadı"}), 404
+# ================= GİRİŞ VƏ QEYDİYYAT ENDPOINLERİ =================
 
 
-@app.route('/api/dashboard/stats', methods=['GET'])
-def get_dashboard_stats():
-    """Dashboard-un yuxarı paneli üçün ümumi statistik göstəricilər"""
-    conn = get_db_connection()
-    
-    # Kəsr fənlərin sayı (Ümumi balı 51-dən az olanlar və ya F dərəcəsi alanlar)
-    failed_courses = conn.execute(
-        "SELECT COUNT(*) as count FROM grades WHERE letter = 'F' OR letter = 'FX'"
-    ).fetchone()['count']
-    
-    # Ümumi kredit sayı
-    total_credits = conn.execute("SELECT SUM(credits) as total FROM courses").fetchone()['total']
-    
-    # Davamiyyət faizi (Ümumi limiti aşma riskini yoxlamaq üçün)
-    attendance = conn.execute("SELECT SUM(total_hours) as total, SUM(absent_hours) as absent FROM attendance").fetchone()
-    att_percentage = 100.0
-    if attendance['total'] and attendance['total'] > 0:
-        att_percentage = round(((attendance['total'] - attendance['absent']) / attendance['total']) * 100, 1)
+@app.route('/api/register', methods=['POST'])
+def register():
+  data = request.get_json() or {}
+  name = data.get('name')
+  email = data.get('email')
+  password = data.get('password')
 
-    conn.close()
-    
-    return jsonify({
-        "outstanding_retakes": failed_courses,
-        "total_credits": total_credits,
-        "attendance_rate": f"{att_percentage}%",
-        "academic_status": "Aktiv (Yoxlama Dövrü)"
-    }), 200
+  if not name or not email or not password:
+    return jsonify({'message': 'Bütün xanaları doldurun!'}), 400
 
+  # S və ya ST (böyük/kiçik fərqsiz) + 6 rəqəm + kiçik hərflə @qu.edu.az
+  email_pattern = r'^(?i:s|st)\d{6}@qu\.edu\.az$'
+  if not re.match(email_pattern, email):
+    return (
+        jsonify({
+            'message': (
+                'Keçərsiz e-poçt formatı! Yalnız S123456@qu.edu.az və ya'
+                ' ST123456@qu.edu.az formatında e-poçtlar qəbul edilir.'
+            )
+        }),
+        400,
+    )
 
-@app.route('/api/grades', methods=['GET'])
-def get_grades():
-    """Fənlər, kreditlər və cari qiymət ballarının siyahısı"""
-    conn = get_db_connection()
-    query = '''
-        SELECT c.code, c.name, c.credits, g.midterm, g.final, g.retake, g.total, g.letter
-        FROM grades g
-        JOIN courses c ON g.course_id = c.id
-    '''
-    grades = conn.execute(query).fetchall()
-    conn.close()
-    
-    return jsonify([dict(row) for row in grades]), 200
+  hashed_password = generate_password_hash(password)
 
+  conn = get_db_connection()
+  cursor = conn.cursor()
 
-@app.route('/api/attendance', methods=['GET'])
-def get_attendance():
-    """Fənlər üzrə limitlər və qayıb saatları"""
-    conn = get_db_connection()
-    query = '''
-        SELECT c.name as course_name, a.total_hours, a.absent_hours,
-               ROUND(((a.absent_hours * 1.0) / a.total_hours) * 100, 1) as limit_percentage
-        FROM attendance a
-        JOIN courses c ON a.course_id = c.id
-    '''
-    attendance_records = conn.execute(query).fetchall()
-    conn.close()
-    
-    return jsonify([dict(row) for row in attendance_records]), 200
+  # Təhlükəsizlik üçün cədvəlin varlığını hər ehtimala qarşı təkrar yoxlayırıq
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    """)
 
-
-@app.route('/api/grades/update-retake', methods=['POST'])
-def update_retake_grade():
-    """Kəsr imtahanı (retake) nəticəsi daxil edildikdə ümumi balı yeniləyən funksional sonluq"""
-    data = request.get_json()
-    course_code = data.get('course_code')
-    retake_score = data.get('retake_score')
-    
-    if not course_code or retake_score is None:
-        return jsonify({"error": "Eksik məlumat daxil edilib"}), 400
-        
-    conn = get_db_connection()
-    course = conn.execute('SELECT id FROM courses WHERE code = ?', (course_code,)).fetchone()
-    
-    if not course:
-        conn.close()
-        return jsonify({"error": "Fənn tapılmadı"}), 404
-        
-    # Yeni ümumi balın hesablanması (Maddə üzrə: Keçid balı hesablanarkən retake finalı əvəzləyir)
-    # Tutaq ki, yeni ümumi bal = Midterm + Retake
-    grade_entry = conn.execute('SELECT midterm FROM grades WHERE course_id = ?', (course['id'],)).fetchone()
-    new_total = grade_entry['midterm'] + float(retake_score)
-    new_letter = 'S' if new_total >= 51 else 'F' # Sadələşdirilmiş KUDS keçid məntiqi
-    
-    conn.execute('''
-        UPDATE grades 
-        SET retake = ?, total = ?, letter = ? 
-        WHERE course_id = ?
-    ''', (retake_score, new_total, new_letter, course['id']))
-    
+  try:
+    cursor.execute(
+        'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+        (name, email, hashed_password),
+    )
     conn.commit()
+    return jsonify({'message': 'Qeydiyyat uğurla tamamlandı!'}), 201
+  except sqlite3.IntegrityError:
+    return (
+        jsonify({'message': 'Bu e-poçt ünvanı artıq qeydiyyatdan keçib!'}),
+        400,
+    )
+  except Exception as e:
+    return jsonify({'message': f'Server xətası: {str(e)}'}), 500
+  finally:
     conn.close()
-    
-    return jsonify({"success": True, "new_total": new_total, "letter": new_letter}), 200
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+  data = request.get_json() or {}
+  email = data.get('email')
+  password = data.get('password')
+
+  if not email or not password:
+    return jsonify({'message': 'E-poçt və şifrəni daxil edin!'}), 400
+
+  conn = get_db_connection()
+  user = conn.execute(
+      'SELECT * FROM users WHERE email = ?', (email,)
+  ).fetchone()
+  conn.close()
+
+  if user and check_password_hash(user['password'], password):
+    return (
+        jsonify({
+            'message': 'Giriş uğurludur!',
+            'token': 'auth-token-xyz-12345',
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+            },
+        }),
+        200,
+    )
+
+  return jsonify({'message': 'E-poçt və ya şifrə yanlışdır!'}), 401
+
+
+# ================= DASHBOARD VƏ STATİSTİKA =================
+
+
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+  conn = get_db_connection()
+  students_count = conn.execute('SELECT COUNT(*) FROM students').fetchone()[0]
+  courses_count = conn.execute('SELECT COUNT(*) FROM courses').fetchone()[0]
+  events_count = conn.execute('SELECT COUNT(*) FROM events').fetchone()[0]
+  resources_count = conn.execute('SELECT COUNT(*) FROM resources').fetchone()[0]
+  conn.close()
+
+  return (
+      jsonify({
+          'students': students_count,
+          'courses': courses_count,
+          'events': events_count,
+          'resources': resources_count,
+      }),
+      200,
+  )
+
+
+# ================= TƏLƏBƏLƏR (STUDENTS) =================
+
+
+@app.route('/api/students', methods=['GET'])
+def get_students():
+  conn = get_db_connection()
+  students = conn.execute('SELECT * FROM students').fetchall()
+  conn.close()
+  return jsonify([dict(row) for row in students]), 200
+
+
+@app.route('/api/students', methods=['POST'])
+def add_student():
+  data = request.get_json() or {}
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  try:
+    cursor.execute(
+        'INSERT INTO students (name, student_id, major, semester) VALUES (?, ?,'
+        ' ?, ?)',
+        (
+            data.get('name'),
+            data.get('student_id'),
+            data.get('major'),
+            data.get('semester'),
+        ),
+    )
+    conn.commit()
+    return jsonify({'message': 'Tələbə uğurla əlavə edildi!'}), 201
+  except sqlite3.IntegrityError:
+    return jsonify({'message': 'Bu ID ilə tələbə artıq mövcuddur!'}), 400
+  finally:
+    conn.close()
+
+
+@app.route('/api/students/<int:id>', methods=['DELETE'])
+def delete_student(id):
+  conn = get_db_connection()
+  conn.execute('DELETE FROM students WHERE id = ?', (id,))
+  conn.commit()
+  conn.close()
+  return jsonify({'message': 'Tələbə silindi!'}), 200
+
+
+# ================= FƏNLƏR (COURSES) =================
+
+
+@app.route('/api/courses', methods=['GET'])
+def get_courses():
+  conn = get_db_connection()
+  courses = conn.execute('SELECT * FROM courses').fetchall()
+  conn.close()
+  return jsonify([dict(row) for row in courses]), 200
+
+
+@app.route('/api/courses', methods=['POST'])
+def add_course():
+  data = request.get_json() or {}
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  try:
+    cursor.execute(
+        'INSERT INTO courses (title, code, credits) VALUES (?, ?, ?)',
+        (data.get('title'), data.get('code'), data.get('credits')),
+    )
+    conn.commit()
+    return jsonify({'message': 'Fənn uğurla əlavə edildi!'}), 201
+  except sqlite3.IntegrityError:
+    return jsonify({'message': 'Bu kodlu fənn artıq mövcuddur!'}), 400
+  finally:
+    conn.close()
+
+
+# ================= TƏDBİRLƏR VƏ RESURSLAR =================
+
+
+@app.route('/api/events', methods=['GET'])
+def get_events():
+  conn = get_db_connection()
+  events = conn.execute('SELECT * FROM events').fetchall()
+  conn.close()
+  return jsonify([dict(row) for row in events]), 200
+
+
+@app.route('/api/resources', methods=['GET'])
+def get_resources():
+  conn = get_db_connection()
+  resources = conn.execute('SELECT * FROM resources').fetchall()
+  conn.close()
+  return jsonify([dict(row) for row in resources]), 200
+
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+  app.run(debug=True, port=5050)
