@@ -1,123 +1,334 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-
-interface EventItem {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-}
+"use client";
+import React, { useState } from 'react';
+import { Calendar, MapPin, Users, Plus, CheckCircle2, Clock, Sparkles, Tag } from 'lucide-react';
 
 export default function EventsPanel() {
-  const [events, setEvents] = useState<EventItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Form stateləri
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
-  const [formMessage, setFormMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [category, setCategory] = useState('Texnologiya');
 
-  const API_URL = 'http://127.0.0.1:5050/api/events';
+  const [events, setEvents] = useState([
+    {
+      id: 1,
+      title: 'AI və Gələcək Seminarı',
+      date: '2026-08-15',
+      displayDate: { day: '15', month: 'AVQ' },
+      location: 'Əsas Bina, Zal A',
+      category: 'Texnologiya',
+      organizer: 'Kompüter Klubu',
+      attendees: 42,
+      isAttending: false
+    },
+    {
+      id: 2,
+      title: 'Kampus daxili Şahmat Turniri',
+      date: '2026-08-18',
+      displayDate: { day: '18', month: 'AVQ' },
+      location: 'Tələbə Mərkəzi',
+      category: 'İdman',
+      organizer: 'İdman Şurası',
+      attendees: 18,
+      isAttending: true
+    },
+    {
+      id: 3,
+      title: 'Karyera və İnternship Masterklassı',
+      date: '2026-08-22',
+      displayDate: { day: '22', month: 'AVQ' },
+      location: 'Böyük Akt Zalı',
+      category: 'Karyera',
+      organizer: 'Karyera Mərkəzi',
+      attendees: 85,
+      isAttending: false
+    }
+  ]);
 
-  const fetchEvents = () => {
-    fetch(API_URL)
-      .then((res) => {
-        if (!res.ok) throw new Error('Tədbirlər yüklənərkən xəta baş verdi.');
-        return res.json();
-      })
-      .then((data) => {
-        setEvents(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormMessage(null);
+    if (!title.trim() || !date || !location.trim()) return;
 
-    if (!title || !date || !location) {
-      setFormMessage({ text: 'Zəhmət olmasa, bütün xanaları doldurun.', isError: true });
-      return;
-    }
+    const eventDate = new Date(date);
+    const months = ['YAN', 'FEV', 'MAR', 'APR', 'MAY', 'İY N', 'İY L', 'AVQ', 'SEN', 'OKT', 'NOY', 'DEK'];
 
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, date, location }),
-      });
+    const newEvent = {
+      id: Date.now(),
+      title,
+      date,
+      displayDate: {
+        day: String(eventDate.getDate()).padStart(2, '0'),
+        month: months[eventDate.getMonth()] || 'AVQ'
+      },
+      location,
+      category,
+      organizer: 'Tələbə Təşəbbüsü',
+      attendees: 1,
+      isAttending: true
+    };
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setFormMessage({ text: 'Tədbir uğurla əlavə olundu!', isError: false });
-        setTitle('');
-        setDate('');
-        setLocation('');
-        fetchEvents(); // Siyahını yeniləyirik
-      } else {
-        setFormMessage({ text: data.message || 'Xəta baş verdi.', isError: true });
-      }
-    } catch (err) {
-      setFormMessage({ text: 'Backend serverinə qoşulmaq mümkün olmadı.', isError: true });
-    }
+    setEvents([newEvent, ...events]);
+    setTitle('');
+    setDate('');
+    setLocation('');
   };
 
-  if (loading) return <div style={{ color: '#fff', padding: '20px' }}>Yüklənir...</div>;
+  const toggleAttend = (id: number) => {
+    setEvents(prev =>
+      prev.map(ev => {
+        if (ev.id === id) {
+          const attending = !ev.isAttending;
+          return {
+            ...ev,
+            isAttending: attending,
+            attendees: attending ? ev.attendees + 1 : ev.attendees - 1
+          };
+        }
+        return ev;
+      })
+    );
+  };
 
   return (
-    <div style={{ padding: '20px', color: '#fff' }}>
-      <h3 style={{ marginBottom: '20px', color: '#1E293B', fontSize: '24px', fontWeight: '600' }}>Universitet Tədbirləri</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+      
+      {/* Başlıq */}
+      <div>
+        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' }}>
+          Universitet Tədbirləri
+        </h2>
+        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748B' }}>
+          Kampus daxilində baş tutan seminarlar, yarışlar və görüşlərdə iştirak edin və ya yenisini təşkil edin.
+        </p>
+      </div>
 
-      {/* Yeni Tədbir Əlavə Etmə Formu */}
-      <form onSubmit={handleSubmit} style={{ background: '#111', padding: '20px', borderRadius: '12px', marginBottom: '30px', border: '1px solid #222' }}>
-        <h4 style={{ margin: '0 0 15px 0', color: '#fff', fontSize: '18px' }}>Yeni Tədbir Yarat</h4>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
         
-        {formMessage && (
-          <div style={{ padding: '10px', borderRadius: '6px', marginBottom: '15px', fontSize: '14px', backgroundColor: formMessage.isError ? '#5c0d11' : '#1b4332', color: '#fff', border: '1px solid', borderColor: formMessage.isError ? '#800f14' : '#2d6a4f' }}>
-            {formMessage.text}
-          </div>
-        )}
+        {/* Sol Sütun: Yeni Tədbir Yarat Formu */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+        }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={18} color="#2E5B4E" /> Yeni Tədbir Yarat
+          </h3>
 
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <input type="text" placeholder="Tədbirin adı" value={title} onChange={(e) => setTitle(e.target.value)} style={{ flex: 2, minWidth: '200px', padding: '10px 12px', borderRadius: '8px', border: '1px solid #333', background: '#1f1f1f', color: '#fff' }} />
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ flex: 1, minWidth: '150px', padding: '10px 12px', borderRadius: '8px', border: '1px solid #333', background: '#1f1f1f', color: '#fff' }} />
-          <input type="text" placeholder="Məkan (Məs: Zal A)" value={location} onChange={(e) => setLocation(e.target.value)} style={{ flex: 1, minWidth: '150px', padding: '10px 12px', borderRadius: '8px', border: '1px solid #333', background: '#1f1f1f', color: '#fff' }} />
-          
-          <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#1b4332', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Yarat</button>
-        </div>
-      </form>
+          <form onSubmit={handleCreateEvent} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                Tədbirin Adı
+              </label>
+              <input
+                type="text"
+                placeholder="Məl. AI və Gələcək Seminarı"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '13px',
+                  outline: 'none',
+                  backgroundColor: '#F8FAFC',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
 
-      {/* Siyahı */}
-      {error && <div style={{ color: '#ff4d4d', marginBottom: '15px' }}>Xəta: {error}</div>}
-      {events.length === 0 ? (
-        <p style={{ color: '#aaa' }}>Hazırda aktiv tədbir yoxdur.</p>
-      ) : (
-        <div style={{ display: 'grid', gap: '15px', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-          {events.map((item) => (
-            <div key={item.id} style={{ background: '#1e1e1e', padding: '20px', borderRadius: '10px', border: '1px solid #333', display: 'flex', flexDirection: 'column', justifyContent: 'between' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <div>
-                <h4 style={{ margin: '0 0 10px 0', color: '#4da6ff', fontSize: '18px' }}>{item.title}</h4>
-                <div style={{ display: 'flex', gap: '15px', fontSize: '13px', color: '#aaa', marginBottom: '5px' }}>
-                  <span>📅 {item.date}</span>
-                  <span>📍 {item.location}</span>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                  Tarix
+                </label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '13px',
+                    outline: 'none',
+                    backgroundColor: '#F8FAFC',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                  Kateqoriya
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '13px',
+                    outline: 'none',
+                    backgroundColor: '#F8FAFC',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="Texnologiya">Texnologiya</option>
+                  <option value="İdman">İdman</option>
+                  <option value="Karyera">Karyera</option>
+                  <option value="Əyləncə">Əyləncə</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                Məkan
+              </label>
+              <input
+                type="text"
+                placeholder="Məl. Əsas Bina, Zal A"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '13px',
+                  outline: 'none',
+                  backgroundColor: '#F8FAFC',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              style={{
+                marginTop: '6px',
+                backgroundColor: '#2E5B4E',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '12px',
+                borderRadius: '10px',
+                fontSize: '13.5px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(46, 91, 78, 0.2)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23473D'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E5B4E'}
+            >
+              <Plus size={16} /> Tədbir Əlavə Et
+            </button>
+          </form>
+        </div>
+
+        {/* Sağ Sütun: Tədbirlər Siyahısı */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {events.map((ev) => (
+            <div
+              key={ev.id}
+              style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: '18px',
+                padding: '20px',
+                border: '1px solid #E2E8F0',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                display: 'flex',
+                gap: '18px',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              {/* Sol Tarix Bloku */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{
+                  backgroundColor: '#ECFDF5',
+                  border: '1px solid #A7F3D0',
+                  borderRadius: '14px',
+                  padding: '12px 16px',
+                  textAlign: 'center',
+                  minWidth: '54px',
+                  flexShrink: 0
+                }}>
+                  <span style={{ display: 'block', fontSize: '20px', fontWeight: '800', color: '#2E5B4E', lineHeight: '1' }}>
+                    {ev.displayDate.day}
+                  </span>
+                  <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#059669', marginTop: '4px' }}>
+                    {ev.displayDate.month}
+                  </span>
+                </div>
+
+                {/* Tədbir Məlumatı */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ backgroundColor: '#F1F5F9', color: '#475569', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px' }}>
+                      {ev.category}
+                    </span>
+                    <span style={{ fontSize: '12px', color: '#94A3B8' }}>• {ev.organizer}</span>
+                  </div>
+
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '15.5px', fontWeight: '700', color: '#0F172A' }}>
+                    {ev.title}
+                  </h4>
+
+                  <div style={{ display: 'flex', gap: '14px', fontSize: '12.5px', color: '#64748B' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={14} color="#64748B" /> {ev.location}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Users size={14} color="#64748B" /> {ev.attendees} İştirakçı
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* İştirak Düyməsi */}
+              <button
+                onClick={() => toggleAttend(ev.id)}
+                style={{
+                  backgroundColor: ev.isAttending ? '#ECFDF5' : '#2E5B4E',
+                  color: ev.isAttending ? '#059669' : '#FFFFFF',
+                  border: ev.isAttending ? '1px solid #A7F3D0' : 'none',
+                  padding: '10px 16px',
+                  borderRadius: '12px',
+                  fontSize: '12.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                {ev.isAttending ? (
+                  <>
+                    <CheckCircle2 size={15} /> Qeydiyyatdasınız
+                  </>
+                ) : (
+                  'İştirak Et'
+                )}
+              </button>
             </div>
           ))}
         </div>
-      )}
+
+      </div>
+
     </div>
   );
 }

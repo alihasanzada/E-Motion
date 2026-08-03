@@ -1,106 +1,289 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-
-interface NutritionLog {
-  id: number;
-  meal: string;
-  calories: number;
-  date?: string;
-}
+"use client";
+import React, { useState } from 'react';
+import { Utensils, Plus, Flame, PieChart, Apple, Trash2, Clock } from 'lucide-react';
 
 export default function NutritionPanel() {
-  const [logs, setLogs] = useState<NutritionLog[]>([]);
-  const [meal, setMeal] = useState('');
+  const [mealName, setMealName] = useState('');
   const [calories, setCalories] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [mealType, setMealType] = useState('Günorta');
 
-  const API_URL = 'http://127.0.0.1:5050/api/nutrition';
+  const [dailyGoal] = useState(2000);
+  const [meals, setMeals] = useState([
+    { id: 1, name: 'Toyuq və Düyü', calories: 650, type: 'Günorta', time: '13:30' },
+    { id: 2, name: 'Yulaf və Giləmeyvə', calories: 350, type: 'Səhər', time: '08:45' }
+  ]);
 
-  const fetchNutrition = () => {
-    fetch(API_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        setLogs(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
+  const totalCalories = meals.reduce((acc, curr) => acc + curr.calories, 0);
+  const progressPercent = Math.min(Math.round((totalCalories / dailyGoal) * 100), 100);
 
-  useEffect(() => {
-    fetchNutrition();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAddMeal = (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
+    if (!mealName.trim() || !calories || isNaN(Number(calories))) return;
 
-    if (!meal || !calories) {
-      setMessage({ text: 'Zəhmət olmasa, bütün xanaları doldurun.', isError: true });
-      return;
-    }
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ meal, calories }),
-      });
+    const newMeal = {
+      id: Date.now(),
+      name: mealName,
+      calories: Number(calories),
+      type: mealType,
+      time: timeStr
+    };
 
-      if (res.ok) {
-        setMessage({ text: 'Qeyd uğurla əlavə olundu!', isError: false });
-        setMeal('');
-        setCalories('');
-        fetchNutrition();
-      } else {
-        setMessage({ text: 'Xəta baş verdi.', isError: true });
-      }
-    } catch {
-      setMessage({ text: 'Serverlə əlaqə qurulmadı.', isError: true });
-    }
+    setMeals([newMeal, ...meals]);
+    setMealName('');
+    setCalories('');
   };
 
-  const totalCalories = logs.reduce((sum, item) => sum + item.calories, 0);
-
-  if (loading) return <div style={{ color: '#fff', padding: '20px' }}>Yüklənir...</div>;
+  const handleDeleteMeal = (id: number) => {
+    setMeals(meals.filter(m => m.id !== id));
+  };
 
   return (
-    <div style={{ padding: '20px', color: '#fff' }}>
-      <h3 style={{ fontSize: '24px', marginBottom: '20px', color: '#fff' }}>Gündəlik Qidalanma və Kalori İzləyicisi</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+      
+      {/* 1. Başlıq */}
+      <div>
+        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' }}>
+          Gündəlik Qidalanma və Kalori İzləyicisi
+        </h2>
+        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748B' }}>
+          Enerjinizi yüksək saxlamaq üçün gündəlik qida qəbulunuzu və kalorilərinizi rahatlıqla qeyd edin.
+        </p>
+      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px' }}>
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ background: '#111', padding: '20px', borderRadius: '12px', border: '1px solid #222' }}>
-          <h4 style={{ margin: '0 0 15px 0' }}>Yemək Əlavə Et</h4>
-          {message && (
-            <div style={{ padding: '10px', borderRadius: '6px', marginBottom: '15px', fontSize: '14px', backgroundColor: message.isError ? '#5c0d11' : '#1b4332' }}>
-              {message.text}
-            </div>
-          )}
-          <input type="text" placeholder="Yeməyin adı (Məs: Toyuq və Düyü)" value={meal} onChange={(e) => setMeal(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#1f1f1f', color: '#fff', marginBottom: '12px', boxSizing: 'border-box' }} />
-          <input type="number" placeholder="Kalori (kcal)" value={calories} onChange={(e) => setCalories(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#1f1f1f', color: '#fff', marginBottom: '15px', boxSizing: 'border-box' }} />
-          <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#1b4332', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Qeyd Et</button>
-        </form>
+      {/* 2. Hədəf və Kalori Xülasəsi Kartı */}
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '20px',
+        padding: '24px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '24px',
+        alignItems: 'center'
+      }}>
+        {/* Sol: Kalori Sayğacı */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Flame size={16} color="#EF4444" /> Günlük Hədəf İrəliləyişi
+            </span>
+            <span style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A' }}>
+              {totalCalories} / {dailyGoal} kcal ({progressPercent}%)
+            </span>
+          </div>
 
-        {/* Günlük Xülasə */}
-        <div style={{ background: '#141414', padding: '20px', borderRadius: '12px', border: '1px solid #222' }}>
-          <h4>Bugünkü Xülasə</h4>
-          <div style={{ fontSize: '28px', color: '#2d6a4f', fontWeight: 'bold', marginBottom: '20px' }}>{totalCalories} <span style={{ fontSize: '16px', color: '#aaa' }}>kcal qəbul edilib</span></div>
-          
-          <h5>Son Qeydlər</h5>
-          {logs.length === 0 ? <p style={{ color: '#aaa', fontSize: '14px' }}>Hələ qeyd yoxdur.</p> : (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {logs.map((log) => (
-                <li key={log.id} style={{ padding: '10px', background: '#1f1f1f', borderRadius: '6px', marginBottom: '8px', border: '1px solid #333', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{log.meal}</span>
-                  <span style={{ color: '#52b788', fontWeight: 'bold' }}>{log.calories} kcal</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div style={{ width: '100%', height: '10px', backgroundColor: '#F1F5F9', borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{
+              width: `${progressPercent}%`,
+              height: '100%',
+              backgroundColor: progressPercent > 90 ? '#EF4444' : '#2E5B4E',
+              borderRadius: '10px',
+              transition: 'width 0.4s ease'
+            }} />
+          </div>
+        </div>
+
+        {/* Sağ: Mini Makro Bədənlər (Zülal, Karbo, Yağ) */}
+        <div style={{ display: 'flex', justifyContent: 'space-around', borderLeft: '1px solid #F1F5F9', paddingLeft: '16px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ display: 'block', fontSize: '11px', color: '#64748B', fontWeight: '600' }}>ZÜLAL</span>
+            <strong style={{ fontSize: '15px', color: '#0F172A' }}>~65g</strong>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ display: 'block', fontSize: '11px', color: '#64748B', fontWeight: '600' }}>KARBO</span>
+            <strong style={{ fontSize: '15px', color: '#0F172A' }}>~120g</strong>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ display: 'block', fontSize: '11px', color: '#64748B', fontWeight: '600' }}>YAĞ</span>
+            <strong style={{ fontSize: '15px', color: '#0F172A' }}>~35g</strong>
+          </div>
         </div>
       </div>
+
+      {/* 3. Form və Siyahı Bloku */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
+        
+        {/* Yemək Əlavə Et Formu */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+        }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Utensils size={18} color="#2E5B4E" /> Yemək Qeyd Et
+          </h3>
+
+          <form onSubmit={handleAddMeal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                Yeməyin Adı
+              </label>
+              <input
+                type="text"
+                placeholder="Məl. Toyuq və Düyü"
+                value={mealName}
+                onChange={(e) => setMealName(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '13px',
+                  outline: 'none',
+                  backgroundColor: '#F8FAFC',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                  Kalori (kcal)
+                </label>
+                <input
+                  type="number"
+                  placeholder="Məl. 650"
+                  value={calories}
+                  onChange={(e) => setCalories(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '13px',
+                    outline: 'none',
+                    backgroundColor: '#F8FAFC',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                  Yemək Vaxtı
+                </label>
+                <select
+                  value={mealType}
+                  onChange={(e) => setMealType(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '13px',
+                    outline: 'none',
+                    backgroundColor: '#F8FAFC',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="Səhər">Səhər Yeməyi</option>
+                  <option value="Günorta">Günorta Yeməyi</option>
+                  <option value="Şam">Şam Yeməyi</option>
+                  <option value="Qəlyanaltı">Qəlyanaltı</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              style={{
+                marginTop: '6px',
+                backgroundColor: '#2E5B4E',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '12px',
+                borderRadius: '10px',
+                fontSize: '13.5px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(46, 91, 78, 0.2)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23473D'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E5B4E'}
+            >
+              <Plus size={16} /> Qeyd Et
+            </button>
+          </form>
+        </div>
+
+        {/* Bugünkü Qeydlər Siyahısı */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px'
+        }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Bugünkü Qeydlər</span>
+            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '500' }}>{meals.length} yemək</span>
+          </h3>
+
+          {meals.length === 0 ? (
+            <p style={{ margin: 0, fontSize: '13px', color: '#94A3B8', textAlign: 'center', padding: '20px 0' }}>
+              Hələ ki, heç bir yemək qeyd edilməyib.
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {meals.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: '#F8FAFC',
+                    border: '1px solid #F1F5F9'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ backgroundColor: '#FEF3C7', padding: '8px', borderRadius: '10px', color: '#D97706' }}>
+                      <Apple size={18} />
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: '#0F172A' }}>{item.name}</h4>
+                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>{item.type} • {item.time}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '13.5px', fontWeight: '800', color: '#2E5B4E' }}>
+                      {item.calories} kcal
+                    </span>
+                    <button
+                      onClick={() => handleDeleteMeal(item.id)}
+                      style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '4px' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+      </div>
+
     </div>
   );
 }

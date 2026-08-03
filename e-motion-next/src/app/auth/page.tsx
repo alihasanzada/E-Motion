@@ -18,70 +18,79 @@ export default function AuthPage() {
   const API_BASE_URL = 'http://127.0.0.1:5050/api';
 
   // Qeydiyyat (Register) Funksiyası
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: username, email, password }),
-      });
+  try {
+    const response = await fetch(`${API_BASE_URL}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: username, email, password }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok) {
-        alert(`Uğurlu: ${data.message}\nİndi daxil ola bilərsiniz.`);
-        setUsername('');
-        setPassword('');
-        setView('login'); // Avtomatik giriş ekranına keçid
-      } else {
-        alert(`Xəta: ${data.message || 'Qeydiyyat baş tutmadı.'}`);
-      }
-    } catch (error) {
-      console.error('Sorğu xətası:', error);
-      alert('Backend serverinə qoşulmaq mümkün olmadı.');
-    } finally {
-      setLoading(false);
+    if (response.ok) {
+      alert(`Uğurlu: ${data.message}\nİndi daxil ola bilərsiniz.`);
+      // Qeydiyyatdan sonra form sahələrini sıfırlayırıq, amma emaili saxlayırıq ki logində rahat yazasan
+      setPassword('');
+      setView('login'); // Avtomatik giriş ekranına keçid
+    } else {
+      alert(`Xəta: ${data.message || 'Qeydiyyat baş tutmadı.'}`);
     }
-  };
+  } catch (error) {
+    console.error('Sorğu xətası:', error);
+    alert('Backend serverinə qoşulmaq mümkün olmadı.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Giriş (Login) Funksiyası
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok) {
-        // Next.js-də localStorage ilə sessiya idarəetməsi
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('userToken', data.token);
-          const userObj = data.user || { name: data.name || email.split('@')[0] };
-          localStorage.setItem('userData', JSON.stringify(userObj));
-        }
+    if (response.ok) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userToken', data.token);
         
-        router.push('/');
-      } else {
-        alert(`Xəta: ${data.message || 'Giriş uğursuz oldu.'}`);
+        // Backend-dən gələn istifadəçi adını götürürük
+        const fullNameFromBackend = data.user?.name || data.name || "Əli Həsənov";
+        
+        // Dashboard-dakı state strukturuna tam uyğun obyekt yaradırıq
+        const userData = {
+          fullname: fullNameFromBackend,
+          major: "Kompüter Mühəndisliyi",
+          course: 1,
+          username: fullNameFromBackend // Bura qeydiyyatdakı ad oturacaq
+        };
+
+        // Dashboard-un oxuduğu eyni açarla ('user') yaddaşa yazırıq
+        localStorage.setItem('user', JSON.stringify(userData));
       }
-    } catch (error) {
-      console.error('Sorğu xətası:', error);
-      alert('Backend serverinə qoşulmaq mümkün olmadı.');
-    } finally {
-      setLoading(false);
+      
+      router.push('/');
+    } else {
+      alert(`Xəta: ${data.message || 'Giriş uğursuz oldu.'}`);
     }
-  };
-
-
+  } catch (error) {
+    console.error('Sorğu xətası:', error);
+    alert('Backend serverinə qoşulmaq mümkün olmadı.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <main style={styles.body}>
@@ -105,7 +114,7 @@ export default function AuthPage() {
             <form onSubmit={handleRegister}>
               <input
                 type="text"
-                placeholder="İstifadəçi adı"
+                placeholder="Adınız və soyadınız"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}

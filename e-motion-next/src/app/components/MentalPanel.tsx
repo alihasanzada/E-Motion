@@ -1,215 +1,276 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-
-interface MoodLog {
-  id: number;
-  mood: string;
-  note: string;
-  date: string;
-}
+"use client";
+import React, { useState } from 'react';
+import { Brain, Heart, Sparkles, Send, Wind, BookOpen, Clock } from 'lucide-react';
 
 export default function MentalPanel() {
-  const [moodLogs, setMoodLogs] = useState<MoodLog[]>([]);
-  const [selectedMood, setSelectedMood] = useState<string>('');
-  const [note, setNote] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [selectedMood, setSelectedMood] = useState<'Əla' | 'Normal' | 'Yorğun' | 'Stressli' | 'Həvəsli'>('Əla');
+  const [noteText, setNoteText] = useState('');
+  const [notes, setNotes] = useState([
+    { id: 1, mood: 'Əla', text: 'Özünü çox gümrah hiss edirəm. İmtahan hazırlıqları yaxşı gedir!', date: '2026-08-03' },
+    { id: 2, mood: 'Normal', text: 'Dərslər bir az sıx idi, amma axşam gəzintisi yaxşı gəldi.', date: '2026-08-02' }
+  ]);
 
-  const API_BASE_URL = 'http://127.0.0.1:5050/api/moods';
-
-  const moodOptions = [
-    { emoji: '😊', label: 'Əla' },
-    { emoji: '😐', label: 'Normal' },
-    { emoji: '😴', label: 'Yorğun' },
-    { emoji: '🤯', label: 'Stressli' },
-    { emoji: '💪', label: 'Həvəsli' }
+  const moods = [
+    { label: 'Əla', emoji: '😊', color: '#10B981', bg: '#ECFDF5' },
+    { label: 'Normal', emoji: '😐', color: '#6366F1', bg: '#EEF2FF' },
+    { label: 'Yorğun', emoji: '😴', color: '#F59E0B', bg: '#FFFBEB' },
+    { label: 'Stressli', emoji: '🤯', color: '#EF4444', bg: '#FEF2F2' },
+    { label: 'Həvəsli', emoji: '💪', color: '#8B5CF6', bg: '#F5F3FF' },
   ];
 
-  // 1. Son mental qeydləri backend-dən çəkirik (Read)
-  const fetchMoods = () => {
-    fetch(API_BASE_URL)
-      .then((res) => {
-        if (!res.ok) throw new Error('Məlumatlar yüklənərkən xəta baş verdi.');
-        return res.json();
-      })
-      .then((data) => {
-        setMoodLogs(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchMoods();
-  }, []);
-
-  // 2. Yeni mental vəziyyət qeydini yadda saxlayırıq (Create)
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMood) {
-      setMessage({ type: 'error', text: 'Zəhmət olmasa, cari emosiyanızı seçin!' });
-      return;
-    }
+    if (!noteText.trim()) return;
 
-    setSubmitting(true);
-    setMessage(null);
+    const newNote = {
+      id: Date.now(),
+      mood: selectedMood,
+      text: noteText,
+      date: new Date().toISOString().split('T')[0]
+    };
 
-    try {
-      const response = await fetch(API_BASE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mood: selectedMood, note }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Mental vəziyyətiniz qeyd olundu.' });
-        setSelectedMood('');
-        setNote('');
-        fetchMoods(); // Siyahını yeniləyirik
-      } else {
-        setMessage({ type: 'error', text: data.message || 'Xəta baş verdi.' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Serverlə əlaqə qurulmadı.' });
-    } finally {
-      setSubmitting(false);
-    }
+    setNotes([newNote, ...notes]);
+    setNoteText('');
   };
-
-  if (loading) return <div style={{ padding: '20px', color: '#fff' }}>Yüklənir...</div>;
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Mental Sağlamlıq Gündəliyi</h2>
-
-      <div style={styles.mainGrid}>
-        {/* Form Hissəsi */}
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <h3 style={styles.sectionTitle}>Özünüzü necə hiss edirsiniz?</h3>
-          
-          {message && (
-            <div style={{
-              ...styles.alert,
-              backgroundColor: message.type === 'success' ? '#1b4332' : '#5c0d11',
-              borderColor: message.type === 'success' ? '#2d6a4f' : '#800f14'
-            }}>
-              {message.text}
-            </div>
-          )}
-
-          {/* Emosiya Seçimi */}
-          <div style={styles.moodSelector}>
-            {moodOptions.map((option) => (
-              <button
-                type="button"
-                key={option.label}
-                onClick={() => setSelectedMood(option.label)}
-                style={{
-                  ...styles.moodButton,
-                  backgroundColor: selectedMood === option.label ? '#2d6a4f' : '#1f1f1f',
-                  borderColor: selectedMood === option.label ? '#52b788' : '#333'
-                }}
-              >
-                <span style={{ fontSize: '24px' }}>{option.emoji}</span>
-                <span style={{ fontSize: '12px', marginTop: '4px' }}>{option.label}</span>
-              </button>
-            ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+      
+      {/* 1. Brend Yaşılına Uyğunlaşdırılmış Rahatladıcı Banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1E3E35 0%, #2E5B4E 50%, #44766C 100%)',
+        borderRadius: '20px',
+        padding: '28px 32px',
+        color: '#FFFFFF',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 10px 25px -5px rgba(46, 91, 78, 0.25)'
+      }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span style={{ backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Brain size={14} /> E-MOTION Mental Mərkəz
+            </span>
           </div>
-
-          {/* Qeyd Sahəsi */}
-          <div style={{ marginTop: '20px' }}>
-            <textarea
-              placeholder="Ağlınızdan nələr keçir? Qısaca qeyd edin..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              style={styles.textarea}
-              rows={4}
-            />
-          </div>
-
-          <button type="submit" disabled={submitting} style={styles.button}>
-            {submitting ? 'Qeyd olunur...' : 'Gündəliyə Əlavə Et'}
-          </button>
-        </form>
-
-        {/* Tarixçə Hissəsi (Son 5 Qeyd) */}
-        <div style={styles.historySection}>
-          <h3 style={styles.sectionTitle}>Son Qeydləriniz</h3>
-          {moodLogs.length === 0 ? (
-            <p style={{ color: '#aaa', fontSize: '14px' }}>Hələ ki heç bir mental qeydiniz yoxdur.</p>
-          ) : (
-            <div style={{ display: 'grid', gap: '12px' }}>
-              {moodLogs.map((log) => (
-                <div key={log.id} style={styles.historyCard}>
-                  <div style={styles.historyHeader}>
-                    <span style={styles.moodBadge}>{log.mood}</span>
-                    <span style={styles.dateText}>{log.date}</span>
-                  </div>
-                  {log.note && <p style={styles.noteText}>{log.note}</p>}
-                </div>
-              ))}
-            </div>
-          )}
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>
+            Zehninizi dinləyin, hisslərinizi kəşf edin!
+          </h2>
+          <p style={{ margin: '6px 0 0 0', fontSize: '13.5px', opacity: 0.9, maxWidth: '520px', lineHeight: '1.5' }}>
+            Hər emosiya təbiidir. Gündəlik əhval-ruhiyyənizi qeyd edin və zehni balansı qorumaq üçün tövsiyələrdən yararlanın.
+          </p>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.08)', padding: '16px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.15)', textAlign: 'center' }}>
+          <Sparkles size={22} style={{ marginBottom: '4px', color: '#A7F3D0' }} />
+          <span style={{ fontSize: '11.5px', opacity: 0.8, display: 'block', fontWeight: '500' }}>Günün Sözü</span>
+          <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', fontWeight: '700', fontStyle: 'italic', maxWidth: '180px', color: '#ECFDF5' }}>
+            "Nəfəsinizə fokuslanın, anı yaşayın."
+          </p>
         </div>
       </div>
+
+      {/* 2. Əsas Şəbəkə: Əhval Qeydiyyatı + Qeydlər */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+        
+        {/* Əhval-ruhiyyə Daxil Etmə Kartı */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
+        }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Heart size={18} color="#EF4444" /> Özünüzü necə hiss edirsiniz?
+          </h3>
+
+          {/* Emoji Düymələri */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '20px' }}>
+            {moods.map((m) => {
+              const isSelected = selectedMood === m.label;
+              return (
+                <button
+                  key={m.label}
+                  type="button"
+                  onClick={() => setSelectedMood(m.label as any)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '12px 6px',
+                    borderRadius: '12px',
+                    border: isSelected ? `2px solid ${m.color}` : '1px solid #E2E8F0',
+                    backgroundColor: isSelected ? m.bg : '#F8FAFC',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    transform: isSelected ? 'scale(1.03)' : 'scale(1)'
+                  }}
+                >
+                  <span style={{ fontSize: '22px' }}>{m.emoji}</span>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: isSelected ? m.color : '#64748B' }}>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mətn Formu */}
+          <form onSubmit={handleAddNote} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <textarea
+              rows={4}
+              placeholder="Ağlınızdan nələr keçir? Qısaca qeyd edin..."
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '12px',
+                border: '1px solid #CBD5E1',
+                fontSize: '13.5px',
+                outline: 'none',
+                resize: 'none',
+                boxSizing: 'border-box',
+                backgroundColor: '#F8FAFC',
+                fontFamily: 'inherit'
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                backgroundColor: '#2E5B4E',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '12px',
+                borderRadius: '12px',
+                fontSize: '13.5px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(46, 91, 78, 0.2)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23473D'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E5B4E'}
+            >
+              <Send size={16} />
+              Gündəliyə Əlavə Et
+            </button>
+          </form>
+        </div>
+
+        {/* Son Qeydlər Kartı */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOpen size={18} color="#2E5B4E" /> Son Qeydləriniz
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', maxHeight: '300px', paddingRight: '4px' }}>
+            {notes.map((note) => {
+              const moodObj = moods.find(m => m.label === note.mood) || moods[0];
+              return (
+                <div
+                  key={note.id}
+                  style={{
+                    padding: '14px',
+                    borderRadius: '12px',
+                    backgroundColor: '#F8FAFC',
+                    borderLeft: `4px solid ${moodObj.color}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      color: moodObj.color,
+                      backgroundColor: moodObj.bg,
+                      padding: '2px 8px',
+                      borderRadius: '12px'
+                    }}>
+                      {moodObj.emoji} {note.mood}
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#94A3B8' }}>{note.date}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#334155', lineHeight: '1.4' }}>
+                    {note.text}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+
+      {/* 3. Sürətli Mental Məşqlər */}
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        padding: '24px',
+        borderRadius: '20px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
+      }}>
+        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Wind size={18} color="#10B981" /> Sürətli Rahatlama Məşqləri
+        </h3>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+          
+          <div style={{ border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', backgroundColor: '#F0FDF4', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: '700', fontSize: '14px', color: '#166534' }}>Nəfəs Məşqi</span>
+              <Clock size={14} color="#166534" />
+            </div>
+            <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.3' }}>
+              4-7-8 texnikası ilə həyəcanı və stressi azaldın.
+            </p>
+            <button style={{ marginTop: '8px', background: '#10B981', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+              Başla (3 dəq)
+            </button>
+          </div>
+
+          <div style={{ border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', backgroundColor: '#F8FAFC', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: '700', fontSize: '14px', color: '#1E293B' }}>Fokus Meditasiyası</span>
+              <Clock size={14} color="#64748B" />
+            </div>
+            <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.3' }}>
+              Dərs öncəsi diqqəti toplamaq üçün mini seans.
+            </p>
+            <button style={{ marginTop: '8px', background: '#2E5B4E', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+              Dinlə (5 dəq)
+            </button>
+          </div>
+
+          <div style={{ border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', backgroundColor: '#F5F3FF', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: '700', fontSize: '14px', color: '#6D28D9' }}>Pozitiv Affirmasiya</span>
+              <Clock size={14} color="#6D28D9" />
+            </div>
+            <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.3' }}>
+              Özünə inamı bərpa etmək üçün gündəlik cümlələr.
+            </p>
+            <button style={{ marginTop: '8px', background: '#8B5CF6', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+              Oxu (2 dəq)
+            </button>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: { padding: '20px', color: '#fff' },
-  title: { fontSize: '24px', marginBottom: '20px', fontWeight: '600' },
-  mainGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' },
-  form: { background: '#111', border: '1px solid #222', padding: '24px', borderRadius: '12px' },
-  sectionTitle: { fontSize: '18px', marginBottom: '15px', color: '#fff' },
-  moodSelector: { display: 'flex', gap: '10px', justifyContent: 'space-between', flexWrap: 'wrap' },
-  moodButton: {
-    flex: '1',
-    minWidth: '60px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '10px',
-    borderRadius: '8px',
-    border: '1px solid',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  },
-  textarea: {
-    width: '100%',
-    padding: '12px',
-    borderRadius: '8px',
-    border: '1px solid #333',
-    background: '#1f1f1f',
-    color: '#fff',
-    outline: 'none',
-    resize: 'none',
-    boxSizing: 'border-box'
-  },
-  button: {
-    marginTop: '15px',
-    width: '100%',
-    padding: '12px',
-    borderRadius: '8px',
-    border: 'none',
-    background: '#1b4332',
-    color: '#fff',
-    cursor: 'pointer',
-    fontWeight: 'bold'
-  },
-  alert: { padding: '12px', borderRadius: '8px', border: '1px solid', marginBottom: '15px', fontSize: '14px' },
-  historySection: { background: '#141414', border: '1px solid #222', padding: '24px', borderRadius: '12px' },
-  historyCard: { background: '#1f1f1f', padding: '15px', borderRadius: '8px', border: '1px solid #333' },
-  historyHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' },
-  moodBadge: { background: '#2d6a4f', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' },
-  dateText: { fontSize: '12px', color: '#aaa' },
-  noteText: { fontSize: '14px', color: '#ddd', margin: '0', lineHeight: '1.4' }
-};

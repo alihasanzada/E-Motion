@@ -1,224 +1,297 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-
-interface ActivityData {
-  steps: number;
-  water_ml: number;
-}
+"use client";
+import React, { useState } from 'react';
+import { Footprints, Droplet, Flame, Trophy, Plus, RefreshCw, Zap, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function ActivityPanel() {
-  const [activity, setActivity] = useState<ActivityData>({ steps: 0, water_ml: 0 });
-  const [inputSteps, setInputSteps] = useState<string>('');
-  const [inputWater, setInputWater] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [steps, setSteps] = useState(4200);
+  const [water, setWater] = useState(2200);
+  const [inputSteps, setInputSteps] = useState('');
+  const [inputWater, setInputWater] = useState('');
 
-  const API_BASE_URL = 'http://127.0.0.1:5050/api/activity';
+  const stepGoal = 10000;
+  const waterGoal = 3000;
 
-  // 1. Məlumatları Backend-dən Çəkmək (Read)
-  useEffect(() => {
-    fetch(API_BASE_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        setActivity({
-          steps: data.steps || 0,
-          water_ml: data.water_ml || 0,
-        });
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Məlumat çəkilərkən xəta:', err);
-        setLoading(false);
-      });
-  }, []);
-
-  // 2. Yeni Məlumatları Yadda Saxlamaq (Create/Update)
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Form validasiyası
-    if (!inputSteps && !inputWater) {
-      setMessage({ type: 'error', text: 'Zəhmət olmasa ən azı bir sahəni doldurun.' });
-      return;
-    }
-
-    setSubmitting(true);
-    setMessage(null);
-
-    // Əgər sahə boşdursa, köhnə dəyəri saxlayırıq
-    const updatedSteps = inputSteps !== '' ? parseInt(inputSteps) : activity.steps;
-    const updatedWater = inputWater !== '' ? parseInt(inputWater) : activity.water_ml;
-
-    try {
-      const response = await fetch(API_BASE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          steps: updatedSteps,
-          water_ml: updatedWater,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setActivity({ steps: updatedSteps, water_ml: updatedWater });
-        setMessage({ type: 'success', text: 'Məlumatlar uğurla yeniləndi!' });
-        setInputSteps('');
-        setInputWater('');
-      } else {
-        setMessage({ type: 'error', text: data.message || 'Xəta baş verdi.' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Serverlə əlaqə qurulmadı.' });
-    } finally {
-      setSubmitting(false);
-    }
+    if (inputSteps) setSteps(prev => prev + Number(inputSteps));
+    if (inputWater) setWater(prev => prev + Number(inputWater));
+    setInputSteps('');
+    setInputWater('');
   };
 
-  if (loading) {
-    return <div style={{ padding: '20px', color: '#fff' }}>Yüklənir...</div>;
-  }
+  const stepPercentage = Math.min(Math.round((steps / stepGoal) * 100), 100);
+  const waterPercentage = Math.min(Math.round((water / waterGoal) * 100), 100);
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Fiziki Aktivlik və Su İzləyicisi</h2>
-
-      {/* Göstəricilər Paneli (Empty State / Data State) */}
-      <div style={styles.grid}>
-        <div style={styles.card}>
-          <h3>🏃 Atılan Addım</h3>
-          <p style={styles.value}>{activity.steps} <span style={styles.unit}>addım</span></p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+      
+      {/* 1. Canlı Hero Banner (Düz ağ fon əvəzinə qradient və motivasiya elementi) */}
+      <div style={{
+        background: 'linear-gradient(135deg, #2E5B4E 0%, #44766C 100%)',
+        borderRadius: '20px',
+        padding: '28px 32px',
+        color: '#FFFFFF',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 10px 25px -5px rgba(68, 118, 108, 0.3)'
+      }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Sparkles size={13} /> Gündəlik Status
+            </span>
+          </div>
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>
+            Hədəflərinə doğru əla irəliləyirsən! 🎯
+          </h2>
+          <p style={{ margin: '6px 0 0 0', fontSize: '13.5px', opacity: 0.9, maxWidth: '500px', lineHeight: '1.5' }}>
+            Bədənini hərəkətdə saxla və su balansını tənzimlə. Kiçik addımlar böyük nəticələr verir.
+          </p>
         </div>
-        <div style={styles.card}>
-          <h3>💧 İçilən Su</h3>
-          <p style={styles.value}>{activity.water_ml} <span style={styles.unit}>ml</span></p>
+        <div style={{ display: 'block', textAlign: 'right', background: 'rgba(255,255,255,0.1)', padding: '16px 20px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)' }}>
+          <span style={{ fontSize: '12px', opacity: 0.8, display: 'block' }}>Ümumi Gedişat</span>
+          <span style={{ fontSize: '22px', fontWeight: '700', color: '#A7F3D0' }}>{Math.round((stepPercentage + waterPercentage) / 2)}%</span>
         </div>
       </div>
 
-      {/* Məlumat Giriş Formu */}
-      <form onSubmit={handleUpdate} style={styles.form}>
-        <h3 style={styles.formTitle}>Gündəlik Göstəriciləri Yenilə</h3>
+      {/* 2. Metrika Kartları (Daha dərin qradient detalları və sürətli əlavəetmə düymələri ilə) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
         
-        {message && (
-          <div style={{
-            ...styles.alert,
-            backgroundColor: message.type === 'success' ? '#1b4332' : '#7209b7',
-            borderColor: message.type === 'success' ? '#2d6a4f' : '#f72585'
-          }}>
-            {message.text}
-          </div>
-        )}
+        {/* Addım Kartı */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Üst bəzək xətti */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #44766C, #A7F3D0)' }} />
 
-        <div style={styles.inputGroup}>
-          <input
-            type="number"
-            placeholder="Yeni addım sayı (Məs: 5000)"
-            value={inputSteps}
-            onChange={(e) => setInputSteps(e.target.value)}
-            style={styles.input}
-            min="0"
-          />
-          <input
-            type="number"
-            placeholder="İçilən su (ml) (Məs: 500)"
-            value={inputWater}
-            onChange={(e) => setInputWater(e.target.value)}
-            style={styles.input}
-            min="0"
-          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ backgroundColor: '#F0FDF4', padding: '12px', borderRadius: '14px', color: '#44766C' }}>
+                <Footprints size={22} />
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>Atılan Addım</h4>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>Hədəf: {stepGoal.toLocaleString()}</span>
+              </div>
+            </div>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#44766C', backgroundColor: '#F0FDF4', padding: '6px 12px', borderRadius: '20px' }}>
+              {stepPercentage}%
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '16px 0' }}>
+            <span style={{ fontSize: '36px', fontWeight: '800', color: '#0F172A', letterSpacing: '-1px' }}>{steps.toLocaleString()}</span>
+            <span style={{ fontSize: '14px', color: '#64748B', fontWeight: '600' }}>addım</span>
+          </div>
+
+          {/* Progress Bar */}
+          <div style={{ width: '100%', backgroundColor: '#F1F5F9', height: '10px', borderRadius: '6px', overflow: 'hidden', marginBottom: '16px' }}>
+            <div style={{
+              width: `${stepPercentage}%`,
+              background: 'linear-gradient(90deg, #44766C, #619B8D)',
+              height: '100%',
+              borderRadius: '6px',
+              transition: 'width 0.5s ease'
+            }} />
+          </div>
+
+          {/* Sürətli Əlavə Et Düymələri (Interaktiv element) */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              onClick={() => setSteps(prev => prev + 500)}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC', color: '#334155', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F8FAFC'}
+            >
+              +500 addım
+            </button>
+            <button 
+              onClick={() => setSteps(prev => prev + 1000)}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #C6F6D5', backgroundColor: '#F0FDF4', color: '#22543D', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#DCFCE7'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F0FDF4'}
+            >
+              +1,000 addım
+            </button>
+          </div>
         </div>
 
-        <button type="submit" disabled={submitting} style={styles.button}>
-          {submitting ? 'Yenilənir...' : 'Göstəriciləri Qeyd Et'}
-        </button>
-      </form>
+        {/* Su Kartı */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          padding: '24px',
+          borderRadius: '20px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Üst bəzək xətti */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #0284C7, #7DD3FC)' }} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ backgroundColor: '#E0F2FE', padding: '12px', borderRadius: '14px', color: '#0284C7' }}>
+                <Droplet size={22} />
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>İçilən Su</h4>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>Hədəf: {waterGoal} ml</span>
+              </div>
+            </div>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#0284C7', backgroundColor: '#F0F9FF', padding: '6px 12px', borderRadius: '20px' }}>
+              {waterPercentage}%
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '16px 0' }}>
+            <span style={{ fontSize: '36px', fontWeight: '800', color: '#0F172A', letterSpacing: '-1px' }}>{water.toLocaleString()}</span>
+            <span style={{ fontSize: '14px', color: '#64748B', fontWeight: '600' }}>ml</span>
+          </div>
+
+          {/* Progress Bar */}
+          <div style={{ width: '100%', backgroundColor: '#F1F5F9', height: '10px', borderRadius: '6px', overflow: 'hidden', marginBottom: '16px' }}>
+            <div style={{
+              width: `${waterPercentage}%`,
+              background: 'linear-gradient(90deg, #0284C7, #38BDF8)',
+              height: '100%',
+              borderRadius: '6px',
+              transition: 'width 0.5s ease'
+            }} />
+          </div>
+
+          {/* Sürətli Əlavə Et Düymələri (Interaktiv element) */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              onClick={() => setWater(prev => prev + 250)}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC', color: '#334155', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F8FAFC'}
+            >
+              +250 ml (Stəkan)
+            </button>
+            <button 
+              onClick={() => setWater(prev => prev + 500)}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #BAE6FD', backgroundColor: '#F0F9FF', color: '#0369A1', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E0F2FE'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F0F9FF'}
+            >
+              +500 ml (Şüşə)
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 3. Fərdi Dəyər Daxiletmə Formu (Modern & Clean) */}
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        padding: '28px',
+        borderRadius: '20px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+          <div style={{ backgroundColor: '#F1F5F9', padding: '8px', borderRadius: '10px', color: '#334155' }}>
+            <RefreshCw size={18} />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0F172A' }}>Manuel Dəyər Daxil Et</h3>
+            <p style={{ margin: 0, fontSize: '12.5px', color: '#64748B' }}>İstədiyiniz dəqiq miqdarı əlavə edin.</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleUpdate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', alignItems: 'end' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '8px' }}>
+              Addım Əlavə Et
+            </label>
+            <input
+              type="number"
+              placeholder="Məs: 1500"
+              value={inputSteps}
+              onChange={(e) => setInputSteps(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                border: '1px solid #CBD5E1',
+                fontSize: '14px',
+                outline: 'none',
+                backgroundColor: '#F8FAFC',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#44766C'}
+              onBlur={(e) => e.currentTarget.style.borderColor = '#CBD5E1'}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '8px' }}>
+              Su Əlavə Et (ml)
+            </label>
+            <input
+              type="number"
+              placeholder="Məs: 300"
+              value={inputWater}
+              onChange={(e) => setInputWater(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                border: '1px solid #CBD5E1',
+                fontSize: '14px',
+                outline: 'none',
+                backgroundColor: '#F8FAFC',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#0284C7'}
+              onBlur={(e) => e.currentTarget.style.borderColor = '#CBD5E1'}
+            />
+          </div>
+
+          <button
+            type="submit"
+            style={{
+              backgroundColor: '#44766C',
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '13px 24px',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(68, 118, 108, 0.25)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#355E56';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#44766C';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <Plus size={18} />
+            Məlumatı Yenilə
+          </button>
+        </form>
+      </div>
+
     </div>
   );
 }
-
-// Sadə və Layihənin Vahid Dizaynına Uyğun Qara/Yaşıl Stil Strukturu
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    padding: '20px',
-    color: '#fff',
-  },
-  title: {
-    fontSize: '24px',
-    marginBottom: '20px',
-    fontWeight: '600',
-  },
-  grid: {
-    display: 'flex',
-    gap: '20px',
-    marginBottom: '30px',
-    flexWrap: 'wrap',
-  },
-  card: {
-    flex: '1',
-    minWidth: '200px',
-    background: '#1a1a1a',
-    border: '1px solid #2e2e2e',
-    padding: '20px',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-  },
-  value: {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    marginTop: '10px',
-    color: '#2d6a4f',
-  },
-  unit: {
-    fontSize: '16px',
-    fontWeight: 'normal',
-    color: '#aaa',
-  },
-  form: {
-    background: '#111',
-    border: '1px solid #222',
-    padding: '24px',
-    borderRadius: '12px',
-  },
-  formTitle: {
-    fontSize: '18px',
-    marginBottom: '15px',
-  },
-  inputGroup: {
-    display: 'flex',
-    gap: '15px',
-    marginBottom: '15px',
-    flexWrap: 'wrap',
-  },
-  input: {
-    flex: '1',
-    minWidth: '200px',
-    padding: '12px',
-    borderRadius: '8px',
-    border: '1px solid #333',
-    background: '#1f1f1f',
-    color: '#fff',
-    outline: 'none',
-  },
-  button: {
-    padding: '12px 24px',
-    borderRadius: '8px',
-    border: 'none',
-    background: '#1b4332',
-    color: '#fff',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    transition: 'background 0.2s',
-  },
-  alert: {
-    padding: '12px',
-    borderRadius: '8px',
-    border: '1px solid',
-    marginBottom: '15px',
-    fontSize: '14px',
-  }
-};
