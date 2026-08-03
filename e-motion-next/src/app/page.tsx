@@ -17,10 +17,12 @@ import StatsPanel from './components/StatsPanel';
 import ResourcesPanel from './components/ResourcesPanel';
 import EventsPanel from './components/EventsPanel';
 import ProgressPanel from './components/ProgressPanel';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [waterCount, setWaterCount] = useState(0);
+  const router = useRouter();
 
   return (
     <div className="flex min-h-screen w-full bg-[#F8FAFC]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}> 
@@ -82,17 +84,50 @@ export default function Dashboard() {
         </div>
 
         {/* Alt Baner və Çıxış */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', padding: '14px', borderRadius: '12px', border: '1px dashed #BFDBFE', textAlign: 'center' }}>
-            <p style={{ margin: '0 0 8px 0', fontSize: '11.5px', fontWeight: '600', color: '#1E3A8A', lineHeight: '1.4' }}>Nəfəs al. Rahatla.<br/>Özünə vaxt ayır.</p>
-            <button style={{ background: '#44766C', color: '#FFFFFF', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer', width: '100%' }}>Analiz et</button>
-          </div>
+<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+  <div style={{ background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', padding: '14px', borderRadius: '12px', border: '1px dashed #BFDBFE', textAlign: 'center' }}>
+    <p style={{ margin: '0 0 8px 0', fontSize: '11.5px', fontWeight: '600', color: '#1E3A8A', lineHeight: '1.4' }}>Nəfəs al. Rahatla.<br/>Özünə vaxt ayır.</p>
+    <button style={{ background: '#44766C', color: '#FFFFFF', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer', width: '100%' }}>Analiz et</button>
+  </div>
 
-          <button className="nav-item" style={{ border: '1px solid #FCA5A5', background: '#FEF2F2', padding: '10px 14px', borderRadius: '8px', width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', color: '#EF4444', fontWeight: '600', fontSize: '13.5px' }}>
-            <LogOut size={18} />
-            <span>Hesabdan Çıx</span>
-          </button>
-        </div>
+  <button 
+  className="nav-item" 
+  onClick={() => {
+    localStorage.clear(); 
+    sessionStorage.clear();
+    router.push('/auth');
+  }}
+  style={{ 
+    border: '1px solid #F87171', // Sərhəd xəttini bir az daha tündləşdirdik
+    background: '#FEE2E2',       // İlkin fon rəngini bir ton tünd etdik (daha dolğun açıq qırmızı)
+    padding: '10px 14px', 
+    borderRadius: '8px', 
+    width: '100%', 
+    textAlign: 'left', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '12px', 
+    color: '#DC2626',            // Yazı və ikon rəngini daha tünd qırmızı etdik
+    fontWeight: '600', 
+    fontSize: '13.5px',
+    transition: 'all 0.2s ease'
+  }}
+  // Siçan üzərinə gələndə fon nəzərəçarpan dərəcədə tünd qırmızı olur:
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = '#FCA5A5'; 
+    e.currentTarget.style.color = '#991B1B'; // Yazı rəngi də uyğun olaraq tündləşir
+  }}
+  // Siçan kənara çəkiləndə əvvəlki vəziyyətinə qayıdır:
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = '#FEE2E2';
+    e.currentTarget.style.color = '#DC2626';
+  }}
+>
+  <LogOut size={18} />
+  <span>Hesabdan Çıx</span>
+</button>
+</div>
       </aside>
 
       {/* ƏSAS PANEL WRAPPER - Tam ekranı doldurması üçün kənar padding-lər sıfırlandı */}
@@ -132,9 +167,9 @@ export default function Dashboard() {
 
         {/* DİNAMİK MƏZMUN SAHƏSİ */}
         <main className="main-content flex-1" style={{ padding: '24px' }}>
-          <div style={{ background: '#FEF08A', color: '#854D0E', padding: '8px 16px', borderRadius: '6px', marginBottom: '16px', fontWeight: '600', fontSize: '13px' }}>
+          {/* <div style={{ background: '#FEF08A', color: '#854D0E', padding: '8px 16px', borderRadius: '6px', marginBottom: '16px', fontWeight: '600', fontSize: '13px' }}>
             Hazırda aktiv olan tabın adı: "{activeTab}"
-          </div>
+          </div>  */}
           {activeTab === 'dashboard' && (
             <div className="dashboard-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '20px' }}>
               
