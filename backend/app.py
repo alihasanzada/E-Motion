@@ -420,6 +420,15 @@ init_activity_db()
 
 @app.route('/api/activity', methods=['GET'])
 def get_activity():
+    """
+    Son fiziki aktivlik məlumatını gətirir
+    ---
+    responses:
+      200:
+        description: Aktivlik məlumatı uğurla gətirildi
+      500:
+        description: Server xətası
+    """
     conn = get_db_connection()
     activity = conn.execute('SELECT * FROM physical_activity ORDER BY id DESC LIMIT 1').fetchone()
     conn.close()
@@ -430,6 +439,30 @@ def get_activity():
 
 @app.route('/api/activity', methods=['POST'])
 def update_activity():
+    """
+    Yeni fiziki aktivlik məlumatı əlavə edir
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            steps:
+              type: integer
+              example: 5000
+            water_ml:
+              type: integer
+              example: 500
+    responses:
+      201:
+        description: Aktivlik uğurla yeniləndi
+      400:
+        description: Məlumatlar tam ötürülməyib
+      500:
+        description: Server xətası
+    """
     data = request.get_json() or {}
     steps = data.get('steps')
     water_ml = data.get('water_ml')
@@ -470,14 +503,44 @@ init_mental_db()
 
 @app.route('/api/moods', methods=['GET'])
 def get_moods():
+    """
+    Son 5 emosiya qeydini gətirir
+    ---
+    responses:
+      200:
+        description: Emosiya siyahısı uğurla gətirildi
+    """
     conn = get_db_connection()
-    # Son 5 qeydi tarixə görə sıralayıb gətiririk
     moods = conn.execute('SELECT * FROM mood_logs ORDER BY id DESC LIMIT 5').fetchall()
     conn.close()
     return jsonify([dict(row) for row in moods]), 200
 
 @app.route('/api/moods', methods=['POST'])
 def add_mood():
+    """
+    Yeni emosiya qeydi əlavə edir
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            mood:
+              type: string
+              example: "Xoşbəxt"
+            note:
+              type: string
+              example: "Bu gün dərslər əla keçdi."
+    responses:
+      201:
+        description: Mental vəziyyət uğurla qeyd olundu
+      400:
+        description: Emosiya seçilməyib
+      500:
+        description: Server xətası
+    """
     data = request.get_json() or {}
     mood = data.get('mood')
     note = data.get('note')
@@ -503,8 +566,14 @@ def add_mood():
 
 @app.route('/api/nutrition', methods=['GET'])
 def get_nutrition():
+    """
+    Son 5 qidalanma logunu gətirir
+    ---
+    responses:
+      200:
+        description: Qidalanma siyahısı uğurla gətirildi
+    """
     conn = get_db_connection()
-    # Əgər cədvəl yoxdursa test üçün boş data qaytaraq
     try:
         logs = conn.execute('SELECT * FROM nutrition ORDER BY id DESC LIMIT 5').fetchall()
         conn.close()
@@ -515,6 +584,30 @@ def get_nutrition():
 
 @app.route('/api/nutrition', methods=['POST'])
 def add_nutrition():
+    """
+    Yeni yemək və kalori qeydi əlavə edir
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            meal:
+              type: string
+              example: "Toyuq və Düyü"
+            calories:
+              type: integer
+              example: 650
+    responses:
+      201:
+        description: Qidalanma qeydi əlavə edildi
+      400:
+        description: Bütün xanalar doldurulmayıb
+      500:
+        description: Server xətası
+    """
     data = request.get_json() or {}
     meal = data.get('meal')
     calories = data.get('calories')
@@ -525,7 +618,6 @@ def add_nutrition():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # Əgər verilənlər bazasında cədvəl yoxdursa dinamik yaradırıq xəta olmasın deyə
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS nutrition (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -549,9 +641,15 @@ def add_nutrition():
 
 @app.route('/api/challenges', methods=['GET'])
 def get_challenges():
+    """
+    Mövcud çağırışların siyahısını gətirir
+    ---
+    responses:
+      200:
+        description: Çağırışlar uğurla gətirildi
+    """
     conn = get_db_connection()
     try:
-        # Cədvəl yoxdursa yaradırıq və ilkin olaraq iki dənə çağırış doldururuq
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS challenges (
@@ -561,8 +659,6 @@ def get_challenges():
                 completed INTEGER DEFAULT 0
             )
         ''')
-        
-        # Əgər cədvəl tamamilə boşdursa, ilkin tapşırıqlar əlavə edək
         count = conn.execute('SELECT COUNT(*) FROM challenges').fetchone()[0]
         if count == 0:
             cursor.execute("INSERT INTO challenges (title, description, completed) VALUES ('Su Kampaniyası', 'Hər gün 2 litr su iç', 0)")
@@ -578,10 +674,24 @@ def get_challenges():
 
 @app.route('/api/challenges/<int:challenge_id>/toggle', methods=['POST'])
 def toggle_challenge(challenge_id):
+    """
+    Çağırışın statusunu dəyişir (Tamamlandı/Tamamlanmadı)
+    ---
+    parameters:
+      - name: challenge_id
+        in: path
+        type: integer
+        required: true
+        description: Çağırışın ID-si
+    responses:
+      200:
+        description: Status yeniləndi
+      500:
+        description: Server xətası
+    """
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # Statusu tərsinə çeviririk (0-ı 1, 1-i 0 edirik)
         cursor.execute('UPDATE challenges SET completed = 1 - completed WHERE id = ?', (challenge_id,))
         conn.commit()
         return jsonify({'message': 'Status yeniləndi!'}), 200
