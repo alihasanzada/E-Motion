@@ -6,15 +6,14 @@
     <title>KU-Emotion - Giriş və Qeydiyyat</title>
 
     <style>
-        /* KUDS Standartları - Qlobal Dəyişənlər və Sıfırlama */
         :root {
-            --bg-color: #0a0a0c;          /* Dərin all-black arxa fon */
-            --card-bg: #121216;           /* Form qutusunun tünd rəngi */
-            --accent-color: #00ff66;      /* Kiber yaşıl (Offensive Security / Red Team tonu) */
-            --text-main: #ffffff;         /* Əsas ağ mətn */
-            --text-muted: #88889b;        /* Köməkçi boz mətn */
-            --input-bg: #1a1a22;          /* Giriş xanalarının fonu */
-            --input-border: #2a2a35;      /* Xanaların çərçivəsi */
+            --bg-color: #0a0a0c;   
+            --card-bg: #121216;       
+            --accent-color: #00ff66;   
+            --text-main: #ffffff;     
+            --text-muted: #88889b;     
+            --input-bg: #1a1a22;    
+            --input-border: #2a2a35;    
         }
 
         * {
@@ -35,7 +34,7 @@
             position: relative;
         }
 
-        /* Arxa fondakı yüngül kiber kursor/işıq effekti */
+        /* Arxa fondakı yüngül kursor/işıq effekti */
         body::before {
             content: '';
             position: absolute;
@@ -64,7 +63,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Kiber vurğu xətti */
         .form-box:hover {
             border-color: rgba(0, 255, 102, 0.3);
             box-shadow: 0 8px 32px rgba(0, 255, 102, 0.05);
@@ -101,12 +99,12 @@
             color: var(--text-muted);
         }
 
-        /* Müasir Düymə (Button) */
+        /* Müasir Düymə */
         form button {
             width: 100%;
             padding: 14px;
             background-color: var(--accent-color);
-            color: #000000; /* All-black üzərində yaşıl fonda qara yazı oxunaqlıdır */
+            color: #000000;
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -153,8 +151,8 @@
         <div class="form-box" id="signup-box">
             <h2>Hesab Yarat</h2>
             <form id="signup-form">
-                <input type="text" id="signup-username" placeholder="İstifadəçi adı" required>
-                <input type="email" id="signup-email" placeholder="E-poçt ünvanınız" required>
+                <input type="text" id="signup-username" placeholder="Ad və Soyadınız" required>
+                <input type="email" id="signup-email" placeholder="Tələbə e-poçtu" required>
                 <input type="password" id="signup-password" placeholder="Şifrəniz" required>
                 <button type="submit">Qeydiyyatdan Keç</button>
             </form>
@@ -173,39 +171,48 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginBox = document.getElementById('login-box');
-            const registerBox = document.getElementById('register-box');
-            const toLoginLink = document.getElementById('to-login');
-            const toRegisterLink = document.getElementById('to-register');
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginBox = document.getElementById('login-box');
+        const signupBox = document.getElementById('signup-box');
+        const toLoginLink = document.getElementById('to-login');
+        const toSignupLink = document.getElementById('to-signup');
 
-            // Backend API URL (Flask serverinin başladığı ünvan)
-            const API_BASE_URL = 'http://127.0.0.1:5050/api';
+        const API_BASE_URL = 'http://127.0.0.1:5050/api';
 
-            // --- EKRANLAR ARASI KEÇİD MƏNTİQİ ---
+        // --- EKRANLAR ARASI KEÇİD MƏNTİQİ ---
+        if (toLoginLink) {
             toLoginLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                registerBox.style.display = 'none';
+                signupBox.style.display = 'none';
                 loginBox.style.display = 'block';
             });
+        }
 
-            toRegisterLink.addEventListener('click', (e) => {
+        if (toSignupLink) {
+            toSignupLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 loginBox.style.display = 'none';
-                registerBox.style.display = 'block';
+                signupBox.style.display = 'block';
             });
+        }
 
-            // --- QEYDİYYAT (REGISTER) API SORĞUSU ---
-            const registerForm = document.getElementById('register-form');
-            registerForm.addEventListener('submit', async (e) => {
+        // --- REAL BACKEND QEYDİYYAT SORĞUSU ---
+        const signupForm = document.getElementById('signup-form');
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const username = document.getElementById('reg-username').value;
-                const email = document.getElementById('reg-email').value;
-                const password = document.getElementById('reg-password').value;
+                const username = document.getElementById('signup-username').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
 
-                console.log("Backend-ə göndərilən data:", { username, email, password });
+                // 💡 JavaScript üçün uyğunlaşdırılmış təhlükəsiz regex formatı
+                const quEmailPattern = /^(s|st)\d{6}@qu\.edu\.az$/i;
+                if (!quEmailPattern.test(email)) {
+                    alert('Xəta: Yalnız S123456@qu.edu.az və ya ST123456@qu.edu.az formatında e-poçtlar qəbul edilir!');
+                    return;
+                }
 
                 try {
                     const response = await fetch(`${API_BASE_URL}/register`, {
@@ -219,21 +226,23 @@
                     const data = await response.json();
 
                     if (response.ok) {
-                        alert(`Uğurlu: ${data.message}\nİndi daxil ola bilərsiniz.`);
-                        registerForm.reset();
-                        registerBox.style.display = 'none';
+                        alert(data.message || 'Qeydiyyat uğurludur! İndi daxil ola bilərsiniz.');
+                        signupForm.reset();
+                        signupBox.style.display = 'none';
                         loginBox.style.display = 'block';
                     } else {
                         alert(`Xəta: ${data.message || 'Qeydiyyat baş tutmadı.'}`);
                     }
                 } catch (error) {
                     console.error('Sorğu xətası:', error);
-                    alert('Backend serverinə qoşulmaq mümkün olmadı. Serverin aktiv olduğundan əmin olun.');
+                    alert('Backend serverinə qoşulmaq mümkün olmadı.');
                 }
             });
+        }
 
-            // --- GİRİŞ (LOGIN) API SORĞUSU ---
-            const loginForm = document.getElementById('login-form');
+        // --- REAL BACKEND GİRİŞ SORĞUSU ---
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -252,26 +261,22 @@
                     const data = await response.json();
 
                     if (response.ok) {
-                        // 1. Backend-dən gələn tokeni təhlükəsiz şəkildə yaddaşa yazırıq
                         localStorage.setItem('userToken', data.token);
-                        
-                        // 2. İstifadəçi məlumatını obyekt halında yazırıq (ad yoxdursa e-poçtdan çıxarır)
-                        const userObj = data.user || { name: data.name || email.split('@')[0] };
-                        localStorage.setItem('userData', JSON.stringify(userObj));
+                        localStorage.setItem('userData', JSON.stringify(data.user));
 
                         loginForm.reset();
-                        
-                        // 3. İstifadəçini avtomatik olaraq əsas səhifəyə (Dashboard) uçururuq
                         window.location.href = 'dashboard.html';
                     } else {
                         alert(`Xəta: ${data.message || 'Giriş uğursuz oldu.'}`);
                     }
                 } catch (error) {
                     console.error('Sorğu xətası:', error);
-                    alert('Backend serverinə qoşulmaq mümkün olmadı. Serverin aktiv olduğundan əmin olun.');
+                    alert('Backend serverinə qoşulmaq mümkün olmadı.');
                 }
             });
-        });
-    </script>
+        }
+    });
+</script>
+
 </body>
 </html>
