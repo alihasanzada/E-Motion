@@ -205,7 +205,7 @@ export default function Dashboard() {
               <Sprout size={22} />
             </div>
             <div className="logo-text">
-              <h2 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary, letterSpacing: '-0.3px' }}>E-MOTION</h2>
+              <h2 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary, letterSpacing: '-0.3px' }}>KU-Emotion</h2>
               <p style={{ margin: 0, fontSize: '10.5px', color: theme.textSecondary, fontWeight: '500' }}>Qarabağ Universiteti</p>
             </div>
           </div>
