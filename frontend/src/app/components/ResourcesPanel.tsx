@@ -1,12 +1,38 @@
 "use client";
 import React, { useState } from 'react';
-import { BookOpen, ExternalLink, Plus, Search, Bookmark, Tag, Code, FileText, Video } from 'lucide-react';
+import { BookOpen, ExternalLink, Plus, Code, FileText, Video } from 'lucide-react';
 
-export default function ResourcesPanel() {
+interface ResourcesPanelProps {
+  isDarkMode?: boolean;
+}
+
+export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelProps) {
+  const theme = {
+    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#0F172A',
+    textSecondary: isDarkMode ? '#94A3B8' : '#64748B',
+    textMuted: isDarkMode ? '#CBD5E1' : '#475569',
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E2E8F0',
+    inputBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    inputBorder: isDarkMode ? '#3F3F46' : '#CBD5E1',
+    badgeCategoryBg: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9',
+    iconBoxBg: isDarkMode ? 'rgba(46, 91, 78, 0.2)' : '#ECFDF5',
+    iconBoxBorder: isDarkMode ? 'rgba(46, 91, 78, 0.4)' : '#A7F3D0',
+    iconBoxColor: isDarkMode ? '#4ADE80' : '#2E5B4E',
+    linkBtnBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    linkBtnText: isDarkMode ? '#4ADE80' : '#2E5B4E',
+    linkBtnBorder: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E2E8F0',
+    activeCatBg: isDarkMode ? '#23473D' : '#2E5B4E',
+    activeCatText: '#FFFFFF',
+    inactiveCatBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    inactiveCatText: isDarkMode ? '#94A3B8' : '#64748B',
+    inactiveCatBorder: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E2E8F0'
+  };
+
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
   const [type, setType] = useState('Dərslik');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Hamısı');
 
   const [resources, setResources] = useState([
@@ -67,10 +93,10 @@ export default function ResourcesPanel() {
       
       {/* 1. Başlıq */}
       <div>
-        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' }}>
+        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
           Faydalı Təhsil Resursları
         </h2>
-        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748B' }}>
+        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: theme.textSecondary }}>
           Dərs materialları, proqramlaşdırma sənədləri və faydalı linkləri kəşf edin və ya yoldaşlarınızla paylaşın.
         </p>
       </div>
@@ -79,19 +105,19 @@ export default function ResourcesPanel() {
         
         {/* Sol Sütun: Yeni Resurs Paylaş Formu */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
         }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BookOpen size={18} color="#2E5B4E" /> Yeni Resurs Paylaş
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOpen size={18} color={isDarkMode ? '#4ADE80' : '#2E5B4E'} /> Yeni Resurs Paylaş
           </h3>
 
           <form onSubmit={handleAddResource} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                 Resursun Adı
               </label>
               <input
@@ -103,10 +129,11 @@ export default function ResourcesPanel() {
                   width: '100%',
                   padding: '11px 14px',
                   borderRadius: '10px',
-                  border: '1px solid #CBD5E1',
+                  border: `1px solid ${theme.inputBorder}`,
                   fontSize: '13px',
                   outline: 'none',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: theme.inputBg,
+                  color: theme.textPrimary,
                   boxSizing: 'border-box'
                 }}
               />
@@ -114,7 +141,7 @@ export default function ResourcesPanel() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                   Növü
                 </label>
                 <select
@@ -124,10 +151,11 @@ export default function ResourcesPanel() {
                     width: '100%',
                     padding: '11px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13px',
                     outline: 'none',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     boxSizing: 'border-box'
                   }}
                 >
@@ -139,7 +167,7 @@ export default function ResourcesPanel() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                   Keçid Linki (URL)
                 </label>
                 <input
@@ -151,10 +179,11 @@ export default function ResourcesPanel() {
                     width: '100%',
                     padding: '11px 14px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13px',
                     outline: 'none',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     boxSizing: 'border-box'
                   }}
                 />
@@ -165,7 +194,7 @@ export default function ResourcesPanel() {
               type="submit"
               style={{
                 marginTop: '6px',
-                backgroundColor: '#2E5B4E',
+                backgroundColor: isDarkMode ? '#23473D' : '#2E5B4E',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '12px',
@@ -177,11 +206,11 @@ export default function ResourcesPanel() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 12px rgba(46, 91, 78, 0.2)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                 transition: 'all 0.2s ease'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23473D'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E5B4E'}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#23473D'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#23473D' : '#2E5B4E'}
             >
               <Plus size={16} /> Resurs Əlavə Et
             </button>
@@ -193,33 +222,36 @@ export default function ResourcesPanel() {
           
           {/* Kateqoriya Düymələri */}
           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                style={{
-                  backgroundColor: selectedCategory === cat ? '#2E5B4E' : '#FFFFFF',
-                  color: selectedCategory === cat ? '#FFFFFF' : '#64748B',
-                  border: '1px solid',
-                  borderColor: selectedCategory === cat ? '#2E5B4E' : '#E2E8F0',
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {cat}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  style={{
+                    backgroundColor: isActive ? theme.activeCatBg : theme.inactiveCatBg,
+                    color: isActive ? theme.activeCatText : theme.inactiveCatText,
+                    border: '1px solid',
+                    borderColor: isActive ? theme.activeCatBg : theme.inactiveCatBorder,
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {cat}
+                </button>
+              );
+            })}
           </div>
 
           {/* Resurs Kartları Siyahısı */}
           {filteredResources.length === 0 ? (
-            <div style={{ backgroundColor: '#FFFFFF', padding: '32px', borderRadius: '18px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
-              <p style={{ margin: 0, fontSize: '13.5px', color: '#94A3B8' }}>Resurs tapılmadı.</p>
+            <div style={{ backgroundColor: theme.cardBg, padding: '32px', borderRadius: '18px', border: `1px solid ${theme.borderColor}`, textAlign: 'center' }}>
+              <p style={{ margin: 0, fontSize: '13.5px', color: theme.textSecondary }}>Resurs tapılmadı.</p>
             </div>
           ) : (
             filteredResources.map((res) => {
@@ -228,10 +260,10 @@ export default function ResourcesPanel() {
                 <div
                   key={res.id}
                   style={{
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: theme.cardBg,
                     borderRadius: '18px',
                     padding: '18px 20px',
-                    border: '1px solid #E2E8F0',
+                    border: `1px solid ${theme.borderColor}`,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
                     display: 'flex',
                     alignItems: 'center',
@@ -242,11 +274,11 @@ export default function ResourcesPanel() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
-                      backgroundColor: '#ECFDF5',
-                      border: '1px solid #A7F3D0',
+                      backgroundColor: theme.iconBoxBg,
+                      border: `1px solid ${theme.iconBoxBorder}`,
                       padding: '12px',
                       borderRadius: '14px',
-                      color: '#2E5B4E',
+                      color: theme.iconBoxColor,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -256,13 +288,13 @@ export default function ResourcesPanel() {
 
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                        <span style={{ backgroundColor: '#F1F5F9', color: '#475569', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px' }}>
+                        <span style={{ backgroundColor: theme.badgeCategoryBg, color: theme.textMuted, fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px' }}>
                           {res.type}
                         </span>
-                        <span style={{ fontSize: '11.5px', color: '#94A3B8' }}>• {res.author}</span>
+                        <span style={{ fontSize: '11.5px', color: theme.textSecondary }}>• {res.author}</span>
                       </div>
 
-                      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>
+                      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>
                         {res.title}
                       </h4>
                     </div>
@@ -273,9 +305,9 @@ export default function ResourcesPanel() {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      backgroundColor: '#F8FAFC',
-                      color: '#2E5B4E',
-                      border: '1px solid #E2E8F0',
+                      backgroundColor: theme.linkBtnBg,
+                      color: theme.linkBtnText,
+                      border: `1px solid ${theme.linkBtnBorder}`,
                       padding: '8px 14px',
                       borderRadius: '10px',
                       fontSize: '12.5px',
@@ -288,12 +320,12 @@ export default function ResourcesPanel() {
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#2E5B4E';
+                      e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#2E5B4E';
                       e.currentTarget.style.color = '#FFFFFF';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#F8FAFC';
-                      e.currentTarget.style.color = '#2E5B4E';
+                      e.currentTarget.style.backgroundColor = theme.linkBtnBg;
+                      e.currentTarget.style.color = theme.linkBtnText;
                     }}
                   >
                     Keçid Et <ExternalLink size={14} />

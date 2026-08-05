@@ -2,7 +2,32 @@
 import React, { useState } from 'react';
 import { Flame, Award, CheckCircle2, Circle, Trophy, Star, Zap, Target } from 'lucide-react';
 
-export default function MyProgressPanel() {
+interface ProgressPanelProps {
+  isDarkMode?: boolean;
+}
+
+export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps) {
+  const theme = {
+    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#0F172A',
+    textSecondary: isDarkMode ? '#94A3B8' : '#64748B',
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E2E8F0',
+    progressBg: isDarkMode ? '#2A2A2A' : '#F1F5F9',
+    trophyIconBg: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7',
+    trophyIconBorder: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A',
+    streakBg: isDarkMode ? 'rgba(234, 88, 12, 0.15)' : '#FFEDD5',
+    awardBg: isDarkMode ? 'rgba(79, 70, 229, 0.15)' : '#E0E7FF',
+    goalBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    goalBorder: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#F1F5F9',
+    goalCompletedBg: isDarkMode ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
+    goalCompletedBorder: isDarkMode ? 'rgba(22, 163, 74, 0.3)' : '#DCFCE7',
+    goalCompletedText: isDarkMode ? '#4ADE80' : '#166534',
+    badgeBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    badgeBorder: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#E2E8F0',
+    badgeLockedBg: isDarkMode ? '#1E1E1E' : '#FAFAFA',
+    badgeLockedBorder: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#F1F5F9',
+  };
+
   const [streakDays] = useState(5);
   const [userLevel] = useState(3);
   const [currentXP] = useState(750);
@@ -37,34 +62,34 @@ export default function MyProgressPanel() {
       
       {/* 1. Başlıq */}
       <div>
-        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' }}>
+        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
           Mənimsənilmiş İrəliləyiş və Uğurlar
         </h2>
-        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748B' }}>
+        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: theme.textSecondary }}>
           Şəxsi inkişaf hədəfləriniz, qazandığınız nişanlar və vərdiş zənciriniz.
         </p>
       </div>
 
       {/* 2. Səviyyə və XP Status Banneri */}
       <div style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.cardBg,
         borderRadius: '20px',
         padding: '24px',
-        border: '1px solid #E2E8F0',
+        border: `1px solid ${theme.borderColor}`,
         boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '24px',
         alignItems: 'center'
       }}>
-        {/* Level İkonu vər Ədədi */}
+        {/* Level İkonu və Ədədi */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{
             width: '56px',
             height: '56px',
             borderRadius: '16px',
-            backgroundColor: '#FEF3C7',
-            border: '1px solid #FDE68A',
+            backgroundColor: theme.trophyIconBg,
+            border: `1px solid ${theme.trophyIconBorder}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -73,10 +98,10 @@ export default function MyProgressPanel() {
             <Trophy size={28} />
           </div>
           <div>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Mövcud Səviyyə
             </span>
-            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0F172A' }}>
+            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: theme.textPrimary }}>
               Səviyyə {userLevel} - Aktiv Tələbə
             </h3>
           </div>
@@ -85,16 +110,16 @@ export default function MyProgressPanel() {
         {/* XP Progress Bar */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12.5px', fontWeight: '700' }}>
-            <span style={{ color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Zap size={14} color="#2E5B4E" /> Təcrübə Xalı (XP)
+            <span style={{ color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Zap size={14} color={isDarkMode ? '#4ADE80' : '#2E5B4E'} /> Təcrübə Xalı (XP)
             </span>
-            <span style={{ color: '#0F172A' }}>{currentXP} / {nextLevelXP} XP</span>
+            <span style={{ color: theme.textPrimary }}>{currentXP} / {nextLevelXP} XP</span>
           </div>
-          <div style={{ width: '100%', height: '10px', backgroundColor: '#F1F5F9', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '10px', backgroundColor: theme.progressBg, borderRadius: '10px', overflow: 'hidden' }}>
             <div style={{
               width: `${xpPercent}%`,
               height: '100%',
-              backgroundColor: '#2E5B4E',
+              backgroundColor: isDarkMode ? '#4ADE80' : '#2E5B4E',
               borderRadius: '10px',
               transition: 'width 0.4s ease'
             }} />
@@ -107,21 +132,21 @@ export default function MyProgressPanel() {
         
         {/* Vərdiş Zənciri */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           borderRadius: '20px',
           padding: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           display: 'flex',
           alignItems: 'center',
           gap: '16px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
         }}>
-          <div style={{ backgroundColor: '#FFEDD5', padding: '14px', borderRadius: '16px', color: '#EA580C' }}>
+          <div style={{ backgroundColor: theme.streakBg, padding: '14px', borderRadius: '16px', color: '#EA580C' }}>
             <Flame size={28} />
           </div>
           <div>
-            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '600' }}>Vərdiş Zənciri</span>
-            <h4 style={{ margin: '2px 0 0 0', fontSize: '22px', fontWeight: '800', color: '#0F172A' }}>
+            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>Vərdiş Zənciri</span>
+            <h4 style={{ margin: '2px 0 0 0', fontSize: '22px', fontWeight: '800', color: theme.textPrimary }}>
               {streakDays} Gün Ardıcıl
             </h4>
             <span style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: '600' }}>🔥 Möhtəşəm tempdir!</span>
@@ -130,24 +155,24 @@ export default function MyProgressPanel() {
 
         {/* Qazanılan Nişanlar Xülasəsi */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           borderRadius: '20px',
           padding: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           display: 'flex',
           alignItems: 'center',
           gap: '16px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
         }}>
-          <div style={{ backgroundColor: '#E0E7FF', padding: '14px', borderRadius: '16px', color: '#4F46E5' }}>
+          <div style={{ backgroundColor: theme.awardBg, padding: '14px', borderRadius: '16px', color: '#4F46E5' }}>
             <Award size={28} />
           </div>
           <div>
-            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '600' }}>Kollektsiya</span>
-            <h4 style={{ margin: '2px 0 0 0', fontSize: '22px', fontWeight: '800', color: '#0F172A' }}>
+            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>Kollektsiya</span>
+            <h4 style={{ margin: '2px 0 0 0', fontSize: '22px', fontWeight: '800', color: theme.textPrimary }}>
               {badges.filter(b => b.unlocked).length} / {badges.length} Nişan
             </h4>
-            <span style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '500' }}>2 yeni nişan kilitlidir</span>
+            <span style={{ fontSize: '11.5px', color: theme.textSecondary, fontWeight: '500' }}>2 yeni nişan kilitlidir</span>
           </div>
         </div>
 
@@ -158,17 +183,17 @@ export default function MyProgressPanel() {
         
         {/* Sol: İnteraktiv Hədəf Siyahısı */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           borderRadius: '20px',
           padding: '24px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
           display: 'flex',
           flexDirection: 'column',
           gap: '16px'
         }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Target size={18} color="#2E5B4E" /> Həftəlik Hədəflərim
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Target size={18} color={isDarkMode ? '#4ADE80' : '#2E5B4E'} /> Həftəlik Hədəflərim
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -182,29 +207,29 @@ export default function MyProgressPanel() {
                   gap: '12px',
                   padding: '12px 14px',
                   borderRadius: '12px',
-                  backgroundColor: goal.completed ? '#F0FDF4' : '#F8FAFC',
+                  backgroundColor: goal.completed ? theme.goalCompletedBg : theme.goalBg,
                   border: '1px solid',
-                  borderColor: goal.completed ? '#DCFCE7' : '#F1F5F9',
+                  borderColor: goal.completed ? theme.goalCompletedBorder : theme.goalBorder,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
               >
                 {goal.completed ? (
-                  <CheckCircle2 size={20} color="#16A34A" />
+                  <CheckCircle2 size={20} color={isDarkMode ? '#4ADE80' : '#16A34A'} />
                 ) : (
-                  <Circle size={20} color="#94A3B8" />
+                  <Circle size={20} color={theme.textSecondary} />
                 )}
                 <div style={{ flex: 1 }}>
                   <p style={{
                     margin: 0,
                     fontSize: '13px',
                     fontWeight: '600',
-                    color: goal.completed ? '#166534' : '#0F172A',
+                    color: goal.completed ? theme.goalCompletedText : theme.textPrimary,
                     textDecoration: goal.completed ? 'line-through' : 'none'
                   }}>
                     {goal.title}
                   </p>
-                  <span style={{ fontSize: '11px', color: goal.completed ? '#22C55E' : '#64748B' }}>
+                  <span style={{ fontSize: '11px', color: goal.completed ? (isDarkMode ? '#4ADE80' : '#22C55E') : theme.textSecondary }}>
                     {goal.category}
                   </span>
                 </div>
@@ -215,16 +240,16 @@ export default function MyProgressPanel() {
 
         {/* Sağ: Qazanılan və Kilitli Nişanlar */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           borderRadius: '20px',
           padding: '24px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
           display: 'flex',
           flexDirection: 'column',
           gap: '16px'
         }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Star size={18} color="#D97706" /> Qazanılan Nişanlar
           </h3>
 
@@ -235,9 +260,9 @@ export default function MyProgressPanel() {
                 style={{
                   padding: '12px',
                   borderRadius: '14px',
-                  backgroundColor: b.unlocked ? '#F8FAFC' : '#FAFAFA',
+                  backgroundColor: b.unlocked ? theme.badgeBg : theme.badgeLockedBg,
                   border: '1px solid',
-                  borderColor: b.unlocked ? '#E2E8F0' : '#F1F5F9',
+                  borderColor: b.unlocked ? theme.badgeBorder : theme.badgeLockedBorder,
                   opacity: b.unlocked ? 1 : 0.5,
                   display: 'flex',
                   alignItems: 'center',
@@ -246,8 +271,8 @@ export default function MyProgressPanel() {
               >
                 <span style={{ fontSize: '24px' }}>{b.icon}</span>
                 <div>
-                  <h5 style={{ margin: 0, fontSize: '12.5px', fontWeight: '700', color: '#0F172A' }}>{b.name}</h5>
-                  <p style={{ margin: 0, fontSize: '10.5px', color: '#64748B' }}>{b.desc}</p>
+                  <h5 style={{ margin: 0, fontSize: '12.5px', fontWeight: '700', color: theme.textPrimary }}>{b.name}</h5>
+                  <p style={{ margin: 0, fontSize: '10.5px', color: theme.textSecondary }}>{b.desc}</p>
                 </div>
               </div>
             ))}

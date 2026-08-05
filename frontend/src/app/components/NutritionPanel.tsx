@@ -1,8 +1,27 @@
 "use client";
 import React, { useState } from 'react';
-import { Utensils, Plus, Flame, PieChart, Apple, Trash2, Clock } from 'lucide-react';
+import { Utensils, Plus, Flame, Apple, Trash2 } from 'lucide-react';
 
-export default function NutritionPanel() {
+interface NutritionPanelProps {
+  isDarkMode?: boolean;
+}
+
+export default function NutritionPanel({ isDarkMode = false }: NutritionPanelProps) {
+  const theme = {
+    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#0F172A',
+    textSecondary: isDarkMode ? '#94A3B8' : '#64748B',
+    textMuted: isDarkMode ? '#CBD5E1' : '#475569',
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E2E8F0',
+    inputBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    inputBorder: isDarkMode ? '#3F3F46' : '#CBD5E1',
+    progressBg: isDarkMode ? '#2A2A2A' : '#F1F5F9',
+    itemBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    itemBorder: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#F1F5F9',
+    appleIconBg: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7',
+    macroBorder: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#F1F5F9',
+  };
+
   const [mealName, setMealName] = useState('');
   const [calories, setCalories] = useState('');
   const [mealType, setMealType] = useState('Günorta');
@@ -45,20 +64,20 @@ export default function NutritionPanel() {
       
       {/* 1. Başlıq */}
       <div>
-        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' }}>
+        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
           Gündəlik Qidalanma və Kalori İzləyicisi
         </h2>
-        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748B' }}>
+        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: theme.textSecondary }}>
           Enerjinizi yüksək saxlamaq üçün gündəlik qida qəbulunuzu və kalorilərinizi rahatlıqla qeyd edin.
         </p>
       </div>
 
       {/* 2. Hədəf və Kalori Xülasəsi Kartı */}
       <div style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.cardBg,
         borderRadius: '20px',
         padding: '24px',
-        border: '1px solid #E2E8F0',
+        border: `1px solid ${theme.borderColor}`,
         boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -68,19 +87,19 @@ export default function NutritionPanel() {
         {/* Sol: Kalori Sayğacı */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Flame size={16} color="#EF4444" /> Günlük Hədəf İrəliləyişi
             </span>
-            <span style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A' }}>
+            <span style={{ fontSize: '13px', fontWeight: '800', color: theme.textPrimary }}>
               {totalCalories} / {dailyGoal} kcal ({progressPercent}%)
             </span>
           </div>
 
-          <div style={{ width: '100%', height: '10px', backgroundColor: '#F1F5F9', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '10px', backgroundColor: theme.progressBg, borderRadius: '10px', overflow: 'hidden' }}>
             <div style={{
               width: `${progressPercent}%`,
               height: '100%',
-              backgroundColor: progressPercent > 90 ? '#EF4444' : '#2E5B4E',
+              backgroundColor: progressPercent > 90 ? '#EF4444' : (isDarkMode ? '#4ADE80' : '#2E5B4E'),
               borderRadius: '10px',
               transition: 'width 0.4s ease'
             }} />
@@ -88,18 +107,18 @@ export default function NutritionPanel() {
         </div>
 
         {/* Sağ: Mini Makro Bədənlər (Zülal, Karbo, Yağ) */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', borderLeft: '1px solid #F1F5F9', paddingLeft: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', borderLeft: `1px solid ${theme.macroBorder}`, paddingLeft: '16px' }}>
           <div style={{ textAlign: 'center' }}>
-            <span style={{ display: 'block', fontSize: '11px', color: '#64748B', fontWeight: '600' }}>ZÜLAL</span>
-            <strong style={{ fontSize: '15px', color: '#0F172A' }}>~65g</strong>
+            <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '600' }}>ZÜLAL</span>
+            <strong style={{ fontSize: '15px', color: theme.textPrimary }}>~65g</strong>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <span style={{ display: 'block', fontSize: '11px', color: '#64748B', fontWeight: '600' }}>KARBO</span>
-            <strong style={{ fontSize: '15px', color: '#0F172A' }}>~120g</strong>
+            <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '600' }}>KARBO</span>
+            <strong style={{ fontSize: '15px', color: theme.textPrimary }}>~120g</strong>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <span style={{ display: 'block', fontSize: '11px', color: '#64748B', fontWeight: '600' }}>YAĞ</span>
-            <strong style={{ fontSize: '15px', color: '#0F172A' }}>~35g</strong>
+            <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '600' }}>YAĞ</span>
+            <strong style={{ fontSize: '15px', color: theme.textPrimary }}>~35g</strong>
           </div>
         </div>
       </div>
@@ -109,19 +128,19 @@ export default function NutritionPanel() {
         
         {/* Yemək Əlavə Et Formu */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
         }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Utensils size={18} color="#2E5B4E" /> Yemək Qeyd Et
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Utensils size={18} color={isDarkMode ? '#4ADE80' : '#2E5B4E'} /> Yemək Qeyd Et
           </h3>
 
           <form onSubmit={handleAddMeal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                 Yeməyin Adı
               </label>
               <input
@@ -133,10 +152,11 @@ export default function NutritionPanel() {
                   width: '100%',
                   padding: '11px 14px',
                   borderRadius: '10px',
-                  border: '1px solid #CBD5E1',
+                  border: `1px solid ${theme.inputBorder}`,
                   fontSize: '13px',
                   outline: 'none',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: theme.inputBg,
+                  color: theme.textPrimary,
                   boxSizing: 'border-box'
                 }}
               />
@@ -144,7 +164,7 @@ export default function NutritionPanel() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                   Kalori (kcal)
                 </label>
                 <input
@@ -156,17 +176,18 @@ export default function NutritionPanel() {
                     width: '100%',
                     padding: '11px 14px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13px',
                     outline: 'none',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                   Yemək Vaxtı
                 </label>
                 <select
@@ -176,10 +197,11 @@ export default function NutritionPanel() {
                     width: '100%',
                     padding: '11px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13px',
                     outline: 'none',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     boxSizing: 'border-box'
                   }}
                 >
@@ -195,7 +217,7 @@ export default function NutritionPanel() {
               type="submit"
               style={{
                 marginTop: '6px',
-                backgroundColor: '#2E5B4E',
+                backgroundColor: isDarkMode ? '#23473D' : '#2E5B4E',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '12px',
@@ -207,11 +229,11 @@ export default function NutritionPanel() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 12px rgba(46, 91, 78, 0.2)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                 transition: 'all 0.2s ease'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23473D'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E5B4E'}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#23473D'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#23473D' : '#2E5B4E'}
             >
               <Plus size={16} /> Qeyd Et
             </button>
@@ -220,22 +242,22 @@ export default function NutritionPanel() {
 
         {/* Bugünkü Qeydlər Siyahısı */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
           display: 'flex',
           flexDirection: 'column',
           gap: '16px'
         }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Bugünkü Qeydlər</span>
-            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '500' }}>{meals.length} yemək</span>
+            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '500' }}>{meals.length} yemək</span>
           </h3>
 
           {meals.length === 0 ? (
-            <p style={{ margin: 0, fontSize: '13px', color: '#94A3B8', textAlign: 'center', padding: '20px 0' }}>
+            <p style={{ margin: 0, fontSize: '13px', color: theme.textSecondary, textAlign: 'center', padding: '20px 0' }}>
               Hələ ki, heç bir yemək qeyd edilməyib.
             </p>
           ) : (
@@ -249,29 +271,29 @@ export default function NutritionPanel() {
                     justifyContent: 'space-between',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #F1F5F9'
+                    backgroundColor: theme.itemBg,
+                    border: `1px solid ${theme.itemBorder}`
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ backgroundColor: '#FEF3C7', padding: '8px', borderRadius: '10px', color: '#D97706' }}>
+                    <div style={{ backgroundColor: theme.appleIconBg, padding: '8px', borderRadius: '10px', color: '#D97706' }}>
                       <Apple size={18} />
                     </div>
                     <div>
-                      <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: '#0F172A' }}>{item.name}</h4>
-                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>{item.type} • {item.time}</span>
+                      <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>{item.name}</h4>
+                      <span style={{ fontSize: '11.5px', color: theme.textSecondary }}>{item.type} • {item.time}</span>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '13.5px', fontWeight: '800', color: '#2E5B4E' }}>
+                    <span style={{ fontSize: '13.5px', fontWeight: '800', color: isDarkMode ? '#4ADE80' : '#2E5B4E' }}>
                       {item.calories} kcal
                     </span>
                     <button
                       onClick={() => handleDeleteMeal(item.id)}
-                      style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '4px' }}
+                      style={{ background: 'none', border: 'none', color: theme.textSecondary, cursor: 'pointer', padding: '4px' }}
                       onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = theme.textSecondary}
                     >
                       <Trash2 size={16} />
                     </button>

@@ -2,7 +2,19 @@
 import React, { useState } from 'react';
 import { Brain, Heart, Sparkles, Send, Wind, BookOpen, Clock } from 'lucide-react';
 
-export default function MentalPanel() {
+interface MentalPanelProps {
+  isDarkMode?: boolean;
+}
+
+export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
+  // Dinamik rengler
+  const theme = {
+    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#111827',
+    textSecondary: isDarkMode ? '#9CA3AF' : '#4B5563',
+    inputBg: isDarkMode ? '#2A2A2A' : '#F9FAFB',
+    borderColor: isDarkMode ? '#374151' : '#E5E7EB',
+  };
   const [selectedMood, setSelectedMood] = useState<'Əla' | 'Normal' | 'Yorğun' | 'Stressli' | 'Həvəsli'>('Əla');
   const [noteText, setNoteText] = useState('');
   const [notes, setNotes] = useState([
@@ -74,13 +86,13 @@ export default function MentalPanel() {
         
         {/* Əhval-ruhiyyə Daxil Etmə Kartı */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
         }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Heart size={18} color="#EF4444" /> Özünüzü necə hiss edirsiniz?
           </h3>
 
@@ -100,15 +112,15 @@ export default function MentalPanel() {
                     gap: '6px',
                     padding: '12px 6px',
                     borderRadius: '12px',
-                    border: isSelected ? `2px solid ${m.color}` : '1px solid #E2E8F0',
-                    backgroundColor: isSelected ? m.bg : '#F8FAFC',
+                    border: isSelected ? `2px solid ${m.color}` : `1px solid ${theme.borderColor}`,
+                    backgroundColor: theme.cardBg,
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     transform: isSelected ? 'scale(1.03)' : 'scale(1)'
                   }}
                 >
                   <span style={{ fontSize: '22px' }}>{m.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: isSelected ? m.color : '#64748B' }}>{m.label}</span>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: isSelected ? m.color : theme.textSecondary }}>{m.label}</span>
                 </button>
               );
             })}
@@ -125,12 +137,12 @@ export default function MentalPanel() {
                 width: '100%',
                 padding: '14px',
                 borderRadius: '12px',
-                border: '1px solid #CBD5E1',
+                border: `1px solid ${theme.borderColor}`,
                 fontSize: '13.5px',
                 outline: 'none',
                 resize: 'none',
                 boxSizing: 'border-box',
-                backgroundColor: '#F8FAFC',
+                backgroundColor: theme.cardBg,
                 fontFamily: 'inherit'
               }}
             />
@@ -163,16 +175,16 @@ export default function MentalPanel() {
 
         {/* Son Qeydlər Kartı */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)',
           display: 'flex',
           flexDirection: 'column'
         }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BookOpen size={18} color="#2E5B4E" /> Son Qeydləriniz
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOpen size={18} color={theme.textPrimary} /> Son Qeydləriniz
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', maxHeight: '300px', paddingRight: '4px' }}>
@@ -184,7 +196,7 @@ export default function MentalPanel() {
                   style={{
                     padding: '14px',
                     borderRadius: '12px',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.cardBg,
                     borderLeft: `4px solid ${moodObj.color}`,
                     display: 'flex',
                     flexDirection: 'column',
@@ -193,18 +205,18 @@ export default function MentalPanel() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      color: moodObj.color,
-                      backgroundColor: moodObj.bg,
-                      padding: '2px 8px',
-                      borderRadius: '12px'
-                    }}>
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: moodObj.color,
+                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : moodObj.bg,
+                    padding: '2px 8px',
+                    borderRadius: '12px'
+                }}>
                       {moodObj.emoji} {note.mood}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#94A3B8' }}>{note.date}</span>
+                    <span style={{ fontSize: '11px', color: theme.textSecondary }}>{note.date}</span>
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#334155', lineHeight: '1.4' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: theme.textPrimary, lineHeight: '1.4' }}>
                     {note.text}
                   </p>
                 </div>
@@ -217,24 +229,24 @@ export default function MentalPanel() {
 
       {/* 3. Sürətli Mental Məşqlər */}
       <div style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.cardBg,
         padding: '24px',
         borderRadius: '20px',
-        border: '1px solid #E2E8F0',
+        border: `1px solid ${theme.borderColor}`,
         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
       }}>
-        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Wind size={18} color="#10B981" /> Sürətli Rahatlama Məşqləri
         </h3>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
           
-          <div style={{ border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', backgroundColor: '#F0FDF4', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ border: `1px solid ${theme.borderColor}`, padding: '16px', borderRadius: '14px', backgroundColor: theme.cardBg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '700', fontSize: '14px', color: '#166534' }}>Nəfəs Məşqi</span>
-              <Clock size={14} color="#166534" />
+              <span style={{ fontWeight: '700', fontSize: '14px', color: theme.textPrimary }}>Nəfəs Məşqi</span>
+              <Clock size={14} color={theme.textPrimary} />
             </div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.3' }}>
+            <p style={{ margin: 0, fontSize: '12px', color: theme.textSecondary, lineHeight: '1.3' }}>
               4-7-8 texnikası ilə həyəcanı və stressi azaldın.
             </p>
             <button style={{ marginTop: '8px', background: '#10B981', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
@@ -242,12 +254,12 @@ export default function MentalPanel() {
             </button>
           </div>
 
-          <div style={{ border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', backgroundColor: '#F8FAFC', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ border: `1px solid ${theme.borderColor}`, padding: '16px', borderRadius: '14px', backgroundColor: theme.cardBg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '700', fontSize: '14px', color: '#1E293B' }}>Fokus Meditasiyası</span>
-              <Clock size={14} color="#64748B" />
+              <span style={{ fontWeight: '700', fontSize: '14px', color: theme.textPrimary }}>Fokus Meditasiyası</span>
+              <Clock size={14} color={theme.textPrimary} />
             </div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.3' }}>
+            <p style={{ margin: 0, fontSize: '12px', color: theme.textSecondary, lineHeight: '1.3' }}>
               Dərs öncəsi diqqəti toplamaq üçün mini seans.
             </p>
             <button style={{ marginTop: '8px', background: '#2E5B4E', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
@@ -255,12 +267,12 @@ export default function MentalPanel() {
             </button>
           </div>
 
-          <div style={{ border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', backgroundColor: '#F5F3FF', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ border: `1px solid ${theme.borderColor}`, padding: '16px', borderRadius: '14px', backgroundColor: theme.cardBg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '700', fontSize: '14px', color: '#6D28D9' }}>Pozitiv Affirmasiya</span>
-              <Clock size={14} color="#6D28D9" />
+              <span style={{ fontWeight: '700', fontSize: '14px', color: theme.textPrimary }}>Pozitiv Affirmasiya</span>
+              <Clock size={14} color={theme.textPrimary} />
             </div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.3' }}>
+            <p style={{ margin: 0, fontSize: '12px', color: theme.textSecondary, lineHeight: '1.3' }}>
               Özünə inamı bərpa etmək üçün gündəlik cümlələr.
             </p>
             <button style={{ marginTop: '8px', background: '#8B5CF6', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>

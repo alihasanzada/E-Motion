@@ -1,8 +1,30 @@
 "use client";
 import React, { useState } from 'react';
-import { Calendar, MapPin, Users, Plus, CheckCircle2, Clock, Sparkles, Tag } from 'lucide-react';
+import { MapPin, Users, Plus, CheckCircle2, Sparkles } from 'lucide-react';
 
-export default function EventsPanel() {
+interface EventsPanelProps {
+  isDarkMode?: boolean;
+}
+
+export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
+  const theme = {
+    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#0F172A',
+    textSecondary: isDarkMode ? '#94A3B8' : '#64748B',
+    textMuted: isDarkMode ? '#CBD5E1' : '#475569',
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E2E8F0',
+    inputBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    inputBorder: isDarkMode ? '#3F3F46' : '#CBD5E1',
+    badgeCategoryBg: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9',
+    dateBoxBg: isDarkMode ? 'rgba(46, 91, 78, 0.2)' : '#ECFDF5',
+    dateBoxBorder: isDarkMode ? 'rgba(46, 91, 78, 0.4)' : '#A7F3D0',
+    dateBoxDayText: isDarkMode ? '#4ADE80' : '#2E5B4E',
+    dateBoxMonthText: isDarkMode ? '#34D399' : '#059669',
+    attendingBtnBg: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
+    attendingBtnText: isDarkMode ? '#34D399' : '#059669',
+    attendingBtnBorder: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0',
+  };
+
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
@@ -93,10 +115,10 @@ export default function EventsPanel() {
       
       {/* Başlıq */}
       <div>
-        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' }}>
+        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
           Universitet Tədbirləri
         </h2>
-        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748B' }}>
+        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: theme.textSecondary }}>
           Kampus daxilində baş tutan seminarlar, yarışlar və görüşlərdə iştirak edin və ya yenisini təşkil edin.
         </p>
       </div>
@@ -105,19 +127,19 @@ export default function EventsPanel() {
         
         {/* Sol Sütun: Yeni Tədbir Yarat Formu */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
         }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={18} color="#2E5B4E" /> Yeni Tədbir Yarat
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={18} color={isDarkMode ? '#4ADE80' : '#2E5B4E'} /> Yeni Tədbir Yarat
           </h3>
 
           <form onSubmit={handleCreateEvent} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                 Tədbirin Adı
               </label>
               <input
@@ -129,10 +151,11 @@ export default function EventsPanel() {
                   width: '100%',
                   padding: '11px 14px',
                   borderRadius: '10px',
-                  border: '1px solid #CBD5E1',
+                  border: `1px solid ${theme.inputBorder}`,
                   fontSize: '13px',
                   outline: 'none',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: theme.inputBg,
+                  color: theme.textPrimary,
                   boxSizing: 'border-box'
                 }}
               />
@@ -140,7 +163,7 @@ export default function EventsPanel() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                   Tarix
                 </label>
                 <input
@@ -151,17 +174,18 @@ export default function EventsPanel() {
                     width: '100%',
                     padding: '11px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13px',
                     outline: 'none',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                   Kateqoriya
                 </label>
                 <select
@@ -171,10 +195,11 @@ export default function EventsPanel() {
                     width: '100%',
                     padding: '11px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13px',
                     outline: 'none',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     boxSizing: 'border-box'
                   }}
                 >
@@ -187,7 +212,7 @@ export default function EventsPanel() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
                 Məkan
               </label>
               <input
@@ -199,10 +224,11 @@ export default function EventsPanel() {
                   width: '100%',
                   padding: '11px 14px',
                   borderRadius: '10px',
-                  border: '1px solid #CBD5E1',
+                  border: `1px solid ${theme.inputBorder}`,
                   fontSize: '13px',
                   outline: 'none',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: theme.inputBg,
+                  color: theme.textPrimary,
                   boxSizing: 'border-box'
                 }}
               />
@@ -212,7 +238,7 @@ export default function EventsPanel() {
               type="submit"
               style={{
                 marginTop: '6px',
-                backgroundColor: '#2E5B4E',
+                backgroundColor: isDarkMode ? '#23473D' : '#2E5B4E',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '12px',
@@ -224,11 +250,11 @@ export default function EventsPanel() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 12px rgba(46, 91, 78, 0.2)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                 transition: 'all 0.2s ease'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23473D'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E5B4E'}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#23473D'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#23473D' : '#2E5B4E'}
             >
               <Plus size={16} /> Tədbir Əlavə Et
             </button>
@@ -241,10 +267,10 @@ export default function EventsPanel() {
             <div
               key={ev.id}
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: theme.cardBg,
                 borderRadius: '18px',
                 padding: '20px',
-                border: '1px solid #E2E8F0',
+                border: `1px solid ${theme.borderColor}`,
                 boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
                 display: 'flex',
                 gap: '18px',
@@ -255,18 +281,18 @@ export default function EventsPanel() {
               {/* Sol Tarix Bloku */}
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                 <div style={{
-                  backgroundColor: '#ECFDF5',
-                  border: '1px solid #A7F3D0',
+                  backgroundColor: theme.dateBoxBg,
+                  border: `1px solid ${theme.dateBoxBorder}`,
                   borderRadius: '14px',
                   padding: '12px 16px',
                   textAlign: 'center',
                   minWidth: '54px',
                   flexShrink: 0
                 }}>
-                  <span style={{ display: 'block', fontSize: '20px', fontWeight: '800', color: '#2E5B4E', lineHeight: '1' }}>
+                  <span style={{ display: 'block', fontSize: '20px', fontWeight: '800', color: theme.dateBoxDayText, lineHeight: '1' }}>
                     {ev.displayDate.day}
                   </span>
-                  <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#059669', marginTop: '4px' }}>
+                  <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: theme.dateBoxMonthText, marginTop: '4px' }}>
                     {ev.displayDate.month}
                   </span>
                 </div>
@@ -274,22 +300,22 @@ export default function EventsPanel() {
                 {/* Tədbir Məlumatı */}
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ backgroundColor: '#F1F5F9', color: '#475569', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px' }}>
+                    <span style={{ backgroundColor: theme.badgeCategoryBg, color: theme.textMuted, fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px' }}>
                       {ev.category}
                     </span>
-                    <span style={{ fontSize: '12px', color: '#94A3B8' }}>• {ev.organizer}</span>
+                    <span style={{ fontSize: '12px', color: theme.textSecondary }}>• {ev.organizer}</span>
                   </div>
 
-                  <h4 style={{ margin: '0 0 6px 0', fontSize: '15.5px', fontWeight: '700', color: '#0F172A' }}>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary }}>
                     {ev.title}
                   </h4>
 
-                  <div style={{ display: 'flex', gap: '14px', fontSize: '12.5px', color: '#64748B' }}>
+                  <div style={{ display: 'flex', gap: '14px', fontSize: '12.5px', color: theme.textSecondary }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={14} color="#64748B" /> {ev.location}
+                      <MapPin size={14} color={theme.textSecondary} /> {ev.location}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Users size={14} color="#64748B" /> {ev.attendees} İştirakçı
+                      <Users size={14} color={theme.textSecondary} /> {ev.attendees} İştirakçı
                     </span>
                   </div>
                 </div>
@@ -299,9 +325,9 @@ export default function EventsPanel() {
               <button
                 onClick={() => toggleAttend(ev.id)}
                 style={{
-                  backgroundColor: ev.isAttending ? '#ECFDF5' : '#2E5B4E',
-                  color: ev.isAttending ? '#059669' : '#FFFFFF',
-                  border: ev.isAttending ? '1px solid #A7F3D0' : 'none',
+                  backgroundColor: ev.isAttending ? theme.attendingBtnBg : (isDarkMode ? '#23473D' : '#2E5B4E'),
+                  color: ev.isAttending ? theme.attendingBtnText : '#FFFFFF',
+                  border: ev.isAttending ? `1px solid ${theme.attendingBtnBorder}` : 'none',
                   padding: '10px 16px',
                   borderRadius: '12px',
                   fontSize: '12.5px',

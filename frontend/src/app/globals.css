@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 * {
-    box-sizing: border-box !important;
+    box-sizing: border-box;
 }
 
 :root {
@@ -13,7 +13,7 @@
     --light-blue: #CAEAF1;
     --cream: #F0F3BF;
     
-    --bg-color: #F8FAFC;
+    --bg-color: transparent;
     --surface: #FFFFFF;
     --border-color: #E2E8F0;
     --text-primary: #1E293B;
@@ -30,15 +30,15 @@
 
 html, body {
     font-family: 'Poppins', 'Tahoma', sans-serif;
-    background-color: var(--bg-color);
+    background-color: var(--bg-app, #121212);
     color: var(--text-primary);
     margin: 0;
     padding: 0;
     display: flex;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 100vh !important;
-    overflow: hidden !important;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    overflow: hidden;
     line-height: 150%;
 }
 
@@ -48,10 +48,10 @@ html, body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 10px 8px !important;
+    padding: 10px 8px;
     overflow: hidden;
     flex-shrink: 0;
-    width: 220px !important;
+    width: 220px;
 }
 .logo-area {
     display: flex;
@@ -92,14 +92,14 @@ html, body {
     display: none;
 }
 .nav-item {
-    padding: 8px 10px !important;
-    border-radius: 6px !important;
+    padding: 8px 10px;
+    border-radius: 6px;
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 12.5px !important;
+    font-size: 12.5px;
     font-weight: 500;
     color: var(--text-secondary);
 }
@@ -118,14 +118,14 @@ html, body {
     height: 18px;
 }
 .nav-menu .nav-item i {
-    color: #555555 !important;
+    color: #555555;
     transition: color 0.2s ease;
 }
 .nav-menu .nav-item.active i {
-    color: #ffffff !important;
+    color: #ffffff;
 }
 .nav-menu .nav-item:hover i {
-    color: #2d6a4f !important;
+    color: #2d6a4f;
 }
 
 /* ƏSAS WRAPPER VƏ HEADER */
@@ -134,47 +134,44 @@ html, body {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: auto !important;
-    max-width: 100% !important;
+    width: auto;
+    max-width: 100%;
     overflow: hidden;
 }
 .header {
-    height: 42px !important;
+    height: 42px;
     background-color: var(--surface);
-    padding: 0 16px !important; 
+    padding: 0 16px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 10px !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 100%;
 }
 .search-container {
-    display: flex !important;
-    align-items: center !important;
-    background-color: #fafafa !important; 
-    border: 1px solid #e2e8f0 !important; 
-    border-radius: 8px !important;            
-    padding: 0 12px !important;
-    width: 320px !important;    
-    height: 34px !important;
-    position: relative !important;            
-    transition: all 0.2s ease !important;
-    margin-left: 50px !important;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;            
+    padding: 0 12px;
+    width: 320px;    
+    height: 34px;
+    position: relative;            
+    transition: all 0.2s ease;
+    margin-left: 50px;
 }
 .search-bar {
-    border: none !important;                
-    background: transparent !important;       
-    box-shadow: none !important;
-    outline: none !important;             
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100% !important;               
-    padding: 0 !important;                   
-    margin: 0 !important;
-    font-size: 13px !important;
-    color: #334155 !important;
+    border: none;                
+    background: transparent;       
+    box-shadow: none;
+    outline: none;  
+    width: 100%;
+    height: 100%;
+    max-width: 100%;               
+    padding: 0;                   
+    margin: 0;
+    font-size: 13px;
 }
 .header-right {
     display: flex;
@@ -203,14 +200,14 @@ html, body {
 
 /* MAIN CONTENT LAYOUT */
 .main-content {
-    padding: 24px 32px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: calc(100vh - 44px) !important;
+    padding: 24px 32px;
+    width: 100%;
+    max-width: 100%;
+    height: calc(100vh - 44px);
     overflow-y: auto;
-    overflow-x: hidden !important;
-    flex: 1 !important;
-    background-color: var(--bg-color);    
+    overflow-x: hidden;
+    flex: 1;
+    background-color: transparent;  
     scrollbar-width: none;
 }
 .main-content::-webkit-scrollbar {
@@ -218,38 +215,38 @@ html, body {
 }
 
 .dashboard-layout {
-    display: grid !important;
-    grid-template-columns: calc(70% - 12px) calc(30% - 12px) !important; 
-    gap: 24px !important;
-    align-items: start !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    display: grid;
+    grid-template-columns: calc(70% - 12px) calc(30% - 12px); 
+    gap: 24px;
+    align-items: start;
+    width: 100%;
+    max-width: 100%;
 }
 
 .left-content {
-    grid-column: 1 !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 20px !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .welcome-banner, .summary-grid {
-    grid-column: span 2 !important;
+    grid-column: span 2;
 }
 
 .left-content > p, .left-content > footer, .left-content > div:not(.card) {
-    grid-column: span 2 !important;
+    grid-column: span 2;
 }
 
 .right-sidebar {
-    grid-column: 2 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .card {
@@ -258,10 +255,10 @@ html, body {
     border: 1px solid var(--border-color);
     padding: 24px;
     box-shadow: var(--shadow-sm);
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    position: relative !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 .card h3 {
@@ -275,14 +272,14 @@ html, body {
 }
 
 .left-content .card a[href*="bax"] {
-    position: absolute !important;
-    top: 24px !important;
-    right: 24px !important;
-    margin: 0 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-    z-index: 5 !important;
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    z-index: 5;
 }
 
 .welcome-banner {
@@ -290,7 +287,7 @@ html, body {
         url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800') no-repeat center center;
     background-size: cover;
     color: white;
-    padding: 16px 24px !important;
+    padding: 16px 24px;
     border-radius: 16px;
     display: flex;
     justify-content: space-between;
@@ -298,13 +295,13 @@ html, body {
 }
 
 .summary-grid {
-    display: grid !important;
-    grid-template-columns: repeat(5, 1fr) !important;
-    gap: 12px !important;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
 }
 .summary-card {
     background-color: var(--surface);
-    padding: 14px !important;
+    padding: 14px;
     border-radius: 14px;
     border: 1px solid var(--border-color);
     display: flex;
@@ -331,10 +328,10 @@ html, body {
 }
 
 @media (max-width: 992px) {
-    .dashboard-layout { grid-template-columns: 1fr !important; }
-    .left-content, .right-sidebar { grid-column: 1 !important; }
-    .left-content { grid-template-columns: 1fr !important; }
-    .welcome-banner, .summary-grid { grid-column: span 1 !important; }
+    .dashboard-layout { grid-template-columns: 1fr; }
+    .left-content, .right-sidebar { grid-column: 1; }
+    .left-content { grid-template-columns: 1fr; }
+    .welcome-banner, .summary-grid { grid-column: span 1; }
 }
 
 svg circle {

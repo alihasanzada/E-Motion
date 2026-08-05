@@ -2,7 +2,22 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Stethoscope, FileText, Plus, PhoneCall, Calendar, CheckCircle2, Clock, AlertCircle, X, ChevronRight } from 'lucide-react';
 
-export default function HealthPanel() {
+interface ServicesPanelProps {
+  isDarkMode?: boolean;
+}
+
+export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps) {
+  const theme = {
+    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#0F172A',
+    textSecondary: isDarkMode ? '#94A3B8' : '#64748B',
+    innerBg: isDarkMode ? '#2A2A2A' : '#F8FAFC',
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E2E8F0',
+    modalBg: isDarkMode ? '#18181B' : '#FFFFFF',
+    inputBg: isDarkMode ? '#27272A' : '#F8FAFC',
+    inputBorder: isDarkMode ? '#3F3F46' : '#CBD5E1',
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [requestType, setRequestType] = useState('Həkim Qəbulu');
   const [description, setDescription] = useState('');
@@ -14,7 +29,7 @@ export default function HealthPanel() {
       sub: 'Kampus Klinikası • İdman zalına buraxılış üçün',
       status: 'Təsdiqləndi',
       statusColor: '#10B981',
-      bgColor: '#ECFDF5',
+      bgColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
       date: '02 Avqust 2026'
     },
     {
@@ -23,7 +38,7 @@ export default function HealthPanel() {
       sub: 'Dr. Aytən Əliyeva • Kampus Tibb Məntəqəsi',
       status: 'Gözləmədə',
       statusColor: '#F59E0B',
-      bgColor: '#FFFBEB',
+      bgColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FFFBEB',
       date: '06 Avqust, 14:00'
     }
   ]);
@@ -38,7 +53,7 @@ export default function HealthPanel() {
       sub: description,
       status: 'Gözləmədə',
       statusColor: '#F59E0B',
-      bgColor: '#FFFBEB',
+      bgColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FFFBEB',
       date: 'İndi əlavə edildi'
     };
 
@@ -50,13 +65,13 @@ export default function HealthPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
       
-      {/* 1. Başlıq vı Yeni Müraciət Düyməsi */}
+      {/* 1. Başlıq və Yeni Müraciət Düyməsi */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' }}>
+          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
             Sağlamlıq Xidmətləri
           </h2>
-          <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748B' }}>
+          <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: theme.textSecondary }}>
             Kampus daxili tibbi xidmətlər, sığorta statusu və həkim qəbullarını rahat idarə edin.
           </p>
         </div>
@@ -91,10 +106,10 @@ export default function HealthPanel() {
         
         {/* Tələbə Tibbi Sığortası */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '20px',
           borderRadius: '16px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
           display: 'flex',
           flexDirection: 'column',
@@ -102,22 +117,22 @@ export default function HealthPanel() {
           gap: '16px'
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-            <div style={{ backgroundColor: '#ECFDF5', padding: '12px', borderRadius: '12px', color: '#10B981' }}>
+            <div style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', padding: '12px', borderRadius: '12px', color: '#10B981' }}>
               <ShieldCheck size={24} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>Tələbə Tibbi Sığortası</h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748B', lineHeight: '1.4' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Tələbə Tibbi Sığortası</h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: theme.textSecondary, lineHeight: '1.4' }}>
                 İllik icbari və könüllü tibbi sığorta paketinizin aktivliyi.
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F1F5F9' }}>
-            <span style={{ backgroundColor: '#DCFCE7', color: '#15803D', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '700' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: `1px solid ${theme.borderColor}` }}>
+            <span style={{ backgroundColor: isDarkMode ? 'rgba(21, 128, 61, 0.25)' : '#DCFCE7', color: isDarkMode ? '#4ADE80' : '#15803D', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '700' }}>
               Aktiv Paket
             </span>
-            <button style={{ background: 'none', border: 'none', color: '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <button style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
               Detallar <ChevronRight size={14} />
             </button>
           </div>
@@ -125,10 +140,10 @@ export default function HealthPanel() {
 
         {/* Kampus Həkimi */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '20px',
           borderRadius: '16px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
           display: 'flex',
           flexDirection: 'column',
@@ -136,22 +151,22 @@ export default function HealthPanel() {
           gap: '16px'
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-            <div style={{ backgroundColor: '#EFF6FF', padding: '12px', borderRadius: '12px', color: '#3B82F6' }}>
+            <div style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF', padding: '12px', borderRadius: '12px', color: '#3B82F6' }}>
               <Stethoscope size={24} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>Kampus Həkimi</h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748B', lineHeight: '1.4' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Kampus Həkimi</h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: theme.textSecondary, lineHeight: '1.4' }}>
                 Universitet tibb məntəqəsindəki həkimlərin növbə qrafiki.
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F1F5F9' }}>
-            <span style={{ fontSize: '12px', color: '#64748B' }}>Növbəti qəbul: <strong style={{ color: '#0F172A' }}>Bu gün</strong></span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: `1px solid ${theme.borderColor}` }}>
+            <span style={{ fontSize: '12px', color: theme.textSecondary }}>Növbəti qəbul: <strong style={{ color: theme.textPrimary }}>Bu gün</strong></span>
             <button 
               onClick={() => setIsModalOpen(true)}
-              style={{ background: 'none', border: 'none', color: '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+              style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
             >
               Növbə al <ChevronRight size={14} />
             </button>
@@ -160,10 +175,10 @@ export default function HealthPanel() {
 
         {/* Tibbi Analizlər */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '20px',
           borderRadius: '16px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
           display: 'flex',
           flexDirection: 'column',
@@ -171,22 +186,22 @@ export default function HealthPanel() {
           gap: '16px'
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-            <div style={{ backgroundColor: '#FEF2F2', padding: '12px', borderRadius: '12px', color: '#EF4444' }}>
+            <div style={{ backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2', padding: '12px', borderRadius: '12px', color: '#EF4444' }}>
               <FileText size={24} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>Tibbi Analizlər</h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748B', lineHeight: '1.4' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Tibbi Analizlər</h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: theme.textSecondary, lineHeight: '1.4' }}>
                 Laboratoriya testlərinin cavabları və check-up tarixçəsi.
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F1F5F9' }}>
-            <span style={{ backgroundColor: '#FEF3C7', color: '#B45309', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '700' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: `1px solid ${theme.borderColor}` }}>
+            <span style={{ backgroundColor: isDarkMode ? 'rgba(180, 83, 9, 0.25)' : '#FEF3C7', color: isDarkMode ? '#FBBF24' : '#B45309', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '700' }}>
               1 Yeni Cavab
             </span>
-            <button style={{ background: 'none', border: 'none', color: '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <button style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
               Görüntülə <ChevronRight size={14} />
             </button>
           </div>
@@ -199,16 +214,16 @@ export default function HealthPanel() {
         
         {/* Müraciətlərin Statusu */}
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
-          border: '1px solid #E2E8F0',
+          border: `1px solid ${theme.borderColor}`,
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)',
           display: 'flex',
           flexDirection: 'column',
           gap: '16px'
         }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0F172A' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>
             Son Müraciətlərin Statusu
           </h3>
 
@@ -219,8 +234,8 @@ export default function HealthPanel() {
                 style={{
                   padding: '16px',
                   borderRadius: '12px',
-                  backgroundColor: '#F8FAFC',
-                  border: '1px solid #F1F5F9',
+                  backgroundColor: theme.innerBg,
+                  border: `1px solid ${theme.borderColor}`,
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -228,12 +243,14 @@ export default function HealthPanel() {
                 }}
               >
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: '#1E293B' }}>{req.title}</h4>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748B' }}>{req.sub}</p>
+                  <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>{req.title}</h4>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: theme.textSecondary }}>{req.sub}</p>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <span style={{
-                    backgroundColor: req.bgColor,
+                    backgroundColor: isDarkMode 
+                      ? (req.status === 'Təsdiqləndi' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)')
+                      : req.bgColor,
                     color: req.statusColor,
                     padding: '4px 10px',
                     borderRadius: '20px',
@@ -244,7 +261,7 @@ export default function HealthPanel() {
                   }}>
                     {req.status}
                   </span>
-                  <span style={{ display: 'block', fontSize: '11px', color: '#94A3B8' }}>{req.date}</span>
+                  <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary }}>{req.date}</span>
                 </div>
               </div>
             ))}
@@ -253,7 +270,9 @@ export default function HealthPanel() {
 
         {/* 7/24 Təcili Dəstək Banneri */}
         <div style={{
-          background: 'linear-gradient(135deg, #1E3E35 0%, #2E5B4E 100%)',
+          background: isDarkMode 
+            ? 'linear-gradient(135deg, #132A24 0%, #1E3E35 100%)' 
+            : 'linear-gradient(135deg, #1E3E35 0%, #2E5B4E 100%)',
           padding: '24px',
           borderRadius: '20px',
           color: '#FFFFFF',
@@ -261,7 +280,8 @@ export default function HealthPanel() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           gap: '20px',
-          boxShadow: '0 10px 20px -5px rgba(46, 91, 78, 0.3)'
+          boxShadow: '0 10px 20px -5px rgba(0, 0, 0, 0.3)',
+          border: `1px solid ${theme.borderColor}`
         }}>
           <div>
             <span style={{ backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>
@@ -276,9 +296,9 @@ export default function HealthPanel() {
           </div>
 
           <button style={{
-            backgroundColor: '#FFFFFF',
-            color: '#2E5B4E',
-            border: 'none',
+            backgroundColor: isDarkMode ? '#2A2A2A' : '#FFFFFF',
+            color: isDarkMode ? '#FFFFFF' : '#2E5B4E',
+            border: `1px solid ${theme.borderColor}`,
             padding: '12px',
             borderRadius: '12px',
             fontSize: '13.5px',
@@ -304,7 +324,7 @@ export default function HealthPanel() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.5)',
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
           backdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
@@ -313,23 +333,24 @@ export default function HealthPanel() {
           padding: '16px'
         }}>
           <div style={{
-            backgroundColor: '#FFFFFF',
+            backgroundColor: theme.modalBg,
             borderRadius: '20px',
             padding: '24px',
             width: '100%',
             maxWidth: '480px',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)',
+            border: `1px solid ${theme.borderColor}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0F172A' }}>Yeni Müraciət Yarat</h3>
-              <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: theme.textPrimary }}>Yeni Müraciət Yarat</h3>
+              <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textSecondary }}>
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleCreateRequest} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: theme.textSecondary, marginBottom: '6px' }}>
                   Müraciət Növü
                 </label>
                 <select
@@ -339,10 +360,11 @@ export default function HealthPanel() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13.5px',
                     outline: 'none',
-                    backgroundColor: '#F8FAFC'
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary
                   }}
                 >
                   <option value="Həkim Qəbulu">Həkim Qəbulu (Növbə)</option>
@@ -352,7 +374,7 @@ export default function HealthPanel() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: theme.textSecondary, marginBottom: '6px' }}>
                   Əlavə Qeyd və ya Şikayət
                 </label>
                 <textarea
@@ -364,11 +386,12 @@ export default function HealthPanel() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
+                    border: `1px solid ${theme.inputBorder}`,
                     fontSize: '13.5px',
                     outline: 'none',
                     resize: 'none',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     boxSizing: 'border-box'
                   }}
                 />
@@ -382,9 +405,9 @@ export default function HealthPanel() {
                     flex: 1,
                     padding: '12px',
                     borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
-                    backgroundColor: '#FFF',
-                    color: '#475569',
+                    border: `1px solid ${theme.inputBorder}`,
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
                     fontWeight: '600',
                     cursor: 'pointer'
                   }}
