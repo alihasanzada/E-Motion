@@ -4,9 +4,15 @@ from flasgger import Swagger
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import re
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
 CORS(app)
+
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 
 # Swagger Konfiqurasiyası
 swagger_config = {
@@ -36,6 +42,31 @@ template = {
 swagger = Swagger(app, config=swagger_config, template=template)
 
 DATABASE = 'kuds_database.db'
+
+# Mərkəzləşdirilmiş Xəta İdarəediciləri (JSON formatında cavab üçün)
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({
+        "status": 400,
+        "error": "Bad Request",
+        "message": getattr(error, 'description', 'Daxil edilən məlumatlar yanlışdır.')
+    }), 400
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "status": 404,
+        "error": "Not Found",
+        "message": "Axtarılan resurs və ya endpoint tapılmadı."
+    }), 404
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return jsonify({
+        "status": 500,
+        "error": "Internal Server Error",
+        "message": "Serverdə daxili xəta baş verdi. Zəhmət olmasa daha sonra yenidən cəhd edin."
+    }), 500
 
 # CORS idarəetməsi
 @app.after_request
@@ -812,4 +843,6 @@ def toggle_challenge(challenge_id):
         conn.close()
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5050)
+    port = int(os.getenv('PORT', 5050))
+    debug = os.getenv('FLASK_ENV') == 'development'
+    app.run(host='0.0.0.0', port=port, debug=debug)

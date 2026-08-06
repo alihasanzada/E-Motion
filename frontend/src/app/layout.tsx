@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KU-Emotion",
-  description: "KU-Emotion platforması",
+  title: "E-Motion",
+  description: "E-Motion platforması",
 };
 
 export default function RootLayout({
