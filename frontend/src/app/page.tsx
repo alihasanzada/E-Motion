@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import EmptyState from "./components/EmptyState";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
 
 const searchIndex = [
   { keywords: ['idarə', 'panel', 'əsas', 'home', 'dashboard'], tabId: 'dashboard', title: 'İdarə paneli' },
@@ -73,9 +73,9 @@ export default function Dashboard() {
       setIsLoading(true);
       try {
         const [notifRes, msgRes, waterRes] = await Promise.all([
-          fetch('http://127.0.0.1:5050/api/notifications'),
-          fetch('http://127.0.0.1:5050/api/messages'),
-          fetch('http://127.0.0.1:5050/api/water')
+          fetch(`${API_BASE_URL}/api/notifications`),
+          fetch(`${API_BASE_URL}/api/messages`),
+          fetch(`${API_BASE_URL}/api/water`)
         ]);
 
         if (notifRes.ok) {
@@ -131,7 +131,7 @@ export default function Dashboard() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
     try {
-      await fetch(`${API_BASE}/api/notifications/read-all`, {
+      await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -167,7 +167,7 @@ export default function Dashboard() {
 
       // Backend bazasından ən son məlumatı çək və sinxronlaşdır
       try {
-        const res = await fetch(`${API_BASE}/api/water`);
+        const res = await fetch(`${API_BASE_URL}/api/water`);
         if (res.ok) {
           const data = await res.json();
           setWaterCount(data.count);
@@ -187,7 +187,7 @@ export default function Dashboard() {
     localStorage.setItem('waterCount', newCount.toString());
 
     try {
-      await fetch(`${API_BASE}/api/water`, {
+      await fetch(`${API_BASE_URL}/api/water`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ count: newCount })
@@ -255,7 +255,7 @@ export default function Dashboard() {
   const handleMarkAllNotificationsAsRead = async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     try {
-      await fetch(`${API_BASE}/api/notifications/read-all`, { method: 'POST' });
+      await fetch(`${API_BASE_URL}/api/notifications/read-all`, { method: 'POST' });
     } catch (err) {
       console.error('Bildiriş sıfırlama xətası:', err);
     }
@@ -270,7 +270,7 @@ export default function Dashboard() {
       setMessages(prev => prev.map(m => ({ ...m, read: true })));
 
       try {
-        await fetch(`${API_BASE}/api/messages/read-all`, {
+        await fetch(`${API_BASE_URL}/api/messages/read-all`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
