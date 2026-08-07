@@ -33,17 +33,203 @@ swagger_config = {
 template = {
     "swagger": "2.0",
     "info": {
-        "title": "KU-Emotion API",
-        "description": "KU-Emotion Platformasının Backend REST API Sənədləşməsi",
+        "title": "E-motion API",
+        "description": "E-motion Platformasının Backend REST API Sənədləşməsi",
         "version": "1.0.0"
     }
 }
 
 swagger = Swagger(app, config=swagger_config, template=template)
 
-DATABASE = 'kuds_database.db'
+DB_NAME = 'kuds_database.db'
 
-# Mərkəzləşdirilmiş Xəta İdarəediciləri (JSON formatında cavab üçün)
+# --- NOTIFICATIONS ENDPOINTS ---
+@app.route('/api/notifications', methods=['GET'])
+def get_notifications():
+    """
+    Get all notifications
+    ---
+    responses:
+      200:
+        description: List of notifications
+    """
+    conn = get_db_connection()
+    notifications = conn.execute('SELECT * FROM notifications').fetchall()
+    conn.close()
+    
+    result = []
+    for n in notifications:
+        result.append({
+            "id": n["id"],
+            "title": n["title"],
+            "desc": n["desc"],
+            "time": n["time"],
+            "read": bool(n["read"])
+        })
+    return jsonify(result), 200
+
+@app.route('/api/notifications/read-all', methods=['PUT', 'POST', 'OPTIONS'])
+def read_all_notifications():
+    """
+    Mark all notifications as read
+    ---
+    responses:
+      200:
+        description: Success status and updated notifications
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn = get_db_connection()
+    conn.execute('UPDATE notifications SET read = 1')
+    conn.commit()
+    
+    notifications = conn.execute('SELECT * FROM notifications').fetchall()
+    conn.close()
+
+    result = []
+    for n in notifications:
+        result.append({
+            "id": n["id"],
+            "title": n["title"],
+            "desc": n["desc"],
+            "time": n["time"],
+            "read": True
+        })
+    return jsonify({"success": True, "notifications": result}), 200
+
+@app.route('/api/notifications/reset', methods=['GET'])
+def reset_notifications():
+    conn = get_db_connection()
+    
+    # 1. Cədvəl boşdursa test bildirişləri əlavə edirik
+    conn.execute('''
+        INSERT OR IGNORE INTO notifications (id, title, desc, time, read)
+        VALUES 
+        (1, 'Sistem yenilənməsi', 'Platformada yeni funksiyalar aktivləşdirildi.', '10 dəq əvvəl', 0),
+        (2, 'Yeni tapşırıq', 'Aktivlik panelinə yeni məqsəd əlavə olundu.', '1 saat əvvəl', 0)
+    ''')
+    
+    # 2. Bütün bildirişləri oxunmamış (0) edirik
+    conn.execute('UPDATE notifications SET read = 0')
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Bildirişlər bərpa olundu və oxunmamış vəziyyətə gətirildi!"}), 200
+
+# --- MESSAGES ENDPOINTS ---
+@app.route('/api/messages', methods=['GET'])
+def get_messages():
+    conn = get_db_connection()
+    messages = conn.execute('SELECT * FROM messages').fetchall()
+    
+    # Əgər bazada heç bir mesaj yoxdursa, test mesajları əlavə edirik
+    if not messages:
+        conn.execute('''
+            INSERT OR IGNORE INTO messages (id, sender, text, time, read)
+            VALUES 
+            (1, 'Aysel Məmmədova', 'Layihənin backend inteqrasiyası hazırdır?', '12:45', 0),
+            (2, 'Dəstək Komandası', 'Sistemlə bağlı hər hansı sualınız var?', 'Dünən', 0)
+        ''')
+        conn.commit()
+        messages = conn.execute('SELECT * FROM messages').fetchall()
+        
+    conn.close()
+
+    result = []
+    for m in messages:
+        result.append({
+            "id": m["id"],
+            "sender": m["sender"],
+            "text": m["text"],
+            "time": m["time"],
+            "read": bool(m["read"]) if "read" in m.keys() else False
+        })
+    return jsonify(result), 200
+
+@app.route('/api/messages/reset', methods=['GET'])
+def reset_messages():
+    conn = get_db_connection()
+    # Test mesajlarını bazaya əlavə edirik
+    conn.execute('''
+        INSERT OR IGNORE INTO messages (id, sender, text, time, read)
+        VALUES 
+        (1, 'Aysel Məmmədova', 'Layihənin backend inteqrasiyası hazırdır?', '12:45', 0),
+        (2, 'Dəstək Komandası', 'Sistemlə bağlı hər hansı sualınız var?', 'Dünən', 0)
+    ''')
+    conn.execute('UPDATE messages SET read = 0')
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Mesajlar bərpa olundu!"}), 200
+
+# --- MESAJLARI OXUNMUŞ ET ---
+@app.route('/api/messages/read-all', methods=['POST', 'OPTIONS'])
+def mark_all_messages_read():
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn = get_db_connection()
+    conn.execute('UPDATE messages SET read = 1')
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True}), 200
+
+# --- BİLDİRİŞLƏRİ OXUNMUŞ ET ---
+@app.route('/api/notifications/read-all', methods=['POST', 'OPTIONS'])
+def mark_all_notifications_read():
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn = get_db_connection()
+    conn.execute('UPDATE notifications SET read = 1')
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True}), 200
+
+# --- WATER ENDPOINTS ---
+@app.route('/api/water', methods=['GET'])
+def get_water():
+    conn = get_db_connection()
+    water = conn.execute('SELECT * FROM water WHERE id = 1').fetchone()
+    conn.close()
+    
+    count = water["count"] if water else 4
+    return jsonify({"count": count}), 200
+
+@app.route('/api/water', methods=['POST', 'PUT', 'OPTIONS'])
+def update_water():
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    data = request.get_json()
+    if data and 'count' in data:
+        new_count = data['count']
+        
+        conn = get_db_connection()
+        conn.execute('INSERT OR REPLACE INTO water (id, count) VALUES (1, ?)', (new_count,))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"success": True, "count": new_count}), 200
+        
+    return jsonify({"error": "Səhv məlumat"}), 400
+
+@app.route('/api/user/profile', methods=['GET'])
+def get_user_profile():
+    """
+    Get active user profile details
+    ---
+    responses:
+      200:
+        description: User profile information
+    """
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
+    conn.close()
+    if user:
+        return jsonify(dict(user)), 200
+    return jsonify({"error": "İstifadəçi tapılmadı"}), 404
+
+# Mərkəzləşdirilmiş Xəta İdarəediciləri
 @app.errorhandler(400)
 def bad_request(error):
     return jsonify({
@@ -77,7 +263,7 @@ def after_request(response):
     return response
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -176,6 +362,45 @@ def init_db():
         )
     ''')
 
+    # 10. Notifications Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            desc TEXT NOT NULL,
+            time TEXT NOT NULL,
+            read BOOLEAN NOT NULL DEFAULT 0
+        )
+    ''')
+
+    # 11. Messages Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sender TEXT NOT NULL,
+            text TEXT NOT NULL,
+            time TEXT NOT NULL
+        )
+    ''')
+
+    # 12. Water Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS water (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            count INTEGER NOT NULL DEFAULT 4
+        )
+    ''')
+
+    # 13. User Profile Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_profile (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            fullname TEXT NOT NULL,
+            major TEXT NOT NULL,
+            course INTEGER NOT NULL
+        )
+    ''')
+
     conn.commit()
 
     # Seed initial test data
@@ -190,6 +415,13 @@ def init_db():
         cursor.execute("INSERT INTO resources (title, category, link) VALUES ('Flask Sənədləşməsi', 'Dərslik', 'https://flask.palletsprojects.com/')")
         cursor.execute("INSERT INTO challenges (title, description, completed) VALUES ('Su Kampaniyası', 'Hər gün 2 litr su iç', 0)")
         cursor.execute("INSERT INTO challenges (title, description, completed) VALUES ('Aktiv Həyat', 'Həftə sonuna qədər günlük 7000 addım at', 0)")
+        cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Su hədəfi', 'Gündəlik su qəbulunun 50%-nə çatdınız!', '10 dəq əvvəl')")
+        cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Həkim qəbulu', 'Sabah saat 14:00-da həkim müayinəniz var.', '1 saat əvvəl')")
+        cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Tədbir xəbərdarlığı', 'Yoqa seansı 22 May tarixində keçiriləcək.', '3 saat əvvəl')")
+        cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Dr. Əliyev (Tibb məntəqəsi)', 'Qan analizi nəticələriniz hazırdır.', '12:30')")
+        cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Psixoloq Leyla M.', 'Növbəti seans üçün vaxtı təsdiqləyin.', 'Dünən')")
+        cursor.execute("INSERT INTO water (id, count) VALUES (1, 4)")
+        cursor.execute("INSERT INTO user_profile (id, fullname, major, course) VALUES (1, 'Əli Həsənov', 'Kompüter Mühəndisliyi', 1)")
         conn.commit()
 
     conn.close()

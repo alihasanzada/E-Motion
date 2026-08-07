@@ -18,6 +18,10 @@ import ResourcesPanel from './components/ResourcesPanel';
 import EventsPanel from './components/EventsPanel';
 import ProgressPanel from './components/ProgressPanel';
 import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
+import EmptyState from "./components/EmptyState";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
 
 const searchIndex = [
   { keywords: ['idarə', 'panel', 'əsas', 'home', 'dashboard'], tabId: 'dashboard', title: 'İdarə paneli' },
@@ -35,10 +39,10 @@ const searchIndex = [
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  const [waterCount, setWaterCount] = useState(4);
   const [stepsCount, setStepsCount] = useState(7200);
   const [sleepHours, setSleepHours] = useState(7.5);
   const [caloriesCount, setCaloriesCount] = useState(420);
@@ -60,9 +64,45 @@ export default function Dashboard() {
   ]);
 
   const [messages, setMessages] = useState([
-    { id: 1, sender: 'Dr. Əliyev (Tibb məntəqəsi)', text: 'Qan analizi nəticələriniz hazırdır.', time: '12:30' },
-    { id: 2, sender: 'Psixoloq Leyla M.', text: 'Növbəti seans üçün vaxtı təsdiqləyin.', time: 'Dünən' }
+    { id: 1, sender: 'Dr. Əliyev (Tibb məntəqəsi)', text: 'Qan analizi nəticələriniz hazırdır.', time: '12:30', read: false },
+    { id: 2, sender: 'Psixoloq Leyla M.', text: 'Növbəti seans üçün vaxtı təsdiqləyin.', time: 'Dünən', read: false }
   ]);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        const [notifRes, msgRes, waterRes] = await Promise.all([
+          fetch('http://127.0.0.1:5050/api/notifications'),
+          fetch('http://127.0.0.1:5050/api/messages'),
+          fetch('http://127.0.0.1:5050/api/water')
+        ]);
+
+        if (notifRes.ok) {
+          const notifData = await notifRes.json();
+          setNotifications(notifData);
+        }
+
+        if (msgRes.ok) {
+          const msgData = await msgRes.json();
+          setMessages(msgData);
+        }
+
+        if (waterRes.ok) {
+          const waterData = await waterRes.json();
+          if (waterData && waterData.count !== undefined) {
+            setWaterCount(waterData.count);
+          }
+        }
+      } catch (err) {
+        console.warn('Backend serveri ilə əlaqə yaradılmadı:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -87,6 +127,19 @@ export default function Dashboard() {
     };
   }, []);
 
+  const handleMarkAllAsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+    try {
+      await fetch(`${API_BASE}/api/notifications/read-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (err) {
+      console.warn('Backend ilə əlaqə qurulmadı, lakin interfeys yeniləndi:', err);
+    }
+  };
+
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
@@ -100,6 +153,50 @@ export default function Dashboard() {
     course: number;
   } | null>(null);
 
+  // 1. Vahid və doğru State istifadə edirik
+  const [waterCount, setWaterCount] = useState<number>(4);
+
+  // 2. Səhifə yüklənəndə həm LocalStorage-dən, həm də Backend-dən oxuyuruq
+  useEffect(() => {
+    const fetchWater = async () => {
+      // İlkin olaraq LocalStorage-dən sürətli oxu
+      const savedWater = localStorage.getItem('waterCount');
+      if (savedWater !== null) {
+        setWaterCount(Number(savedWater));
+      }
+
+      // Backend bazasından ən son məlumatı çək və sinxronlaşdır
+      try {
+        const res = await fetch(`${API_BASE}/api/water`);
+        if (res.ok) {
+          const data = await res.json();
+          setWaterCount(data.count);
+          localStorage.setItem('waterCount', data.count.toString());
+        }
+      } catch (err) {
+        console.warn('Backend-dən su məlumatı alınmadı:', err);
+      }
+    };
+
+    fetchWater();
+  }, []);
+
+  // 3. Yeganə və təmizlənmiş yeniləmə funksiyası
+  const handleWaterUpdate = async (newCount: number) => {
+    setWaterCount(newCount);
+    localStorage.setItem('waterCount', newCount.toString());
+
+    try {
+      await fetch(`${API_BASE}/api/water`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count: newCount })
+      });
+    } catch (err) {
+      console.warn('Backend yenilənmə xətası:', err);
+    }
+  };
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -107,6 +204,7 @@ export default function Dashboard() {
         setUser(JSON.parse(storedUser));
       } catch (e) {
         console.error("İstifadəçi məlumatları oxunarkən xəta baş verdi:", e);
+        toast.error("Məlumatları yükləyərkən xəta baş verdi.");
       }
     } else {
       setUser({
@@ -153,49 +251,77 @@ export default function Dashboard() {
   };
 
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+  const unreadMessagesCount = messages.filter(m => !m.read).length;
+  const handleMarkAllNotificationsAsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    try {
+      await fetch(`${API_BASE}/api/notifications/read-all`, { method: 'POST' });
+    } catch (err) {
+      console.error('Bildiriş sıfırlama xətası:', err);
+    }
+  };
+
+  const toggleMessagesModal = async () => {
+    const nextState = !isMessagesOpen;
+    setIsMessagesOpen(nextState);
+    setIsNotificationsOpen(false);
+
+    if (nextState && unreadMessagesCount > 0) {
+      setMessages(prev => prev.map(m => ({ ...m, read: true })));
+
+      try {
+        await fetch(`${API_BASE}/api/messages/read-all`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (err) {
+        console.warn('Backend ilə əlaqə qurulmadı, lakin interfeys yeniləndi:', err);
+      }
+    }
+  };
 
   return (
-    <div 
-      style={{ 
-        display: 'flex', 
-        minHeight: '100vh', 
-        width: '100%', 
-        backgroundColor: theme.bgApp, 
+    <div
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        width: '100%',
+        backgroundColor: theme.bgApp,
         color: theme.textPrimary,
         transition: 'background-color 0.3s ease, color 0.3s ease',
         position: 'relative'
       }}
     >
-      
+
       {/* Sidebar */}
-      <aside 
-        className="sidebar transition-colors duration-300" 
-        style={{ 
-          width: '240px', 
-          backgroundColor: theme.bgCard, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          justifyContent: 'space-between', 
-          padding: '16px 14px', 
-          flexShrink: 0, 
+      <aside
+        className="sidebar transition-colors duration-300"
+        style={{
+          width: '240px',
+          backgroundColor: theme.bgCard,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '16px 14px',
+          flexShrink: 0,
           borderRight: `1px solid ${theme.border}`,
-          height: '100vh', 
-          position: 'sticky', 
-          top: 0, 
-          boxSizing: 'border-box' 
+          height: '100vh',
+          position: 'sticky',
+          top: 0,
+          boxSizing: 'border-box'
         }}
       >
         <div>
           <div className="logo-area" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px', padding: '0 4px' }}>
-            <div 
-              className="logo-icon" 
-              style={{ 
-                width: '38px', 
-                height: '38px', 
-                borderRadius: '10px', 
-                backgroundColor: '#44766C', 
-                display: 'flex', 
-                alignItems: 'center', 
+            <div
+              className="logo-icon"
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                backgroundColor: '#44766C',
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
                 color: '#FFFFFF',
                 flexShrink: 0,
@@ -209,7 +335,7 @@ export default function Dashboard() {
               <p style={{ margin: 0, fontSize: '10.5px', color: theme.textSecondary, fontWeight: '500' }}>Qarabağ Universiteti</p>
             </div>
           </div>
-          
+
           <nav className="nav-menu" style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
             {[
               { id: 'dashboard', label: 'İdarə paneli', icon: <LayoutDashboard size={17} /> },
@@ -225,9 +351,9 @@ export default function Dashboard() {
             ].map((item) => {
               const isActive = activeTab === item.id;
               return (
-                <button 
+                <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)} 
+                  onClick={() => setActiveTab(item.id)}
                   className={`nav-item ${isActive ? 'active' : ''}`}
                   style={{
                     display: 'flex',
@@ -269,35 +395,35 @@ export default function Dashboard() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{ background: darkMode ? '#143826' : '#F0FDF4', padding: '11px 12px', borderRadius: '10px', border: darkMode ? '1px solid #1C5438' : '1px solid #DCFCE7', textAlign: 'center' }}>
-            <p style={{ margin: '0 0 6px 0', fontSize: '11px', fontWeight: '600', color: darkMode ? '#A7F3D0' : '#166534', lineHeight: '1.3' }}>Nəfəs al. Rahatla.<br/>Özünə vaxt ayır.</p>
-            <button 
-              onClick={() => setActiveTab('mental')} 
+            <p style={{ margin: '0 0 6px 0', fontSize: '11px', fontWeight: '600', color: darkMode ? '#A7F3D0' : '#166534', lineHeight: '1.3' }}>Nəfəs al. Rahatla.<br />Özünə vaxt ayır.</p>
+            <button
+              onClick={() => setActiveTab('mental')}
               style={{ background: '#44766C', color: '#FFFFFF', border: 'none', padding: '7px 12px', borderRadius: '6px', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer', width: '100%', transition: 'opacity 0.2s' }}
             >
               Analiz et
             </button>
           </div>
 
-          <button 
-            className="nav-item" 
+          <button
+            className="nav-item"
             onClick={() => {
-              localStorage.clear(); 
+              localStorage.clear();
               sessionStorage.clear();
               router.push('/auth');
             }}
             style={{
               border: darkMode ? '1px solid #7F1D1D' : '1px solid #FEE2E2',
               background: darkMode ? '#451A1A' : '#FEF2F2',
-              padding: '9px 12px', 
-              borderRadius: '8px', 
-              width: '100%', 
-              textAlign: 'left', 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '11px', 
+              padding: '9px 12px',
+              borderRadius: '8px',
+              width: '100%',
+              textAlign: 'left',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '11px',
               color: darkMode ? '#FCA5A5' : '#EF4444',
-              fontWeight: '600', 
+              fontWeight: '600',
               fontSize: '13px',
               transition: 'all 0.2s ease'
             }}
@@ -317,48 +443,48 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Content Area */}
-      <div 
-        className="wrapper flex-1 flex flex-col" 
-        style={{ 
+      <div
+        className="wrapper flex-1 flex flex-col"
+        style={{
           backgroundColor: theme.bgApp,
           minHeight: '100vh',
-          overflowY: 'auto', 
-          padding: '0' 
+          overflowY: 'auto',
+          padding: '0'
         }}
       >
-        
+
         {/* Header */}
-        <header style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          padding: '12px 22px', 
+        <header style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 22px',
           backgroundColor: theme.bgCard,
-          borderBottom: `1px solid ${theme.border}`, 
+          borderBottom: `1px solid ${theme.border}`,
           width: '100%',
           position: 'sticky',
           top: 0,
           zIndex: 50
         }}>
           <div style={{ position: 'relative', width: '400px' }}>
-            <div 
-              className="search-container" 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                backgroundColor: theme.bgInner, 
-                border: `1px solid ${theme.border}`, 
-                padding: '8px 14px', 
-                borderRadius: '8px', 
+            <div
+              className="search-container"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: theme.bgInner,
+                border: `1px solid ${theme.border}`,
+                padding: '8px 14px',
+                borderRadius: '8px',
                 width: '100%',
                 boxSizing: 'border-box'
               }}
             >
               <Search size={16} style={{ color: theme.textSecondary, marginRight: '8px', flexShrink: 0 }} />
-              <input 
+              <input
                 type="text"
-                placeholder="Axtarış edin..." 
-                className="search-bar"  
+                placeholder="Axtarış edin..."
+                className="search-bar"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -367,29 +493,29 @@ export default function Dashboard() {
                 onFocus={() => {
                   if (searchQuery.trim().length > 0) setIsSearchOpen(true);
                 }}
-                style={{ 
-                  border: 'none', 
-                  outline: 'none', 
-                  fontSize: '13px', 
-                  width: '100%', 
-                  color: theme.textPrimary, 
-                  background: 'transparent' 
-                }} 
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '13px',
+                  width: '100%',
+                  color: theme.textPrimary,
+                  background: 'transparent'
+                }}
               />
               {searchQuery && (
-                <X 
-                  size={16} 
+                <X
+                  size={16}
                   onClick={() => {
                     setSearchQuery('');
                     setIsSearchOpen(false);
                   }}
-                  style={{ color: theme.textSecondary, cursor: 'pointer', marginLeft: '6px' }} 
+                  style={{ color: theme.textSecondary, cursor: 'pointer', marginLeft: '6px' }}
                 />
               )}
             </div>
 
             {isSearchOpen && searchQuery && (
-              <div 
+              <div
                 style={{
                   position: 'absolute',
                   top: '44px',
@@ -442,9 +568,10 @@ export default function Dashboard() {
                       </div>
                     ))
                 ) : (
-                  <div style={{ padding: '12px', fontSize: '12.5px', color: theme.textSecondary, textAlign: 'center' }}>
-                    Uyğun xidmət və ya panel tapılmadı.
-                  </div>
+                  <EmptyState
+                    title="Axtarış nəticəsi tapılmadı"
+                    description="Daxil etdiyiniz açar sözə uyğun xidmət və ya panel tapılmadı."
+                  />
                 )}
               </div>
             )}
@@ -472,15 +599,16 @@ export default function Dashboard() {
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
+              {/* BİLDİRİŞ VƏ MESAJ KONTEYNERİ */}
               <div ref={notificationRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                <button 
+                <button
                   onClick={() => {
                     setIsNotificationsOpen(!isNotificationsOpen);
                     setIsMessagesOpen(false);
                   }}
                   title="Bildirişlər"
-                  style={{ 
-                    background: 'transparent', 
+                  style={{
+                    background: 'transparent',
                     border: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -496,19 +624,19 @@ export default function Dashboard() {
                 >
                   <Bell size={20} />
                   {unreadNotificationsCount > 0 && (
-                    <span style={{ 
-                      position: 'absolute', 
-                      top: '-3px', 
-                      right: '-4px', 
-                      background: '#EF4444', 
-                      color: '#FFFFFF', 
-                      fontSize: '9px', 
-                      fontWeight: '700', 
-                      borderRadius: '50%', 
-                      width: '15px', 
-                      height: '15px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <span style={{
+                      position: 'absolute',
+                      top: '-3px',
+                      right: '-4px',
+                      background: '#EF4444',
+                      color: '#FFFFFF',
+                      fontSize: '9px',
+                      fontWeight: '700',
+                      borderRadius: '50%',
+                      width: '15px',
+                      height: '15px',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
                       border: `2px solid ${theme.bgCard}`
                     }}>
@@ -517,52 +645,170 @@ export default function Dashboard() {
                   )}
                 </button>
 
+                {/* Bildirişlər Modal Pəncərəsi */}
                 {isNotificationsOpen && (
                   <div style={{
                     position: 'absolute',
-                    top: '38px',
+                    top: '42px',
                     right: '0px',
-                    width: '290px',
+                    width: '320px',
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
-                    borderRadius: '12px',
-                    boxShadow: darkMode ? '0 10px 25px rgba(0, 0, 0, 0.6)' : '0 10px 25px rgba(0, 0, 0, 0.1)',
+                    borderRadius: '16px',
+                    boxShadow: darkMode ? '0 12px 32px rgba(0, 0, 0, 0.5)' : '0 12px 30px rgba(0, 0, 0, 0.08)',
                     zIndex: 100,
                     overflow: 'hidden'
                   }}>
-                    <div style={{ padding: '12px 14px', borderBottom: `1px solid ${theme.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: theme.textPrimary }}>Bildirişlər</h4>
-                      <span 
-                        onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
-                        style={{ fontSize: '10.5px', color: '#44766C', cursor: 'pointer', fontWeight: '600' }}
-                      >
-                        Hamısını oxunmuş et
-                      </span>
+                    {/* Başlıq Hissəsi */}
+                    <div style={{
+                      padding: '12px 16px',
+                      borderBottom: `1px solid ${theme.border}`,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      width: '100%',
+                      boxSizing: 'border-box'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: theme.textPrimary }}>
+                          Bildirişlər
+                        </h4>
+                        {unreadNotificationsCount > 0 && (
+                          <span style={{
+                            fontSize: '10.5px',
+                            fontWeight: '700',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                            color: '#10B981'
+                          }}>
+                            {unreadNotificationsCount} yeni
+                          </span>
+                        )}
+                      </div>
+
+                      {unreadNotificationsCount > 0 && (
+                        <span
+                          onClick={handleMarkAllAsRead}
+                          style={{
+                            fontSize: '11.5px',
+                            color: '#10B981',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            transition: 'opacity 0.2s',
+                            marginLeft: 'auto'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                        >
+                          Hamısını oxunmuş et
+                        </span>
+                      )}
                     </div>
-                    <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                      {notifications.map((n) => (
-                        <div key={n.id} style={{ padding: '10px 14px', borderBottom: `1px solid ${theme.border}`, backgroundColor: n.read ? 'transparent' : (darkMode ? '#1E293B' : '#F0FDF4') }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                            <span style={{ fontSize: '12px', fontWeight: '600', color: theme.textPrimary }}>{n.title}</span>
-                            <span style={{ fontSize: '9.5px', color: theme.textSecondary }}>{n.time}</span>
+
+                    {/* Bildirişlər Siyahısı */}
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                      {notifications && notifications.filter(n => !n.read).length > 0 ? (
+                        notifications.filter(n => !n.read).map((n) => (
+                          <div
+                            key={n.id}
+                            style={{
+                              padding: '12px 16px',
+                              borderBottom: `1px solid ${theme.border}`,
+                              backgroundColor: darkMode ? 'rgba(16, 185, 129, 0.08)' : '#F0FDF4',
+                              display: 'flex',
+                              gap: '10px',
+                              alignItems: 'flex-start',
+                              transition: 'all 0.2s ease',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {/* Oxunmamış İndikator Nöqtəsi */}
+                            <span style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: '#10B981',
+                              marginTop: '5px',
+                              flexShrink: 0
+                            }} />
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                                <span style={{
+                                  fontSize: '13.5px',
+                                  fontWeight: '600',
+                                  color: theme.textPrimary,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
+                                }}>
+                                  {n.title}
+                                </span>
+                                <span style={{
+                                  fontSize: '11px',
+                                  color: theme.textSecondary,
+                                  flexShrink: 0,
+                                  marginLeft: '8px'
+                                }}>
+                                  {n.time}
+                                </span>
+                              </div>
+                              <p style={{
+                                margin: 0,
+                                fontSize: '12px',
+                                color: theme.textSecondary,
+                                lineHeight: '1.45',
+                                wordBreak: 'break-word'
+                              }}>
+                                {n.desc}
+                              </p>
+                            </div>
                           </div>
-                          <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary, lineHeight: '1.3' }}>{n.desc}</p>
+                        ))
+                      ) : (
+                        <div style={{
+                          padding: '24px 16px',
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '12px',
+                            backgroundColor: darkMode ? 'rgba(16, 185, 129, 0.12)' : '#ECFDF5',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#10B981',
+                            marginBottom: '10px'
+                          }}>
+                            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                          </div>
+                          <p style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '600', color: theme.textPrimary }}>
+                            Yeni bildiriş yoxdur
+                          </p>
+                          <p style={{ margin: 0, fontSize: '12px', color: theme.textSecondary, maxWidth: '240px', lineHeight: '1.4' }}>
+                            Bütün bildirişləri oxumusunuz və ya hazırda yeni xəbərdarlıq yoxdur.
+                          </p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div ref={messageRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                <button 
-                  onClick={() => {
-                    setIsMessagesOpen(!isMessagesOpen);
-                    setIsNotificationsOpen(false);
-                  }}
+              {/* MESAJ SEKSİYASI */}
+              <div ref={messageRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: '12px' }}>
+                <button
+                  onClick={toggleMessagesModal}
                   title="Mesajlar"
-                  style={{ 
-                    background: 'transparent', 
+                  style={{
+                    background: 'transparent',
                     border: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -577,26 +823,29 @@ export default function Dashboard() {
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
                   <MessageSquare size={20} />
-                  <span style={{ 
-                    position: 'absolute', 
-                    top: '-3px', 
-                    right: '-4px', 
-                    background: '#3B82F6', 
-                    color: '#FFFFFF', 
-                    fontSize: '9px', 
-                    fontWeight: '700', 
-                    borderRadius: '50%', 
-                    width: '15px', 
-                    height: '15px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    border: `2px solid ${theme.bgCard}`
-                  }}>
-                    {messages.length}
-                  </span>
+                  {unreadMessagesCount > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '-3px',
+                      right: '-4px',
+                      background: '#3B82F6',
+                      color: '#FFFFFF',
+                      fontSize: '9px',
+                      fontWeight: '700',
+                      borderRadius: '50%',
+                      width: '15px',
+                      height: '15px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: `2px solid ${theme.bgCard}`
+                    }}>
+                      {unreadMessagesCount}
+                    </span>
+                  )}
                 </button>
 
+                {/* Mesajlar Modal Pəncərəsi */}
                 {isMessagesOpen && (
                   <div style={{
                     position: 'absolute',
@@ -614,15 +863,22 @@ export default function Dashboard() {
                       <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: theme.textPrimary }}>Mesajlar</h4>
                     </div>
                     <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                      {messages.map((m) => (
-                        <div key={m.id} style={{ padding: '10px 14px', borderBottom: `1px solid ${theme.border}`, cursor: 'pointer' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                            <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>{m.sender}</span>
-                            <span style={{ fontSize: '9.5px', color: theme.textSecondary }}>{m.time}</span>
+                      {messages && messages.length > 0 ? (
+                        messages.map((m) => (
+                          <div key={m.id} style={{ padding: '10px 14px', borderBottom: `1px solid ${theme.border}`, cursor: 'pointer' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                              <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>{m.sender}</span>
+                              <span style={{ fontSize: '9.5px', color: theme.textSecondary }}>{m.time}</span>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary, lineHeight: '1.3' }}>{m.text}</p>
                           </div>
-                          <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary, lineHeight: '1.3' }}>{m.text}</p>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <EmptyState
+                          title="Mesaj yoxdur"
+                          description="Yeni mesajınız mövcud deyil."
+                        />
+                      )}
                     </div>
                   </div>
                 )}
@@ -649,21 +905,21 @@ export default function Dashboard() {
 
         {/* Dashboard Grid View */}
         <main className="main-content flex-1" style={{ padding: '18px 22px', backgroundColor: theme.bgApp }}>
-          
+
           {activeTab === 'dashboard' && (
             <div className="dashboard-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '16px' }}>
-              
+
               <div className="left-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                
+
                 {/* Banner */}
-                <div 
-                  style={{ 
+                <div
+                  style={{
                     backgroundImage: `linear-gradient(90deg, rgba(10, 35, 25, 0.82) 0%, rgba(10, 35, 25, 0.55) 50%, rgba(10, 35, 25, 0.15) 100%), url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1400&q=80')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center 45%',
-                    color: '#FFFFFF', 
-                    padding: '26px 28px', 
-                    borderRadius: '16px', 
+                    color: '#FFFFFF',
+                    padding: '26px 28px',
+                    borderRadius: '16px',
                     border: `1px solid ${theme.border}`,
                     boxShadow: '0 8px 20px rgba(0,0,0,0.08)'
                   }}
@@ -676,8 +932,8 @@ export default function Dashboard() {
                       <p style={{ margin: '8px 0 0 0', fontSize: '13px', opacity: 0.95, lineHeight: '1.45', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
                         Təbiətlə iç-içə, daha sağlam seçimlər və aydın bir zehin. Bu gün hədəfinizə bir addım daha yaxınlaşın.
                       </p>
-                      <button 
-                        onClick={() => setActiveTab('stats')} 
+                      <button
+                        onClick={() => setActiveTab('stats')}
                         style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', color: '#FFFFFF', padding: '8px 16px', borderRadius: '8px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
                       >
                         Göstəriciləri yenilə <ArrowRight size={14} />
@@ -692,24 +948,24 @@ export default function Dashboard() {
 
                 <div className="summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '11px' }}>
                   {[
-                    { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: darkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount/10000)*100) },
+                    { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: darkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
                     { id: 'activity', title: 'Aktivlik', value: '35 dəq', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: darkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: 58 },
-                    { id: 'nutrition', title: 'Kalori', value: `${caloriesCount} kkal`, sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: darkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount/600)*100) },
-                    { id: 'nutrition', title: 'Su qəbulu', value: `${waterCount} stəkan`, sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: darkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount/8)*100) },
-                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: darkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours/8)*100) }
+                    { id: 'nutrition', title: 'Kalori', value: `${caloriesCount} kkal`, sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: darkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
+                    { id: 'nutrition', title: 'Su qəbulu', value: `${waterCount} stəkan`, sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: darkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
+                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: darkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) }
                   ].map((card, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={() => setActiveTab(card.id)} 
-                      className="summary-card" 
-                      style={{ 
-                        backgroundColor: theme.bgCard, 
-                        padding: '14px 15px', 
-                        borderRadius: '13px', 
-                        border: `1px solid ${theme.border}`, 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: '7px', 
+                    <div
+                      key={idx}
+                      onClick={() => setActiveTab(card.id)}
+                      className="summary-card"
+                      style={{
+                        backgroundColor: theme.bgCard,
+                        padding: '14px 15px',
+                        borderRadius: '13px',
+                        border: `1px solid ${theme.border}`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '7px',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease'
                       }}
@@ -728,10 +984,10 @@ export default function Dashboard() {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.4fr', gap: '16px' }}>
-                  
-                  <div 
-                    onClick={() => setActiveTab('challenges')} 
-                    className="card" 
+
+                  <div
+                    onClick={() => setActiveTab('challenges')}
+                    className="card"
                     style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
@@ -751,7 +1007,7 @@ export default function Dashboard() {
                       Susuzlaşmanın qarşısını almaq üçün hər gün hüceyrələri yenilə.
                     </p>
                   </div>
-                  
+
                   <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -760,7 +1016,7 @@ export default function Dashboard() {
                       </div>
                       <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
                     </div>
-                    
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', flex: 1 }}>
                       {[
                         { title: 'Meditasiya', desc: 'Stressi azaldın', time: '10 dəq', bg: darkMode ? '#3B0764' : '#F3E8FF', border: darkMode ? '#581C87' : '#E9D5FF', icon: <Flower2 size={16} />, color: darkMode ? '#E9D5FF' : '#6B21A8' },
@@ -768,9 +1024,9 @@ export default function Dashboard() {
                         { title: 'Yaddaş dəftəri', desc: 'Düşüncələrini yaz', time: '10 dəq', bg: darkMode ? '#7C2D12' : '#FFF7ED', border: darkMode ? '#9A3412' : '#FFEDD5', icon: <BookOpen size={16} />, color: darkMode ? '#FFEDD5' : '#9A3412' },
                         { title: 'Özünüqiymətləndirmə', desc: 'Öz rifahını yoxla', time: '5 dəq', bg: darkMode ? '#064E3B' : '#E6F4EA', border: darkMode ? '#047857' : '#D1FAE5', icon: <Smile size={16} />, color: darkMode ? '#A7F3D0' : '#065F46' }
                       ].map((box, i) => (
-                        <div 
-                          key={i} 
-                          onClick={() => setActiveTab('mental')} 
+                        <div
+                          key={i}
+                          onClick={() => setActiveTab('mental')}
                           style={{ padding: '10px 4px', background: box.bg, borderRadius: '11px', border: `1px solid ${box.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-around', textAlign: 'center', height: '100%', cursor: 'pointer', boxSizing: 'border-box' }}
                         >
                           <div style={{ color: box.color, background: darkMode ? 'rgba(0,0,0,0.4)' : '#FFFFFF', padding: '5.5px', borderRadius: '50%', display: 'flex' }}>{box.icon}</div>
@@ -799,8 +1055,8 @@ export default function Dashboard() {
                       { date: '25 MAY', title: 'Sağlamlıq həftəsi', time: '09:00 - 17:00', location: 'Təbib meydançası' },
                       { date: '28 MAY', title: 'Stress idarəetməsi', time: '14:00 - 15:30', location: 'Tələbə mərkəzi' }
                     ].map((event, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         onClick={() => setActiveTab('events')}
                         style={{ backgroundColor: theme.bgInner, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}
                       >
@@ -821,10 +1077,10 @@ export default function Dashboard() {
               </div>
 
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                
-                <div 
-                  onClick={() => setActiveTab('progress')} 
-                  className="card" 
+
+                <div
+                  onClick={() => setActiveTab('progress')}
+                  className="card"
                   style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, cursor: 'pointer' }}
                 >
                   <h3 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Ardıcıl sağlamlıq günləri</h3>
@@ -844,8 +1100,8 @@ export default function Dashboard() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '9px' }}>
-                    <div 
-                      onClick={() => setActiveTab('services')} 
+                    <div
+                      onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
                       <div style={{ backgroundColor: darkMode ? '#064E3B' : '#ECFDF5', color: '#10B981', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
@@ -854,8 +1110,8 @@ export default function Dashboard() {
                       <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>Həkim qəbulu</span>
                     </div>
 
-                    <div 
-                      onClick={() => setActiveTab('services')} 
+                    <div
+                      onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
                       <div style={{ backgroundColor: darkMode ? '#3B0764' : '#F3E8FF', color: '#9333EA', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
@@ -864,8 +1120,8 @@ export default function Dashboard() {
                       <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>Psixoloq görüşü</span>
                     </div>
 
-                    <div 
-                      onClick={() => setActiveTab('services')} 
+                    <div
+                      onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
                       <div style={{ backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF', color: '#3B82F6', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
@@ -874,8 +1130,8 @@ export default function Dashboard() {
                       <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>Tibbi məlumatlar</span>
                     </div>
 
-                    <div 
-                      onClick={() => setActiveTab('services')} 
+                    <div
+                      onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
                       <div style={{ backgroundColor: darkMode ? '#451A1A' : '#FEF2F2', color: '#EF4444', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
@@ -896,7 +1152,7 @@ export default function Dashboard() {
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                       <div
                         key={i}
-                        onClick={() => setWaterCount(i <= waterCount ? i - 1 : i)}
+                        onClick={() => handleWaterUpdate(i <= waterCount ? i - 1 : i)}
                         style={{
                           flex: 1,
                           height: '28px',
@@ -930,7 +1186,7 @@ export default function Dashboard() {
                   <p style={{ margin: '0 0 12px 0', fontSize: '11px', opacity: 0.85, lineHeight: '1.4' }}>
                     Bədəninə qulluq et, çünki orada yaşamaq məcburiyyətindəsən.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('resources')}
                     style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', color: '#FFFFFF', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', width: '100%', textAlign: 'center' }}
                   >
