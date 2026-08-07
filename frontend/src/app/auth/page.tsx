@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
   const router = useRouter();
-  
+
   // Ekranlar arası keçid state-i: 'login' və ya 'signup'
   const [view, setView] = useState<'login' | 'signup'>('signup');
   const [loading, setLoading] = useState<boolean>(false);
@@ -15,82 +15,81 @@ export default function AuthPage() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const API_BASE_URL = 'http://127.0.0.1:5050/api';
-
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
   // Qeydiyyat (Register) Funksiyası
-const handleRegister = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: username, email, password }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: username, email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      alert(`Uğurlu: ${data.message}\nİndi daxil ola bilərsiniz.`);
-      // Qeydiyyatdan sonra form sahələrini sıfırlayırıq, amma emaili saxlayırıq ki logində rahat yazasan
-      setPassword('');
-      setView('login'); // Avtomatik giriş ekranına keçid
-    } else {
-      alert(`Xəta: ${data.message || 'Qeydiyyat baş tutmadı.'}`);
+      if (response.ok) {
+        alert(`Uğurlu: ${data.message}\nİndi daxil ola bilərsiniz.`);
+        // Qeydiyyatdan sonra form sahələrini sıfırlayırıq, amma emaili saxlayırıq ki logində rahat yazasan
+        setPassword('');
+        setView('login'); // Avtomatik giriş ekranına keçid
+      } else {
+        alert(`Xəta: ${data.message || 'Qeydiyyat baş tutmadı.'}`);
+      }
+    } catch (error) {
+      console.error('Sorğu xətası:', error);
+      alert('Backend serverinə qoşulmaq mümkün olmadı.');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Sorğu xətası:', error);
-    alert('Backend serverinə qoşulmaq mümkün olmadı.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Giriş (Login) Funksiyası
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('userToken', data.token);
-        
-        // Backend-dən gələn istifadəçi adını götürürük
-        const fullNameFromBackend = data.user?.name || data.name || "Əli Həsənov";
-        
-        // Dashboard-dakı state strukturuna tam uyğun obyekt yaradırıq
-        const userData = {
-          fullname: fullNameFromBackend,
-          major: "Kompüter Mühəndisliyi",
-          course: 1,
-          username: fullNameFromBackend // Bura qeydiyyatdakı ad oturacaq
-        };
+      if (response.ok) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userToken', data.token);
 
-        // Dashboard-un oxuduğu eyni açarla ('user') yaddaşa yazırıq
-        localStorage.setItem('user', JSON.stringify(userData));
+          // Backend-dən gələn istifadəçi adını götürürük
+          const fullNameFromBackend = data.user?.name || data.name || "Əli Həsənov";
+
+          // Dashboard-dakı state strukturuna tam uyğun obyekt yaradırıq
+          const userData = {
+            fullname: fullNameFromBackend,
+            major: "Kompüter Mühəndisliyi",
+            course: 1,
+            username: fullNameFromBackend // Bura qeydiyyatdakı ad oturacaq
+          };
+
+          // Dashboard-un oxuduğu eyni açarla ('user') yaddaşa yazırıq
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+
+        router.push('/');
+      } else {
+        alert(`Xəta: ${data.message || 'Giriş uğursuz oldu.'}`);
       }
-      
-      router.push('/');
-    } else {
-      alert(`Xəta: ${data.message || 'Giriş uğursuz oldu.'}`);
+    } catch (error) {
+      console.error('Sorğu xətası:', error);
+      alert('Backend serverinə qoşulmaq mümkün olmadı.');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Sorğu xətası:', error);
-    alert('Backend serverinə qoşulmaq mümkün olmadı.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <main style={styles.body}>
@@ -106,7 +105,7 @@ const handleLogin = async (e: React.FormEvent) => {
       />
 
       <div style={styles.authContainer}>
-        
+
         {/* QEYDİYYAT FORMU (SIGNUP) */}
         {view === 'signup' && (
           <div style={styles.formBox}>
