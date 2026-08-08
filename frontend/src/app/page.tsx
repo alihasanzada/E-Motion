@@ -987,12 +987,12 @@ export default function Dashboard() {
                       </p>
                       <button
                         onClick={() => setActiveTab('stats')}
-                        style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)' }}
+                        style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)', padding: '8px 16px', borderRadius: '10px', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600' }}
                       >
                         Göstəriciləri yenilə <ArrowRight size={14} />
                       </button>
                     </div>
-                    <div className="banner-quote" style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: `1px solid ${theme.border}` }}>
+                    <div className="banner-quote" style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: `1px solid ${theme.border}`, padding: '10px 14px', borderRadius: '12px', maxWidth: '220px' }}>
                       <b style={{ color: '#A7F3D0', display: 'block', marginBottom: '4px' }}>Günün mesajı:</b>
                       <p style={{ margin: 0, fontStyle: 'italic', opacity: 0.95, fontSize: '11.5px', lineHeight: '1.4' }}>"Kiçik addımlar böyük dəyişikliklər yaradır."</p>
                     </div>

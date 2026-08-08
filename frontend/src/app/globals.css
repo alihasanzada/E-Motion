@@ -387,36 +387,30 @@ svg circle {
         max-width: 100vw !important;
         min-width: 0 !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding-top: 4px !important;
+        padding-bottom: 12px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
         overflow-x: hidden !important;
     }
 
-    .header {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        width: 100% !important;
-        padding: 8px 12px !important;
-        box-sizing: border-box !important;
+    header,
+    .header,
+    div[class*="header"] {
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+        margin-top: 0 !important;
+        margin-bottom: 8px !important;
+        min-height: auto !important;
     }
 
-    .search-container {
+    .search-container,
+    div[class*="search"] {
         flex: 1 !important;
         width: 100% !important;
-        margin: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         height: 38px !important;
-    }
-
-    .search-container input,
-    input[placeholder*="Axtarış"] {
-        height: 100% !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-    }
-
-    .main-content {
-        padding: 12px !important;
-        box-sizing: border-box !important;
     }
 
     .dashboard-layout,
@@ -443,11 +437,6 @@ svg circle {
         overflow-x: hidden !important;
     }
 
-    .welcome-banner {
-        padding: 14px !important;
-        border-radius: 12px !important;
-    }
-
     .banner-content {
         display: flex !important;
         flex-direction: column !important;
@@ -456,14 +445,16 @@ svg circle {
         width: 100% !important;
     }
 
-    .banner-text,
-    .banner-quote {
+    .banner-text {
         max-width: 100% !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }
 
     .banner-quote {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
         text-align: left !important;
     }
 
