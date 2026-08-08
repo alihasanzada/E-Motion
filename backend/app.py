@@ -102,7 +102,6 @@ def read_all_notifications():
 def reset_notifications():
     conn = get_db_connection()
     
-    # 1. Cədvəl boşdursa test bildirişləri əlavə edirik
     conn.execute('''
         INSERT OR IGNORE INTO notifications (id, title, desc, time, read)
         VALUES 
@@ -110,7 +109,6 @@ def reset_notifications():
         (2, 'Yeni tapşırıq', 'Aktivlik panelinə yeni məqsəd əlavə olundu.', '1 saat əvvəl', 0)
     ''')
     
-    # 2. Bütün bildirişləri oxunmamış (0) edirik
     conn.execute('UPDATE notifications SET read = 0')
     conn.commit()
     conn.close()
@@ -122,7 +120,6 @@ def get_messages():
     conn = get_db_connection()
     messages = conn.execute('SELECT * FROM messages').fetchall()
     
-    # Əgər bazada heç bir mesaj yoxdursa, test mesajları əlavə edirik
     if not messages:
         conn.execute('''
             INSERT OR IGNORE INTO messages (id, sender, text, time, read)
@@ -149,7 +146,6 @@ def get_messages():
 @app.route('/api/messages/reset', methods=['GET'])
 def reset_messages():
     conn = get_db_connection()
-    # Test mesajlarını bazaya əlavə edirik
     conn.execute('''
         INSERT OR IGNORE INTO messages (id, sender, text, time, read)
         VALUES 
@@ -667,7 +663,6 @@ def delete_student(id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Əvvəlcə yoxlayırıq ki, belə bir tələbə var
     cursor.execute("SELECT id FROM students WHERE id = ?", (id,))
     if cursor.fetchone() is None:
         conn.close()
@@ -859,57 +854,58 @@ def add_resource():
 def get_activity():
     """
     Son fiziki aktivlik məlumatını gətirir
-    ---
-    tags:
-      - Health & Activity
-    responses:
-      200:
-        description: Aktivlik məlumatı uğurla gətirildi
     """
     conn = get_db_connection()
     activity = conn.execute('SELECT * FROM physical_activity ORDER BY id DESC LIMIT 1').fetchone()
     conn.close()
+    
     if activity:
-        return jsonify(dict(activity)), 200
-    return jsonify({'steps': 0, 'water_ml': 0}), 200
+        act_dict = dict(activity)
+        steps = act_dict.get('steps', 0)
+        water = act_dict.get('water_ml', act_dict.get('water', 0))
+        calories = int(steps * 0.04)
+        
+        return jsonify({
+            'steps': steps,
+            'water': water,
+            'water_ml': water,
+            'calories': calories
+        }), 200
+
+    return jsonify({'steps': 0, 'water': 0, 'water_ml': 0, 'calories': 0}), 200
+
 
 @app.route('/api/activity', methods=['POST'])
 def update_activity():
     """
     Yeni fiziki aktivlik məlumatı əlavə edir
-    ---
-    tags:
-      - Health & Activity
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            steps:
-              type: integer
-              example: 5000
-            water_ml:
-              type: integer
-              example: 500
-    responses:
-      201:
-        description: Aktivlik uğurla yeniləndi
     """
     data = request.get_json() or {}
+    
     steps = data.get('steps')
-    water_ml = data.get('water_ml')
-
-    if steps is None or water_ml is None:
-        return jsonify({'message': 'Məlumatlar tam ötürülməyib!'}), 400
+    water_ml = data.get('water_ml') if data.get('water_ml') is not None else data.get('water')
 
     conn = get_db_connection()
+    
+    if steps is None or water_ml is None:
+        last_act = conn.execute('SELECT * FROM physical_activity ORDER BY id DESC LIMIT 1').fetchone()
+        if steps is None:
+            steps = last_act['steps'] if last_act else 0
+        if water_ml is None:
+            water_ml = last_act['water_ml'] if last_act else 0
+
     cursor = conn.cursor()
     try:
         cursor.execute('INSERT INTO physical_activity (steps, water_ml) VALUES (?, ?)', (steps, water_ml))
         conn.commit()
-        return jsonify({'message': 'Aktivlik uğurla yeniləndi!'}), 201
+        
+        return jsonify({
+            'message': 'Aktivlik uğurla yeniləndi!',
+            'steps': steps,
+            'water': water_ml,
+            'water_ml': water_ml,
+            'calories': int(steps * 0.04)
+        }), 201
     except Exception as e:
         return jsonify({'message': f'Server xətası: {str(e)}'}), 500
     finally:

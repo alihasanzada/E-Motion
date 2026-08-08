@@ -69,6 +69,9 @@ export default function Dashboard() {
   ]);
 
   useEffect(() => {
+    const localSteps = localStorage.getItem('user_steps');
+    if (localSteps) setStepsCount(Number(localSteps));
+
     const loadDashboardData = async () => {
       setIsLoading(true);
       try {
@@ -99,7 +102,13 @@ export default function Dashboard() {
         if (activityRes.ok) {
           const activityData = await activityRes.json();
           if (activityData) {
-            setStepsCount(activityData.steps || 0);
+            if (activityData.steps && activityData.steps > 0) {
+              setStepsCount(activityData.steps);
+              localStorage.setItem('user_steps', activityData.steps.toString());
+            } else if (localSteps) {
+              setStepsCount(Number(localSteps));
+            }
+
             setCaloriesCount(activityData.calories || 0);
           }
         }
@@ -162,19 +171,15 @@ export default function Dashboard() {
     course: number;
   } | null>(null);
 
-  // 1. Vahid və doğru State istifadə edirik
   const [waterCount, setWaterCount] = useState<number>(4);
 
-  // 2. Səhifə yüklənəndə həm LocalStorage-dən, həm də Backend-dən oxuyuruq
   useEffect(() => {
     const fetchWater = async () => {
-      // İlkin olaraq LocalStorage-dən sürətli oxu
       const savedWater = localStorage.getItem('waterCount');
       if (savedWater !== null) {
         setWaterCount(Number(savedWater));
       }
 
-      // Backend bazasından ən son məlumatı çək və sinxronlaşdır
       try {
         const res = await fetch(`${API_BASE_URL}/api/water`);
         if (res.ok) {
@@ -190,7 +195,6 @@ export default function Dashboard() {
     fetchWater();
   }, []);
 
-  // 3. Yeganə və təmizlənmiş yeniləmə funksiyası
   const handleWaterUpdate = async (newCount: number) => {
     setWaterCount(newCount);
     localStorage.setItem('waterCount', newCount.toString());

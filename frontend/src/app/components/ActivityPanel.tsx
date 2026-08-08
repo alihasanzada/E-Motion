@@ -17,25 +17,42 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const stepGoal = 10000;
   const waterGoal = 3000;
 
-  // 1. Backend-dən məlumat çəkmək üçün useEffect
   useEffect(() => {
+    const savedSteps = localStorage.getItem('user_steps');
+    const savedWater = localStorage.getItem('user_water');
+
+    if (savedSteps !== null) setSteps(Number(savedSteps));
+    if (savedWater !== null) setWater(Number(savedWater));
+
     const fetchActivity = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/activity`);
         if (res.ok) {
           const data = await res.json();
-          setSteps(data.steps ?? 0);
-          setWater(data.water ?? 0);
+          if (data.steps !== undefined && data.steps !== null) {
+            setSteps(data.steps);
+            localStorage.setItem('user_steps', data.steps.toString());
+          }
+          if (data.water !== undefined && data.water !== null) {
+            setWater(data.water);
+            localStorage.setItem('user_water', data.water.toString());
+          }
         }
       } catch (error) {
         console.error("Aktivlik məlumatı çəkilə bilmədi:", error);
       }
     };
+
     fetchActivity();
   }, []);
 
-  // 2. Backend-ə məlumat göndərmək üçün funksiya
-  const updateBackendActivity = async (newSteps: number, newWater: number) => {
+  const updateActivity = async (newSteps: number, newWater: number) => {
+    setSteps(newSteps);
+    setWater(newWater);
+
+    localStorage.setItem('user_steps', newSteps.toString());
+    localStorage.setItem('user_water', newWater.toString());
+
     try {
       await fetch(`${API_BASE_URL}/api/activity`, {
         method: 'POST',
@@ -47,7 +64,6 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     }
   };
 
-  // 3. Form submit funksiyası
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     const addedSteps = inputSteps ? Number(inputSteps) : 0;
@@ -56,29 +72,22 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     const newSteps = steps + addedSteps;
     const newWater = water + addedWater;
 
-    setSteps(newSteps);
-    setWater(newWater);
     setInputSteps('');
     setInputWater('');
 
-    await updateBackendActivity(newSteps, newWater);
+    await updateActivity(newSteps, newWater);
   };
 
-  // 4. Sürətli əlavə düymələri üçün funksiya
   const handleQuickAdd = async (addSteps: number, addWater: number) => {
     const newSteps = steps + addSteps;
     const newWater = water + addWater;
 
-    setSteps(newSteps);
-    setWater(newWater);
-
-    await updateBackendActivity(newSteps, newWater);
+    await updateActivity(newSteps, newWater);
   };
 
   const stepPercentage = Math.min(Math.round((steps / stepGoal) * 100), 100);
   const waterPercentage = Math.min(Math.round((water / waterGoal) * 100), 100);
 
-  // Dynamic Dark Mode Colors
   const theme = {
     cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
     border: isDarkMode ? '#2D3748' : '#E2E8F0',
@@ -251,7 +260,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
       </div>
 
-      {/* 3. Manuel Dəyər Daxiletmə Formu */}
+      {/* 3. Manual Dəyər Daxiletmə Formu */}
       <div style={{
         backgroundColor: theme.cardBg,
         padding: '28px',
@@ -264,7 +273,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
             <RefreshCw size={18} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Manuel Dəyər Daxil Et</h3>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Manual Dəyər Daxil Et</h3>
             <p style={{ margin: 0, fontSize: '12.5px', color: theme.textSecondary }}>İstədiyiniz dəqiq miqdarı əlavə edin.</p>
           </div>
         </div>
