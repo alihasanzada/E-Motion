@@ -15,7 +15,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const [inputWater, setInputWater] = useState('');
 
   const stepGoal = 10000;
-  const waterGoal = 3000;
+  const waterGoal = 2000;
 
   useEffect(() => {
     const savedSteps = localStorage.getItem('user_steps');
@@ -236,11 +236,11 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               </div>
               <div>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>İçilən Su</h4>
-                <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hədəf: {waterGoal} ml</span>
+                <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hədəf: 2000 ml</span>
               </div>
             </div>
             <span style={{ fontSize: '13px', fontWeight: '700', color: '#38BDF8', backgroundColor: 'rgba(56, 189, 248, 0.15)', padding: '6px 12px', borderRadius: '20px' }}>
-              {waterPercentage}%
+              {Math.min(Math.round((water / 2000) * 100), 100)}%
             </span>
           </div>
 
