@@ -43,7 +43,6 @@ body {
     line-height: 150%;
 }
 
-/* SOL MENYÜ (SIDEBAR) */
 .sidebar {
     height: 100vh;
     display: flex;
@@ -142,7 +141,6 @@ body {
     color: #2d6a4f;
 }
 
-/* ƏSAS WRAPPER VƏ HEADER */
 .wrapper {
     flex-grow: 1;
     display: flex;
@@ -227,7 +225,6 @@ body {
     color: var(--text-secondary);
 }
 
-/* MAIN CONTENT LAYOUT */
 .main-content {
     padding: 24px;
     width: 100%;
@@ -316,7 +313,6 @@ body {
     align-items: center;
 }
 
-/* 5-li indikator kartları şəbəkəsi */
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -353,14 +349,13 @@ body {
 }
 
 svg circle {
-    fill: none !important;
+    fill: none;
 }
 
-/* ========================================================= */
-/* RESPONSIVE (PLANŞET VƏ MOBİL UYĞUNLAŞDIRMASI)             */
-/* ========================================================= */
+.mobile-menu-btn {
+    display: none;
+}
 
-/* Planşet Rejimi (992px və kiçik ekranlar) */
 @media (max-width: 992px) {
     .dashboard-layout {
         grid-template-columns: 1fr;
@@ -376,52 +371,46 @@ svg circle {
     }
 }
 
-/* Mobil Rejim (768px və kiçik ekranlar) */
 @media (max-width: 768px) {
 
     html,
     body {
         height: auto;
         min-height: 100vh;
+        overflow-x: hidden;
         overflow-y: auto;
-        flex-direction: column;
     }
 
     .sidebar {
-        width: 100% !important;
-        height: auto !important;
-        position: relative !important;
-        padding: 12px;
-        border-bottom: 1px solid var(--border-color);
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 260px;
+        height: 100vh;
+        background-color: var(--surface);
+        z-index: 9999;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+        transition: left 0.3s ease-in-out;
     }
 
-    .nav-menu {
-        flex-direction: row;
-        overflow-x: auto;
-        padding-bottom: 6px;
-        white-space: nowrap;
-    }
-
-    .nav-item {
-        flex-shrink: 0;
+    .sidebar.mobile-open {
+        left: 0;
     }
 
     .wrapper {
+        width: 100%;
         height: auto;
-        overflow: visible;
     }
 
     .header {
-        padding: 8px 12px;
-        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 10px 16px;
+        background-color: var(--surface);
     }
 
     .search-container {
-        margin-left: 0;
-        max-width: 180px;
-    }
-
-    .profile-info {
         display: none;
     }
 
@@ -431,8 +420,16 @@ svg circle {
         overflow: visible;
     }
 
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+
     .left-content {
         grid-template-columns: 1fr;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .welcome-banner,
@@ -440,17 +437,8 @@ svg circle {
         grid-column: span 1;
     }
 
-    .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .mobile-stack {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-    }
-
-    .mobile-btn-full {
-        width: 100% !important;
+    .mobile-menu-btn {
+        display: block;
     }
 }
 

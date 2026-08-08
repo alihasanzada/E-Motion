@@ -37,6 +37,7 @@ const searchIndex = [
 ];
 
 export default function Dashboard() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -315,7 +316,7 @@ export default function Dashboard() {
 
       {/* Sidebar */}
       <aside
-        className="sidebar transition-colors duration-300"
+        className={`sidebar transition-colors duration-300 ${isMobileMenuOpen ? 'mobile-open' : ''}`}
         style={{
           width: '240px',
           backgroundColor: theme.bgCard,
@@ -373,7 +374,10 @@ export default function Dashboard() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsMobileMenuOpen(false);
+                  }}
                   className={`nav-item ${isActive ? 'active' : ''}`}
                   style={{
                     display: 'flex',
@@ -462,6 +466,22 @@ export default function Dashboard() {
         </div>
       </aside>
 
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          onClick={() => setIsMobileMenuOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            zIndex: 9998
+          }}
+        />
+      )}
+
       {/* Main Content Area */}
       <div
         className="wrapper flex-1 flex flex-col"
@@ -486,115 +506,138 @@ export default function Dashboard() {
           top: 0,
           zIndex: 50
         }}>
-          <div style={{ position: 'relative', width: '400px' }}>
-            <div
-              className="search-container"
+          {/* Header Content */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+
+            {/* Mobil Hamburger Düyməsi */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="mobile-menu-btn"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: theme.bgInner,
-                border: `1px solid ${theme.border}`,
-                padding: '8px 14px',
-                borderRadius: '8px',
-                width: '100%',
-                boxSizing: 'border-box'
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: theme.textPrimary,
+                padding: '4px 8px'
               }}
             >
-              <Search size={16} style={{ color: theme.textSecondary, marginRight: '8px', flexShrink: 0 }} />
-              <input
-                type="text"
-                placeholder="Axtarış edin..."
-                className="search-bar"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setIsSearchOpen(e.target.value.trim().length > 0);
-                }}
-                onFocus={() => {
-                  if (searchQuery.trim().length > 0) setIsSearchOpen(true);
-                }}
-                style={{
-                  border: 'none',
-                  outline: 'none',
-                  fontSize: '13px',
-                  width: '100%',
-                  color: theme.textPrimary,
-                  background: 'transparent'
-                }}
-              />
-              {searchQuery && (
-                <X
-                  size={16}
-                  onClick={() => {
-                    setSearchQuery('');
-                    setIsSearchOpen(false);
-                  }}
-                  style={{ color: theme.textSecondary, cursor: 'pointer', marginLeft: '6px' }}
-                />
-              )}
-            </div>
+              {isMobileMenuOpen ? '✕' : '☰'}
+            </button>
 
-            {isSearchOpen && searchQuery && (
+            {/* Axtarış Paneli */}
+            <div style={{ position: 'relative', width: '400px' }}>
+
+              {/* Axtarış Çərçivəsi */}
               <div
+                className="search-container"
                 style={{
-                  position: 'absolute',
-                  top: '44px',
-                  left: 0,
-                  right: 0,
-                  backgroundColor: theme.bgCard,
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: theme.bgInner,
                   border: `1px solid ${theme.border}`,
-                  borderRadius: '10px',
-                  boxShadow: darkMode ? '0 10px 25px rgba(0, 0, 0, 0.5)' : '0 10px 25px rgba(0, 0, 0, 0.08)',
-                  zIndex: 100,
-                  maxHeight: '250px',
-                  overflowY: 'auto',
-                  padding: '4px 0'
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  width: '100%',
+                  boxSizing: 'border-box'
                 }}
               >
-                {searchIndex.filter(item =>
-                  item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.keywords.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()))
-                ).length > 0 ? (
-                  searchIndex
-                    .filter(item =>
-                      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      item.keywords.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()))
-                    )
-                    .map((res, index) => (
-                      <div
-                        key={index}
-                        onClick={() => {
-                          setActiveTab(res.tabId);
-                          setSearchQuery('');
-                          setIsSearchOpen(false);
-                        }}
-                        style={{
-                          padding: '9px 15px',
-                          fontSize: '12.5px',
-                          fontWeight: '600',
-                          color: theme.textPrimary,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          borderBottom: `1px solid ${theme.border}`,
-                          transition: 'background-color 0.15s ease'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.bgInner}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <span>{res.title}</span>
-                        <span style={{ fontSize: '11px', color: '#44766C', fontWeight: '600' }}>Keçid et →</span>
-                      </div>
-                    ))
-                ) : (
-                  <EmptyState
-                    title="Axtarış nəticəsi tapılmadı"
-                    description="Daxil etdiyiniz açar sözə uyğun xidmət və ya panel tapılmadı."
+                <Search size={16} style={{ color: theme.textSecondary, marginRight: '8px', flexShrink: 0 }} />
+                <input
+                  type="text"
+                  placeholder="Axtarış edin..."
+                  className="search-bar"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsSearchOpen(e.target.value.trim().length > 0);
+                  }}
+                  onFocus={() => {
+                    if (searchQuery.trim().length > 0) setIsSearchOpen(true);
+                  }}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '13px',
+                    width: '100%',
+                    color: theme.textPrimary,
+                    background: 'transparent'
+                  }}
+                />
+                {searchQuery && (
+                  <X
+                    size={16}
+                    onClick={() => {
+                      setSearchQuery('');
+                      setIsSearchOpen(false);
+                    }}
+                    style={{ color: theme.textSecondary, cursor: 'pointer', marginLeft: '6px' }}
                   />
                 )}
               </div>
-            )}
+
+              {isSearchOpen && searchQuery && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '44px',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: theme.bgCard,
+                    border: `1px solid ${theme.border}`,
+                    borderRadius: '10px',
+                    boxShadow: darkMode ? '0 10px 25px rgba(0, 0, 0, 0.5)' : '0 10px 25px rgba(0, 0, 0, 0.08)',
+                    zIndex: 100,
+                    maxHeight: '250px',
+                    overflowY: 'auto',
+                    padding: '4px 0'
+                  }}
+                >
+                  {searchIndex.filter(item =>
+                    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    item.keywords.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()))
+                  ).length > 0 ? (
+                    searchIndex
+                      .filter(item =>
+                        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        item.keywords.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()))
+                      )
+                      .map((res, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            setActiveTab(res.tabId);
+                            setSearchQuery('');
+                            setIsSearchOpen(false);
+                          }}
+                          style={{
+                            padding: '9px 15px',
+                            fontSize: '12.5px',
+                            fontWeight: '600',
+                            color: theme.textPrimary,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderBottom: `1px solid ${theme.border}`,
+                            transition: 'background-color 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.bgInner}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <span>{res.title}</span>
+                          <span style={{ fontSize: '11px', color: '#44766C', fontWeight: '600' }}>Keçid et →</span>
+                        </div>
+                      ))
+                  ) : (
+                    <EmptyState
+                      title="Axtarış nəticəsi tapılmadı"
+                      description="Daxil etdiyiniz açar sözə uyğun xidmət və ya panel tapılmadı."
+                    />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -1260,98 +1303,100 @@ export default function Dashboard() {
         <Plus size={24} />
       </button>
 
-      {isQuickAddOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(3px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 200
-        }}>
+      {
+        isQuickAddOpen && (
           <div style={{
-            backgroundColor: theme.bgCard,
-            border: `1px solid ${theme.border}`,
-            borderRadius: '16px',
-            padding: '20px 24px',
-            width: '360px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 200
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Sürətli məlumat əlavəsi</h3>
-              <X size={18} style={{ cursor: 'pointer', color: theme.textSecondary }} onClick={() => setIsQuickAddOpen(false)} />
-            </div>
+            <div style={{
+              backgroundColor: theme.bgCard,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '16px',
+              padding: '20px 24px',
+              width: '360px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Sürətli məlumat əlavəsi</h3>
+                <X size={18} style={{ cursor: 'pointer', color: theme.textSecondary }} onClick={() => setIsQuickAddOpen(false)} />
+              </div>
 
-            <form onSubmit={handleQuickAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>KATEQORİYA SEÇİN</label>
-                <select
-                  value={quickMetricType}
-                  onChange={(e) => setQuickMetricType(e.target.value)}
+              <form onSubmit={handleQuickAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>KATEQORİYA SEÇİN</label>
+                  <select
+                    value={quickMetricType}
+                    onChange={(e) => setQuickMetricType(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: `1px solid ${theme.border}`,
+                      backgroundColor: theme.bgInner,
+                      color: theme.textPrimary,
+                      fontSize: '13px',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="water">Su qəbulu (Stəkan)</option>
+                    <option value="steps">Addım sayı</option>
+                    <option value="sleep">Yuxu (Saat)</option>
+                    <option value="calories">Qidalanma (Kkal)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>MİQDAR</label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Məsələn: 2 və ya 500"
+                    value={quickMetricValue}
+                    onChange={(e) => setQuickMetricValue(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: `1px solid ${theme.border}`,
+                      backgroundColor: theme.bgInner,
+                      color: theme.textPrimary,
+                      fontSize: '13px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
                   style={{
-                    width: '100%',
-                    padding: '9px 12px',
+                    marginTop: '6px',
+                    backgroundColor: '#44766C',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '10px',
                     borderRadius: '8px',
-                    border: `1px solid ${theme.border}`,
-                    backgroundColor: theme.bgInner,
-                    color: theme.textPrimary,
                     fontSize: '13px',
-                    outline: 'none'
+                    fontWeight: '600',
+                    cursor: 'pointer'
                   }}
                 >
-                  <option value="water">Su qəbulu (Stəkan)</option>
-                  <option value="steps">Addım sayı</option>
-                  <option value="sleep">Yuxu (Saat)</option>
-                  <option value="calories">Qidalanma (Kkal)</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>MİQDAR</label>
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="Məsələn: 2 və ya 500"
-                  value={quickMetricValue}
-                  onChange={(e) => setQuickMetricValue(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${theme.border}`,
-                    backgroundColor: theme.bgInner,
-                    color: theme.textPrimary,
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                style={{
-                  marginTop: '6px',
-                  backgroundColor: '#44766C',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                Əlavə et
-              </button>
-            </form>
+                  Əlavə et
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-    </div>
+    </div >
   );
 }
