@@ -1,26 +1,78 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Footprints, Droplet, Plus, RefreshCw, Sparkles } from 'lucide-react';
 
 interface ActivityPanelProps {
   isDarkMode?: boolean;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
+
 export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps) {
-  const [steps, setSteps] = useState(4200);
-  const [water, setWater] = useState(2200);
+  const [steps, setSteps] = useState(0);
+  const [water, setWater] = useState(0);
   const [inputSteps, setInputSteps] = useState('');
   const [inputWater, setInputWater] = useState('');
 
   const stepGoal = 10000;
   const waterGoal = 3000;
 
-  const handleUpdate = (e: React.FormEvent) => {
+  // 1. Backend-dən məlumat çəkmək üçün useEffect
+  useEffect(() => {
+    const fetchActivity = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/activity`);
+        if (res.ok) {
+          const data = await res.json();
+          setSteps(data.steps ?? 0);
+          setWater(data.water ?? 0);
+        }
+      } catch (error) {
+        console.error("Aktivlik məlumatı çəkilə bilmədi:", error);
+      }
+    };
+    fetchActivity();
+  }, []);
+
+  // 2. Backend-ə məlumat göndərmək üçün funksiya
+  const updateBackendActivity = async (newSteps: number, newWater: number) => {
+    try {
+      await fetch(`${API_BASE_URL}/api/activity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ steps: newSteps, water: newWater }),
+      });
+    } catch (error) {
+      console.error("Aktivlik yenilənə bilmədi:", error);
+    }
+  };
+
+  // 3. Form submit funksiyası
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputSteps) setSteps(prev => prev + Number(inputSteps));
-    if (inputWater) setWater(prev => prev + Number(inputWater));
+    const addedSteps = inputSteps ? Number(inputSteps) : 0;
+    const addedWater = inputWater ? Number(inputWater) : 0;
+
+    const newSteps = steps + addedSteps;
+    const newWater = water + addedWater;
+
+    setSteps(newSteps);
+    setWater(newWater);
     setInputSteps('');
     setInputWater('');
+
+    await updateBackendActivity(newSteps, newWater);
+  };
+
+  // 4. Sürətli əlavə düymələri üçün funksiya
+  const handleQuickAdd = async (addSteps: number, addWater: number) => {
+    const newSteps = steps + addSteps;
+    const newWater = water + addWater;
+
+    setSteps(newSteps);
+    setWater(newWater);
+
+    await updateBackendActivity(newSteps, newWater);
   };
 
   const stepPercentage = Math.min(Math.round((steps / stepGoal) * 100), 100);
@@ -43,7 +95,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
-      
+
       {/* 1. Hero Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #2E5B4E 0%, #44766C 100%)',
@@ -76,7 +128,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
       {/* 2. Metrika Kartları */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-        
+
         {/* Addım Kartı */}
         <div style={{
           backgroundColor: theme.cardBg,
@@ -122,14 +174,14 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
           {/* Sürətli Əlavə Et Düymələri */}
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-              onClick={() => setSteps(prev => prev + 500)}
+            <button
+              onClick={() => handleQuickAdd(500, 0)}
               style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
             >
               +500 addım
             </button>
-            <button 
-              onClick={() => setSteps(prev => prev + 1000)}
+            <button
+              onClick={() => handleQuickAdd(1000, 0)}
               style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.3)', backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
             >
               +1,000 addım
@@ -182,14 +234,14 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
           {/* Sürətli Əlavə Et Düymələri */}
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-              onClick={() => setWater(prev => prev + 250)}
+            <button
+              onClick={() => handleQuickAdd(250, 0)}
               style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
             >
               +250 ml (Stəkan)
             </button>
-            <button 
-              onClick={() => setWater(prev => prev + 500)}
+            <button
+              onClick={() => handleQuickAdd(500, 0)}
               style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.3)', backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
             >
               +500 ml (Şüşə)

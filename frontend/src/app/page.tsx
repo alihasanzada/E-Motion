@@ -72,10 +72,11 @@ export default function Dashboard() {
     const loadDashboardData = async () => {
       setIsLoading(true);
       try {
-        const [notifRes, msgRes, waterRes] = await Promise.all([
+        const [notifRes, msgRes, waterRes, activityRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/notifications`),
           fetch(`${API_BASE_URL}/api/messages`),
-          fetch(`${API_BASE_URL}/api/water`)
+          fetch(`${API_BASE_URL}/api/water`),
+          fetch(`${API_BASE_URL}/api/activity`)
         ]);
 
         if (notifRes.ok) {
@@ -92,6 +93,14 @@ export default function Dashboard() {
           const waterData = await waterRes.json();
           if (waterData && waterData.count !== undefined) {
             setWaterCount(waterData.count);
+          }
+        }
+
+        if (activityRes.ok) {
+          const activityData = await activityRes.json();
+          if (activityData) {
+            setStepsCount(activityData.steps || 0);
+            setCaloriesCount(activityData.calories || 0);
           }
         }
       } catch (err) {
