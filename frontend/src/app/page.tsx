@@ -318,18 +318,8 @@ export default function Dashboard() {
       <aside
         className={`sidebar transition-colors duration-300 ${isMobileMenuOpen ? 'mobile-open' : ''}`}
         style={{
-          width: '240px',
           backgroundColor: theme.bgCard,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '16px 14px',
-          flexShrink: 0,
-          borderRight: `1px solid ${theme.border}`,
-          height: '100vh',
-          position: 'sticky',
-          top: 0,
-          boxSizing: 'border-box'
+          borderRight: `1px solid ${theme.border}`
         }}
       >
         <div>

@@ -44,14 +44,18 @@ body {
 }
 
 .sidebar {
+    width: 220px;
     height: 100vh;
+    position: sticky;
+    top: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: 16px 12px;
     overflow: hidden;
     flex-shrink: 0;
-    width: 220px;
+    z-index: 50;
+    transition: left 0.3s ease;
 }
 
 .logo-area {
@@ -377,6 +381,7 @@ svg circle {
     body {
         height: auto;
         min-height: 100vh;
+        max-width: 100vw;
         overflow-x: hidden;
         overflow-y: auto;
     }
@@ -399,7 +404,9 @@ svg circle {
 
     .wrapper {
         width: 100%;
+        max-width: 100vw;
         height: auto;
+        overflow-x: hidden;
     }
 
     .header {
