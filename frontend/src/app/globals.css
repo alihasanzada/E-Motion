@@ -526,6 +526,31 @@ svg circle {
 
 @media (max-width: 1024px) {
 
+    html,
+    body,
+    main,
+    .main-content,
+    .dashboard-layout,
+    .left-content,
+    .right-sidebar,
+    .wrapper,
+    div[class*="dashboard"] {
+        height: auto !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
     .sidebar,
     aside {
         position: fixed !important;
@@ -543,21 +568,6 @@ svg circle {
         left: 0 !important;
     }
 
-    div[class*="dashboard"],
-    .dashboard-layout,
-    main,
-    .main-content,
-    .wrapper {
-        display: flex !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        max-width: 100vw !important;
-        margin: 0 !important;
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-        box-sizing: border-box !important;
-    }
-
     header,
     .header {
         width: 100% !important;
@@ -573,6 +583,7 @@ svg circle {
     }
 
     .banner-content {
+        display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 12px !important;
@@ -587,6 +598,24 @@ svg circle {
 
     .summary-grid,
     .mental-mini-grid {
+        display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .events-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    section,
+    .card,
+    .summary-card,
+    .summary-grid,
+    .mental-mini-grid,
+    .events-grid,
+    .challenge-mental-row {
+        height: auto !important;
+        max-height: none !important;
+        grid-auto-rows: auto !important;
     }
 }
