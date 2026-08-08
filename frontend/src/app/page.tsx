@@ -479,7 +479,8 @@ export default function Dashboard() {
           backgroundColor: theme.bgApp,
           minHeight: '100vh',
           overflowY: 'auto',
-          padding: '0'
+          padding: '0',
+          width: '100%'
         }}
       >
 
@@ -496,8 +497,7 @@ export default function Dashboard() {
           top: 0,
           zIndex: 50
         }}>
-          {/* Header Content */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, maxWidth: '500px' }}>
 
             {/* Mobil Hamburger Düyməsi */}
             <button
@@ -516,9 +516,8 @@ export default function Dashboard() {
             </button>
 
             {/* Axtarış Paneli */}
-            <div style={{ position: 'relative', width: '400px' }}>
+            <div className="search-wrapper" style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
 
-              {/* Axtarış Çərçivəsi */}
               <div
                 className="search-container"
                 style={{
@@ -630,7 +629,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
               <button
                 onClick={toggleDarkMode}
@@ -652,7 +651,7 @@ export default function Dashboard() {
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
-              {/* BİLDİRİŞ VƏ MESAJ KONTEYNERİ */}
+              {/* BİLDİRİŞ KONTEYNERİ */}
               <div ref={notificationRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                 <button
                   onClick={() => {
@@ -698,7 +697,6 @@ export default function Dashboard() {
                   )}
                 </button>
 
-                {/* Bildirişlər Modal Pəncərəsi */}
                 {isNotificationsOpen && (
                   <div style={{
                     position: 'absolute',
@@ -712,7 +710,6 @@ export default function Dashboard() {
                     zIndex: 100,
                     overflow: 'hidden'
                   }}>
-                    {/* Başlıq Hissəsi */}
                     <div style={{
                       padding: '12px 16px',
                       borderBottom: `1px solid ${theme.border}`,
@@ -759,7 +756,6 @@ export default function Dashboard() {
                       )}
                     </div>
 
-                    {/* Bildirişlər Siyahısı */}
                     <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                       {notifications && notifications.filter(n => !n.read).length > 0 ? (
                         notifications.filter(n => !n.read).map((n) => (
@@ -776,7 +772,6 @@ export default function Dashboard() {
                               cursor: 'pointer'
                             }}
                           >
-                            {/* Oxunmamış İndikator Nöqtəsi */}
                             <span style={{
                               width: '8px',
                               height: '8px',
@@ -855,8 +850,8 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* MESAJ SEKSİYASI */}
-              <div ref={messageRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: '12px' }}>
+              {/* MESAJ KONTEYNERİ */}
+              <div ref={messageRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                 <button
                   onClick={toggleMessagesModal}
                   title="Mesajlar"
@@ -898,7 +893,6 @@ export default function Dashboard() {
                   )}
                 </button>
 
-                {/* Mesajlar Modal Pəncərəsi */}
                 {isMessagesOpen && (
                   <div style={{
                     position: 'absolute',
@@ -960,7 +954,7 @@ export default function Dashboard() {
         <main className="main-content flex-1" style={{ padding: '18px 22px', backgroundColor: theme.bgApp }}>
 
           {activeTab === 'dashboard' && (
-            <div className="dashboard-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '16px' }}>
+            <div className="dashboard-layout">
 
               <div className="left-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
@@ -977,8 +971,8 @@ export default function Dashboard() {
                     boxShadow: '0 8px 20px rgba(0,0,0,0.08)'
                   }}
                 >
-                  <div className="banner-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div className="banner-text" style={{ maxWidth: '60%' }}>
+                  <div className="banner-content">
+                    <div className="banner-text">
                       <h1 style={{ margin: 0, fontSize: '23px', fontWeight: '700', letterSpacing: '-0.2px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
                         Xoş gəlmisiniz, {user ? user.fullname.split(' ')[0] : 'Əli'}!
                       </h1>
@@ -992,14 +986,14 @@ export default function Dashboard() {
                         Göstəriciləri yenilə <ArrowRight size={14} />
                       </button>
                     </div>
-                    <div className="banner-quote" style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: `1px solid ${theme.border}`, padding: '10px 14px', borderRadius: '12px', maxWidth: '220px' }}>
-                      <b style={{ color: '#A7F3D0', display: 'block', marginBottom: '4px' }}>Günün mesajı:</b>
+                    <div className="banner-quote" style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: `1px solid ${theme.border}`, padding: '10px 14px', borderRadius: '12px' }}>
                       <p style={{ margin: 0, fontStyle: 'italic', opacity: 0.95, fontSize: '11.5px', lineHeight: '1.4' }}>"Kiçik addımlar böyük dəyişikliklər yaradır."</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '11px' }}>
+                {/* Summary Cards Grid */}
+                <div className="summary-grid">
                   {[
                     { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: darkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
                     { id: 'activity', title: 'Aktivlik', value: '35 dəq', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: darkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: 58 },
@@ -1036,7 +1030,8 @@ export default function Dashboard() {
                   ))}
                 </div>
 
-                <div className="challenge-mental-row" style={{ display: 'grid', gridTemplateColumns: '1fr 2.4fr', gap: '16px' }}>
+                {/* Challenge & Mental Row */}
+                <div className="challenge-mental-row">
 
                   <div
                     onClick={() => setActiveTab('challenges')}
@@ -1070,7 +1065,7 @@ export default function Dashboard() {
                       <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
                     </div>
 
-                    <div className="mental-mini-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', flex: 1 }}>
+                    <div className="mental-mini-grid">
                       {[
                         { title: 'Meditasiya', desc: 'Stressi azaldın', time: '10 dəq', bg: darkMode ? '#3B0764' : '#F3E8FF', border: darkMode ? '#581C87' : '#E9D5FF', icon: <Flower2 size={16} />, color: darkMode ? '#E9D5FF' : '#6B21A8' },
                         { title: 'Nəfəs məşqləri', desc: 'Rahatla və fokuslan', time: '5 dəq', bg: darkMode ? '#1E3A8A' : '#EFF6FF', border: darkMode ? '#1D4ED8' : '#DBEAFE', icon: <Wind size={16} />, color: darkMode ? '#BFDBFE' : '#1E40AF' },
@@ -1080,7 +1075,7 @@ export default function Dashboard() {
                         <div
                           key={i}
                           onClick={() => setActiveTab('mental')}
-                          style={{ padding: '10px 4px', background: box.bg, borderRadius: '11px', border: `1px solid ${box.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-around', textAlign: 'center', height: '100%', cursor: 'pointer', boxSizing: 'border-box' }}
+                          style={{ padding: '10px 4px', background: box.bg, borderRadius: '11px', border: `1px solid ${box.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-around', textAlign: 'center', cursor: 'pointer', boxSizing: 'border-box' }}
                         >
                           <div style={{ color: box.color, background: darkMode ? 'rgba(0,0,0,0.4)' : '#FFFFFF', padding: '5.5px', borderRadius: '50%', display: 'flex' }}>{box.icon}</div>
                           <h5 style={{ margin: 0, fontSize: box.title === 'Özünüqiymətləndirmə' ? '10px' : '11px', fontWeight: '700', color: theme.textPrimary, whiteSpace: 'nowrap' }}>{box.title}</h5>
@@ -1093,6 +1088,7 @@ export default function Dashboard() {
 
                 </div>
 
+                {/* Events Card */}
                 <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1102,7 +1098,7 @@ export default function Dashboard() {
                     <button onClick={() => setActiveTab('events')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
                   </div>
 
-                  <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '11px' }}>
+                  <div className="events-grid">
                     {[
                       { date: '22 MAY', title: 'Yoqa seansı', time: '17:00 - 18:00', location: 'Qarabağ idman zalı' },
                       { date: '25 MAY', title: 'Sağlamlıq həftəsi', time: '09:00 - 17:00', location: 'Təbib meydançası' },
@@ -1129,6 +1125,7 @@ export default function Dashboard() {
 
               </div>
 
+              {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                 <div
@@ -1265,7 +1262,7 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* Quick Add Modal */}
+      {/* Quick Add Modal Button */}
       <button
         onClick={() => setIsQuickAddOpen(true)}
         title="Sürətli məlumat əlavə et"
@@ -1293,100 +1290,100 @@ export default function Dashboard() {
         <Plus size={24} />
       </button>
 
-      {
-        isQuickAddOpen && (
-          <div style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(3px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 200
+      {/* Quick Add Modal */}
+      {isQuickAddOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(3px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 200,
+          padding: '16px'
+        }}>
+          <div className="quick-add-modal" style={{
+            backgroundColor: theme.bgCard,
+            border: `1px solid ${theme.border}`,
+            borderRadius: '16px',
+            padding: '20px 24px',
+            width: '100%',
+            maxWidth: '360px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
           }}>
-            <div className="quick-add-modal" style={{
-              backgroundColor: theme.bgCard,
-              border: `1px solid ${theme.border}`,
-              borderRadius: '16px',
-              padding: '20px 24px',
-              width: '360px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Sürətli məlumat əlavəsi</h3>
-                <X size={18} style={{ cursor: 'pointer', color: theme.textSecondary }} onClick={() => setIsQuickAddOpen(false)} />
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Sürətli məlumat əlavəsi</h3>
+              <X size={18} style={{ cursor: 'pointer', color: theme.textSecondary }} onClick={() => setIsQuickAddOpen(false)} />
+            </div>
 
-              <form onSubmit={handleQuickAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>KATEQORİYA SEÇİN</label>
-                  <select
-                    value={quickMetricType}
-                    onChange={(e) => setQuickMetricType(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '8px',
-                      border: `1px solid ${theme.border}`,
-                      backgroundColor: theme.bgInner,
-                      color: theme.textPrimary,
-                      fontSize: '13px',
-                      outline: 'none'
-                    }}
-                  >
-                    <option value="water">Su qəbulu (Stəkan)</option>
-                    <option value="steps">Addım sayı</option>
-                    <option value="sleep">Yuxu (Saat)</option>
-                    <option value="calories">Qidalanma (Kkal)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>MİQDAR</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Məsələn: 2 və ya 500"
-                    value={quickMetricValue}
-                    onChange={(e) => setQuickMetricValue(e.target.value)}
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '8px',
-                      border: `1px solid ${theme.border}`,
-                      backgroundColor: theme.bgInner,
-                      color: theme.textPrimary,
-                      fontSize: '13px',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-
-                <button
-                  type="submit"
+            <form onSubmit={handleQuickAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>KATEQORİYA SEÇİN</label>
+                <select
+                  value={quickMetricType}
+                  onChange={(e) => setQuickMetricType(e.target.value)}
                   style={{
-                    marginTop: '6px',
-                    backgroundColor: '#44766C',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    padding: '10px',
+                    width: '100%',
+                    padding: '9px 12px',
                     borderRadius: '8px',
+                    border: `1px solid ${theme.border}`,
+                    backgroundColor: theme.bgInner,
+                    color: theme.textPrimary,
                     fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
+                    outline: 'none'
                   }}
                 >
-                  Əlavə et
-                </button>
-              </form>
-            </div>
-          </div>
-        )
-      }
+                  <option value="water">Su qəbulu (Stəkan)</option>
+                  <option value="steps">Addım sayı</option>
+                  <option value="sleep">Yuxu (Saat)</option>
+                  <option value="calories">Qidalanma (Kkal)</option>
+                </select>
+              </div>
 
-    </div >
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>MİQDAR</label>
+                <input
+                  type="number"
+                  step="any"
+                  placeholder="Məsələn: 2 və ya 500"
+                  value={quickMetricValue}
+                  onChange={(e) => setQuickMetricValue(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: `1px solid ${theme.border}`,
+                    backgroundColor: theme.bgInner,
+                    color: theme.textPrimary,
+                    fontSize: '13px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  marginTop: '6px',
+                  backgroundColor: '#44766C',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Əlavə et
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
