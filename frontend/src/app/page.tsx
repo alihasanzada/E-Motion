@@ -69,7 +69,6 @@ export default function Dashboard() {
   ]);
 
   useEffect(() => {
-    // 1. Səhifə ilk yüklənəndə brauzer yaddaşından (localStorage) addım və stəkan sayını oxuyuruq
     const localSteps = localStorage.getItem('user_steps');
     const localWaterGlasses = localStorage.getItem('user_water_glasses');
     const localWaterMl = localStorage.getItem('user_water_ml');
@@ -85,51 +84,31 @@ export default function Dashboard() {
     const loadDashboardData = async () => {
       setIsLoading(true);
       try {
-        const [notifRes, msgRes, waterRes, activityRes] = await Promise.all([
+        const [notifRes, msgRes, activityRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/notifications`),
           fetch(`${API_BASE_URL}/api/messages`),
-          fetch(`${API_BASE_URL}/api/water`),
           fetch(`${API_BASE_URL}/api/activity`)
         ]);
 
-        if (notifRes.ok) {
-          const notifData = await notifRes.json();
-          setNotifications(notifData);
-        }
-
-        if (msgRes.ok) {
-          const msgData = await msgRes.json();
-          setMessages(msgData);
-        }
-
-        if (waterRes.ok) {
-          const waterData = await waterRes.json();
-          if (waterData && waterData.count !== undefined) {
-            setWaterCount(waterData.count);
-            localStorage.setItem('user_water_glasses', waterData.count.toString());
-          }
-        }
+        if (notifRes.ok) setNotifications(await notifRes.json());
+        if (msgRes.ok) setMessages(await msgRes.json());
 
         if (activityRes.ok) {
           const activityData = await activityRes.json();
           if (activityData) {
-            // Addım sayğacı
+
             if (activityData.steps && activityData.steps > 0) {
               setStepsCount(activityData.steps);
               localStorage.setItem('user_steps', activityData.steps.toString());
-            } else if (localSteps) {
-              setStepsCount(Number(localSteps));
             }
 
-            // Kalori sayğacı
             setCaloriesCount(activityData.calories || 0);
 
-            // Su miqdarını (ml) stəkan sayına çevirib həm kartı, həm də izləyicini sinxronlaşdırırıq (1 stəkan = 250 ml)
-            const totalWaterMl = activityData.water ?? activityData.water_ml;
-            if (totalWaterMl !== undefined && totalWaterMl !== null) {
-              const calculatedGlasses = Math.floor(totalWaterMl / 250);
+            const serverWaterMl = activityData.water ?? activityData.water_ml;
+            if (serverWaterMl !== undefined && serverWaterMl !== null && serverWaterMl > 0) {
+              const calculatedGlasses = Math.floor(serverWaterMl / 250);
               setWaterCount(calculatedGlasses);
-              localStorage.setItem('user_water_ml', totalWaterMl.toString());
+              localStorage.setItem('user_water_ml', serverWaterMl.toString());
               localStorage.setItem('user_water_glasses', calculatedGlasses.toString());
             }
           }

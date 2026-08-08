@@ -81,11 +81,27 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     await updateActivity(newSteps, newWater);
   };
 
-  const handleQuickAdd = async (addSteps: number, addWater: number) => {
+  const handleQuickAdd = async (addSteps: number, addWaterMl: number) => {
     const newSteps = steps + addSteps;
-    const newWater = water + addWater;
+    const newWaterMl = water + addWaterMl;
+    const newGlasses = Math.floor(newWaterMl / 250);
 
-    await updateActivity(newSteps, newWater);
+    setSteps(newSteps);
+    setWater(newWaterMl);
+
+    localStorage.setItem('user_steps', newSteps.toString());
+    localStorage.setItem('user_water_ml', newWaterMl.toString());
+    localStorage.setItem('user_water_glasses', newGlasses.toString());
+
+    try {
+      await fetch(`${API_BASE_URL}/api/activity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ steps: newSteps, water_ml: newWaterMl }),
+      });
+    } catch (err) {
+      console.warn("Aktivlik yenilənə bilmədi:", err);
+    }
   };
 
   const stepPercentage = Math.min(Math.round((steps / stepGoal) * 100), 100);
@@ -245,15 +261,15 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           </div>
 
           {/* Sürətli Əlavə Et Düymələri */}
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
             <button
-              onClick={() => handleQuickAdd(250, 0)}
+              onClick={() => handleQuickAdd(0, 250)}
               style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
             >
               +250 ml (Stəkan)
             </button>
             <button
-              onClick={() => handleQuickAdd(500, 0)}
+              onClick={() => handleQuickAdd(0, 500)}
               style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.3)', backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
             >
               +500 ml (Şüşə)

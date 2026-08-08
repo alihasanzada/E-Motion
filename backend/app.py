@@ -878,7 +878,7 @@ def get_activity():
 @app.route('/api/activity', methods=['POST'])
 def update_activity():
     """
-    Yeni fiziki aktivlik məlumatı əlavə edir
+    Yeni fiziki aktivlik və su qəbulu məlumatını bazada saxlayır
     """
     data = request.get_json() or {}
     
@@ -887,25 +887,28 @@ def update_activity():
 
     conn = get_db_connection()
     
-    if steps is None or water_ml is None:
-        last_act = conn.execute('SELECT * FROM physical_activity ORDER BY id DESC LIMIT 1').fetchone()
-        if steps is None:
-            steps = last_act['steps'] if last_act else 0
-        if water_ml is None:
-            water_ml = last_act['water_ml'] if last_act else 0
-
-    cursor = conn.cursor()
     try:
+        if steps is None or water_ml is None:
+            last_act = conn.execute('SELECT * FROM physical_activity ORDER BY id DESC LIMIT 1').fetchone()
+            if steps is None:
+                steps = last_act['steps'] if last_act else 0
+            if water_ml is None:
+                water_ml = last_act['water_ml'] if last_act else 0
+
+        cursor = conn.cursor()
         cursor.execute('INSERT INTO physical_activity (steps, water_ml) VALUES (?, ?)', (steps, water_ml))
         conn.commit()
+        
+        calories_burned = int(steps * 0.04)
         
         return jsonify({
             'message': 'Aktivlik uğurla yeniləndi!',
             'steps': steps,
             'water': water_ml,
             'water_ml': water_ml,
-            'calories': int(steps * 0.04)
+            'calories': calories_burned
         }), 201
+
     except Exception as e:
         return jsonify({'message': f'Server xətası: {str(e)}'}), 500
     finally:
