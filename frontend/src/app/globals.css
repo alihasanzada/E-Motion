@@ -386,6 +386,70 @@ svg circle {
         overflow-y: auto;
     }
 
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 4px 10px;
+        min-height: 42px;
+        height: auto;
+        gap: 8px;
+    }
+
+    .search-container {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        height: 32px;
+        margin: 2px 0;
+    }
+
+    .main-content {
+        padding: 8px;
+        height: auto;
+        overflow-x: hidden;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-layout,
+    .left-content,
+    .right-sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        gap: 10px;
+        grid-template-columns: none;
+    }
+
+    .card {
+        padding: 12px;
+        border-radius: 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .welcome-banner {
+        padding: 12px 14px;
+        border-radius: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+    }
+
+    .summary-card {
+        padding: 10px;
+        border-radius: 10px;
+    }
+
     .sidebar {
         position: fixed;
         top: 0;
@@ -407,45 +471,6 @@ svg circle {
         max-width: 100vw;
         height: auto;
         overflow-x: hidden;
-    }
-
-    .header {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        padding: 10px 16px;
-        background-color: var(--surface);
-    }
-
-    .search-container {
-        display: none;
-    }
-
-    .main-content {
-        padding: 12px;
-        height: auto;
-        overflow: visible;
-    }
-
-    .dashboard-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .left-content {
-        grid-template-columns: 1fr;
-    }
-
-    .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .welcome-banner,
-    .summary-grid {
-        grid-column: span 1;
-    }
-
-    .mobile-menu-btn {
-        display: block;
     }
 }
 
