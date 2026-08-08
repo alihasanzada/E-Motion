@@ -46,18 +46,21 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     fetchActivity();
   }, []);
 
-  const updateActivity = async (newSteps: number, newWater: number) => {
+  const updateActivity = async (newSteps: number, newWaterMl: number) => {
     setSteps(newSteps);
-    setWater(newWater);
+    setWater(newWaterMl);
 
+    const glassCount = Math.floor(newWaterMl / 250);
+
+    localStorage.setItem('user_water_ml', newWaterMl.toString());
+    localStorage.setItem('user_water_glasses', glassCount.toString());
     localStorage.setItem('user_steps', newSteps.toString());
-    localStorage.setItem('user_water', newWater.toString());
 
     try {
       await fetch(`${API_BASE_URL}/api/activity`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps: newSteps, water: newWater }),
+        body: JSON.stringify({ steps: newSteps, water_ml: newWaterMl }),
       });
     } catch (error) {
       console.error("Aktivlik yenilənə bilmədi:", error);

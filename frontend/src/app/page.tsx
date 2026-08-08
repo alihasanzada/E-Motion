@@ -69,8 +69,18 @@ export default function Dashboard() {
   ]);
 
   useEffect(() => {
+    // 1. Səhifə ilk yüklənəndə brauzer yaddaşından (localStorage) addım və stəkan sayını oxuyuruq
     const localSteps = localStorage.getItem('user_steps');
+    const localWaterGlasses = localStorage.getItem('user_water_glasses');
+    const localWaterMl = localStorage.getItem('user_water_ml');
+
     if (localSteps) setStepsCount(Number(localSteps));
+
+    if (localWaterGlasses !== null) {
+      setWaterCount(Number(localWaterGlasses));
+    } else if (localWaterMl !== null) {
+      setWaterCount(Math.floor(Number(localWaterMl) / 250));
+    }
 
     const loadDashboardData = async () => {
       setIsLoading(true);
@@ -96,12 +106,14 @@ export default function Dashboard() {
           const waterData = await waterRes.json();
           if (waterData && waterData.count !== undefined) {
             setWaterCount(waterData.count);
+            localStorage.setItem('user_water_glasses', waterData.count.toString());
           }
         }
 
         if (activityRes.ok) {
           const activityData = await activityRes.json();
           if (activityData) {
+            // Addım sayğacı
             if (activityData.steps && activityData.steps > 0) {
               setStepsCount(activityData.steps);
               localStorage.setItem('user_steps', activityData.steps.toString());
@@ -109,7 +121,17 @@ export default function Dashboard() {
               setStepsCount(Number(localSteps));
             }
 
+            // Kalori sayğacı
             setCaloriesCount(activityData.calories || 0);
+
+            // Su miqdarını (ml) stəkan sayına çevirib həm kartı, həm də izləyicini sinxronlaşdırırıq (1 stəkan = 250 ml)
+            const totalWaterMl = activityData.water ?? activityData.water_ml;
+            if (totalWaterMl !== undefined && totalWaterMl !== null) {
+              const calculatedGlasses = Math.floor(totalWaterMl / 250);
+              setWaterCount(calculatedGlasses);
+              localStorage.setItem('user_water_ml', totalWaterMl.toString());
+              localStorage.setItem('user_water_glasses', calculatedGlasses.toString());
+            }
           }
         }
       } catch (err) {
@@ -195,18 +217,22 @@ export default function Dashboard() {
     fetchWater();
   }, []);
 
-  const handleWaterUpdate = async (newCount: number) => {
-    setWaterCount(newCount);
-    localStorage.setItem('waterCount', newCount.toString());
+  const handleWaterUpdate = async (newGlasses: number) => {
+    setWaterCount(newGlasses);
+
+    const newWaterMl = newGlasses * 250;
+
+    localStorage.setItem('user_water_glasses', newGlasses.toString());
+    localStorage.setItem('user_water_ml', newWaterMl.toString());
 
     try {
-      await fetch(`${API_BASE_URL}/api/water`, {
+      await fetch(`${API_BASE_URL}/api/activity`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: newCount })
+        body: JSON.stringify({ steps: stepsCount, water_ml: newWaterMl }),
       });
     } catch (err) {
-      console.warn('Backend yenilənmə xətası:', err);
+      console.warn("Su miqdarı yenilənə bilmədi:", err);
     }
   };
 
