@@ -485,3 +485,116 @@ svg circle {
         padding: 16px !important;
     }
 }
+
+@media (max-width: 768px) {
+    .header {
+        min-height: 42px !important;
+        height: 42px !important;
+        padding: 0 10px !important;
+    }
+
+    .profile-info {
+        display: none !important;
+    }
+
+    .profile-card {
+        gap: 0 !important;
+    }
+
+    .profile-img {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 13px !important;
+    }
+
+    .main-content {
+        padding: 8px !important;
+    }
+
+    .dashboard-layout,
+    .left-content,
+    .right-sidebar {
+        gap: 8px !important;
+    }
+
+    .welcome-banner {
+        padding: 10px 12px !important;
+        border-radius: 10px !important;
+        min-height: auto !important;
+    }
+
+    .banner-content {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+    }
+
+    .banner-text h1,
+    .banner-text h2 {
+        font-size: 15px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .banner-text p {
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+    }
+
+    .banner-quote,
+    .welcome-banner button {
+        display: none !important;
+    }
+
+    .card {
+        padding: 10px 12px !important;
+        border-radius: 10px !important;
+    }
+
+    .card h3 {
+        font-size: 13px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    .summary-card {
+        padding: 8px 10px !important;
+        border-radius: 8px !important;
+        gap: 2px !important;
+    }
+
+    .summary-card h4,
+    .summary-card p {
+        font-size: 11px !important;
+    }
+
+    .summary-card span,
+    .summary-card div[class*="value"] {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }
+
+    .mental-mini-grid {
+        gap: 6px !important;
+    }
+
+    .mental-mini-grid>div {
+        padding: 8px !important;
+        border-radius: 8px !important;
+    }
+
+    .events-grid {
+        gap: 6px !important;
+    }
+
+    .events-grid>div {
+        padding: 8px !important;
+    }
+
+    .water-glass {
+        height: 32px !important;
+    }
+}
