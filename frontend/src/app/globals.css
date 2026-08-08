@@ -523,3 +523,70 @@ svg circle {
         height: auto;
     }
 }
+
+@media (max-width: 1024px) {
+
+    .sidebar,
+    aside {
+        position: fixed !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 270px !important;
+        height: 100vh !important;
+        z-index: 99999 !important;
+        transition: left 0.3s ease-in-out !important;
+        box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .sidebar.mobile-open,
+    aside.mobile-open {
+        left: 0 !important;
+    }
+
+    div[class*="dashboard"],
+    .dashboard-layout,
+    main,
+    .main-content,
+    .wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    header,
+    .header {
+        width: 100% !important;
+        margin-top: 0 !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .search-container,
+    div[class*="search"] {
+        width: 100% !important;
+        height: 38px !important;
+    }
+
+    .banner-content {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .banner-text,
+    .banner-quote {
+        max-width: 100% !important;
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    .summary-grid,
+    .mental-mini-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
