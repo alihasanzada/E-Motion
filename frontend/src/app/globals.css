@@ -375,6 +375,16 @@ svg circle {
     }
 }
 
+@media (max-width: 480px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-container {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
 
     html,
@@ -500,7 +510,7 @@ svg circle {
         background-color: var(--surface) !important;
         z-index: 9999 !important;
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2) !important;
-        transition: left 0.3s ease-in-out !important;
+        transition: left 0.3s ease !important;
     }
 
     .sidebar.mobile-open {
@@ -511,15 +521,5 @@ svg circle {
     svg {
         max-width: 100%;
         height: auto;
-    }
-}
-
-@media (max-width: 480px) {
-    .summary-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .search-container {
-        display: none;
     }
 }
