@@ -404,6 +404,14 @@ svg circle {
         flex: 1 !important;
         width: 100% !important;
         margin: 0 !important;
+        height: 38px !important;
+    }
+
+    .search-container input,
+    input[placeholder*="Axtarış"] {
+        height: 100% !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }
 
     .main-content {
@@ -421,6 +429,7 @@ svg circle {
         min-width: 0 !important;
         gap: 12px !important;
         grid-template-columns: 1fr !important;
+        overflow-x: hidden !important;
     }
 
     .welcome-banner,
@@ -431,6 +440,7 @@ svg circle {
         min-width: 0 !important;
         box-sizing: border-box !important;
         grid-column: span 1 / -1 !important;
+        overflow-x: hidden !important;
     }
 
     .welcome-banner {
@@ -438,11 +448,56 @@ svg circle {
         border-radius: 12px !important;
     }
 
+    .banner-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    .banner-text,
+    .banner-quote {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .banner-quote {
+        text-align: left !important;
+    }
+
     .summary-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 8px !important;
         width: 100% !important;
+    }
+
+    .challenge-mental-row {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+        width: 100% !important;
+    }
+
+    .mental-mini-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        width: 100% !important;
+    }
+
+    .events-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        width: 100% !important;
+    }
+
+    .quick-add-modal {
+        width: 90vw !important;
+        max-width: 340px !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
     }
 
     .sidebar {
@@ -459,6 +514,12 @@ svg circle {
 
     .sidebar.mobile-open {
         left: 0 !important;
+    }
+
+    img,
+    svg {
+        max-width: 100%;
+        height: auto;
     }
 }
 

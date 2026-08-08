@@ -977,22 +977,22 @@ export default function Dashboard() {
                     boxShadow: '0 8px 20px rgba(0,0,0,0.08)'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ maxWidth: '60%' }}>
+                  <div className="banner-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="banner-text" style={{ maxWidth: '60%' }}>
                       <h1 style={{ margin: 0, fontSize: '23px', fontWeight: '700', letterSpacing: '-0.2px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
                         Xoş gəlmisiniz, {user ? user.fullname.split(' ')[0] : 'Əli'}!
                       </h1>
-                      <p style={{ margin: '8px 0 0 0', fontSize: '13px', opacity: 0.95, lineHeight: '1.45', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                      <p style={{ margin: '8px 0 0', fontSize: '13px', opacity: 0.95, lineHeight: '1.45', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
                         Təbiətlə iç-içə, daha sağlam seçimlər və aydın bir zehin. Bu gün hədəfinizə bir addım daha yaxınlaşın.
                       </p>
                       <button
                         onClick={() => setActiveTab('stats')}
-                        style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', color: '#FFFFFF', padding: '8px 16px', borderRadius: '8px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                        style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)' }}
                       >
                         Göstəriciləri yenilə <ArrowRight size={14} />
                       </button>
                     </div>
-                    <div style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.25)', padding: '12px 16px', borderRadius: '12px', maxWidth: '220px' }}>
+                    <div className="banner-quote" style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: `1px solid ${theme.border}` }}>
                       <b style={{ color: '#A7F3D0', display: 'block', marginBottom: '4px' }}>Günün mesajı:</b>
                       <p style={{ margin: 0, fontStyle: 'italic', opacity: 0.95, fontSize: '11.5px', lineHeight: '1.4' }}>"Kiçik addımlar böyük dəyişikliklər yaradır."</p>
                     </div>
@@ -1036,7 +1036,7 @@ export default function Dashboard() {
                   ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.4fr', gap: '16px' }}>
+                <div className="challenge-mental-row" style={{ display: 'grid', gridTemplateColumns: '1fr 2.4fr', gap: '16px' }}>
 
                   <div
                     onClick={() => setActiveTab('challenges')}
@@ -1070,7 +1070,7 @@ export default function Dashboard() {
                       <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', flex: 1 }}>
+                    <div className="mental-mini-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', flex: 1 }}>
                       {[
                         { title: 'Meditasiya', desc: 'Stressi azaldın', time: '10 dəq', bg: darkMode ? '#3B0764' : '#F3E8FF', border: darkMode ? '#581C87' : '#E9D5FF', icon: <Flower2 size={16} />, color: darkMode ? '#E9D5FF' : '#6B21A8' },
                         { title: 'Nəfəs məşqləri', desc: 'Rahatla və fokuslan', time: '5 dəq', bg: darkMode ? '#1E3A8A' : '#EFF6FF', border: darkMode ? '#1D4ED8' : '#DBEAFE', icon: <Wind size={16} />, color: darkMode ? '#BFDBFE' : '#1E40AF' },
@@ -1102,7 +1102,7 @@ export default function Dashboard() {
                     <button onClick={() => setActiveTab('events')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '11px' }}>
+                  <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '11px' }}>
                     {[
                       { date: '22 MAY', title: 'Yoqa seansı', time: '17:00 - 18:00', location: 'Qarabağ idman zalı' },
                       { date: '25 MAY', title: 'Sağlamlıq həftəsi', time: '09:00 - 17:00', location: 'Təbib meydançası' },
@@ -1305,7 +1305,7 @@ export default function Dashboard() {
             justifyContent: 'center',
             zIndex: 200
           }}>
-            <div style={{
+            <div className="quick-add-modal" style={{
               backgroundColor: theme.bgCard,
               border: `1px solid ${theme.border}`,
               borderRadius: '16px',
