@@ -73,7 +73,11 @@ export default function Dashboard() {
     const localWaterGlasses = localStorage.getItem('user_water_glasses');
     const localWaterMl = localStorage.getItem('user_water_ml');
 
-    if (localSteps) setStepsCount(Number(localSteps));
+    if (localSteps) {
+      const stepsNum = Number(localSteps);
+      setStepsCount(stepsNum);
+      setCaloriesCount(Math.round(stepsNum * 0.04));
+    }
 
     if (localWaterGlasses !== null) {
       setWaterCount(Number(localWaterGlasses));
@@ -96,13 +100,11 @@ export default function Dashboard() {
         if (activityRes.ok) {
           const activityData = await activityRes.json();
           if (activityData) {
-
             if (activityData.steps && activityData.steps > 0) {
               setStepsCount(activityData.steps);
+              setCaloriesCount(activityData.calories || Math.round(activityData.steps * 0.04));
               localStorage.setItem('user_steps', activityData.steps.toString());
             }
-
-            setCaloriesCount(activityData.calories || 0);
 
             const serverWaterMl = activityData.water ?? activityData.water_ml;
             if (serverWaterMl !== undefined && serverWaterMl !== null && serverWaterMl > 0) {
@@ -121,7 +123,7 @@ export default function Dashboard() {
     };
 
     loadDashboardData();
-  }, []);
+  }, [activeTab]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
