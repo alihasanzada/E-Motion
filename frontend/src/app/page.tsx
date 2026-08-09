@@ -960,6 +960,7 @@ export default function Dashboard() {
 
                 {/* Banner */}
                 <div
+                  className="welcome-banner-card"
                   style={{
                     backgroundImage: `linear-gradient(90deg, rgba(10, 35, 25, 0.82) 0%, rgba(10, 35, 25, 0.55) 50%, rgba(10, 35, 25, 0.15) 100%), url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1400&q=80')`,
                     backgroundSize: 'cover',
