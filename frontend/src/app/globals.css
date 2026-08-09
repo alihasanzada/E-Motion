@@ -488,8 +488,8 @@ svg circle {
 
 @media (max-width: 768px) {
     .header {
-        min-height: 42px !important;
-        height: 42px !important;
+        min-height: 40px !important;
+        height: 40px !important;
         padding: 0 10px !important;
     }
 
@@ -502,99 +502,163 @@ svg circle {
     }
 
     .profile-img {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 13px !important;
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
     }
 
     .main-content {
-        padding: 8px !important;
+        padding: 6px !important;
     }
 
-    .dashboard-layout,
+    .dashboard-layout {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+
     .left-content,
-    .right-sidebar {
-        gap: 8px !important;
+    .right-sidebar,
+    .challenge-mental-row {
+        display: contents !important;
+    }
+
+    .card,
+    .summary-card,
+    .welcome-banner {
+        padding: 8px 10px !important;
+        border-radius: 10px !important;
+        min-height: auto !important;
+        height: auto !important;
+        box-shadow: none !important;
+    }
+
+    .card h3 {
+        font-size: 12px !important;
+        margin-bottom: 6px !important;
     }
 
     .welcome-banner {
-        padding: 10px 12px !important;
-        border-radius: 10px !important;
-        min-height: auto !important;
+        order: 1 !important;
+        grid-column: span 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }
 
     .banner-content {
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 4px !important;
+        gap: 2px !important;
     }
 
     .banner-text h1,
     .banner-text h2 {
-        font-size: 15px !important;
-        margin-bottom: 2px !important;
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
     }
 
-    .banner-text p {
-        font-size: 11px !important;
-        line-height: 1.3 !important;
-    }
-
+    .banner-text p,
     .banner-quote,
     .welcome-banner button {
         display: none !important;
     }
 
-    .card {
-        padding: 10px 12px !important;
-        border-radius: 10px !important;
-    }
-
-    .card h3 {
-        font-size: 13px !important;
-        margin-bottom: 8px !important;
+    .right-sidebar>.card:first-child,
+    div[class*="streak"] {
+        order: 2 !important;
+        grid-column: span 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }
 
     .summary-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 6px !important;
+        order: 3 !important;
+        grid-column: span 2 !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 5px !important;
     }
 
     .summary-card {
-        padding: 8px 10px !important;
-        border-radius: 8px !important;
+        padding: 6px !important;
         gap: 2px !important;
     }
 
     .summary-card h4,
     .summary-card p {
-        font-size: 11px !important;
+        font-size: 10px !important;
+        margin: 0 !important;
     }
 
     .summary-card span,
     .summary-card div[class*="value"] {
-        font-size: 15px !important;
+        font-size: 13px !important;
         font-weight: 700 !important;
     }
 
-    .mental-mini-grid {
-        gap: 6px !important;
+    .left-content>.card:nth-child(3),
+    div[class*="challenge"] {
+        order: 4 !important;
+        grid-column: span 1 !important;
     }
 
-    .mental-mini-grid>div {
-        padding: 8px !important;
-        border-radius: 8px !important;
+    .events-grid,
+    div[class*="event"] {
+        order: 5 !important;
+        grid-column: span 1 !important;
     }
 
     .events-grid {
-        gap: 6px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
     }
 
     .events-grid>div {
-        padding: 8px !important;
+        padding: 4px 6px !important;
+        font-size: 10px !important;
+    }
+
+    .mental-mini-grid,
+    div[class*="mental"] {
+        order: 6 !important;
+        grid-column: span 1 !important;
+    }
+
+    .mental-mini-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 4px !important;
+    }
+
+    .mental-mini-grid>div {
+        padding: 6px 4px !important;
+        font-size: 9px !important;
+        text-align: center !important;
+    }
+
+    div[class*="service"],
+    .right-sidebar>.card:nth-child(2) {
+        order: 7 !important;
+        grid-column: span 1 !important;
+    }
+
+    .water-grid,
+    div[class*="water"] {
+        order: 8 !important;
+        grid-column: span 2 !important;
     }
 
     .water-glass {
-        height: 32px !important;
+        height: 24px !important;
+    }
+
+    div[class*="motivation"] {
+        order: 9 !important;
+        grid-column: span 2 !important;
     }
 }
