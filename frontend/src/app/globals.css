@@ -490,15 +490,11 @@ svg circle {
     .header {
         min-height: 40px !important;
         height: 40px !important;
-        padding: 0 10px !important;
+        padding: 0 8px !important;
     }
 
     .profile-info {
         display: none !important;
-    }
-
-    .profile-card {
-        gap: 0 !important;
     }
 
     .profile-img {
@@ -513,7 +509,7 @@ svg circle {
 
     .dashboard-layout {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: calc(50% - 3px) calc(50% - 3px) !important;
         gap: 6px !important;
         width: 100% !important;
     }
@@ -525,26 +521,30 @@ svg circle {
     }
 
     .card,
-    .summary-card,
     .welcome-banner {
         padding: 8px 10px !important;
         border-radius: 10px !important;
-        min-height: auto !important;
-        height: auto !important;
+        margin: 0 !important;
         box-shadow: none !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
     }
 
     .card h3 {
-        font-size: 12px !important;
-        margin-bottom: 6px !important;
+        font-size: 11px !important;
+        margin-bottom: 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .welcome-banner {
         order: 1 !important;
-        grid-column: span 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
+        grid-column: 1 / 2 !important;
+        min-height: 90px !important;
     }
 
     .banner-content {
@@ -555,7 +555,7 @@ svg circle {
 
     .banner-text h1,
     .banner-text h2 {
-        font-size: 13px !important;
+        font-size: 12px !important;
         line-height: 1.2 !important;
         margin: 0 !important;
     }
@@ -566,99 +566,96 @@ svg circle {
         display: none !important;
     }
 
-    .right-sidebar>.card:first-child,
-    div[class*="streak"] {
+    div[class*="streak"],
+    .right-sidebar>div:has(h3:contains("Ardıcıl")),
+    .right-sidebar>div:nth-child(1) {
         order: 2 !important;
-        grid-column: span 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
+        grid-column: 2 / 3 !important;
+        min-height: 90px !important;
     }
 
     .summary-grid {
         order: 3 !important;
-        grid-column: span 2 !important;
+        grid-column: 1 / -1 !important;
         display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 5px !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 4px !important;
     }
 
     .summary-card {
-        padding: 6px !important;
-        gap: 2px !important;
+        padding: 4px 2px !important;
+        border-radius: 6px !important;
+        text-align: center !important;
+        align-items: center !important;
     }
 
     .summary-card h4,
     .summary-card p {
-        font-size: 10px !important;
+        font-size: 9px !important;
         margin: 0 !important;
     }
 
     .summary-card span,
     .summary-card div[class*="value"] {
-        font-size: 13px !important;
+        font-size: 11px !important;
         font-weight: 700 !important;
     }
 
-    .left-content>.card:nth-child(3),
-    div[class*="challenge"] {
+    div[class*="challenge"],
+    .left-content>div:nth-child(3) {
         order: 4 !important;
-        grid-column: span 1 !important;
+        grid-column: 1 / 2 !important;
     }
 
     .events-grid,
-    div[class*="event"] {
+    div[class*="event"],
+    .right-sidebar>div:nth-child(3) {
         order: 5 !important;
-        grid-column: span 1 !important;
-    }
-
-    .events-grid {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 4px !important;
+        grid-column: 2 / 3 !important;
     }
 
     .events-grid>div {
-        padding: 4px 6px !important;
-        font-size: 10px !important;
+        padding: 4px !important;
+        font-size: 9px !important;
     }
 
     .mental-mini-grid,
     div[class*="mental"] {
         order: 6 !important;
-        grid-column: span 1 !important;
+        grid-column: 1 / 2 !important;
     }
 
     .mental-mini-grid {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 4px !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 3px !important;
     }
 
     .mental-mini-grid>div {
-        padding: 6px 4px !important;
-        font-size: 9px !important;
-        text-align: center !important;
+        padding: 4px 2px !important;
+        font-size: 8px !important;
+        border-radius: 6px !important;
     }
 
     div[class*="service"],
-    .right-sidebar>.card:nth-child(2) {
+    .right-sidebar>div:nth-child(2) {
         order: 7 !important;
-        grid-column: span 1 !important;
+        grid-column: 2 / 3 !important;
     }
 
-    .water-grid,
-    div[class*="water"] {
+    div[class*="water"],
+    .left-content>div:nth-child(4) {
         order: 8 !important;
-        grid-column: span 2 !important;
+        grid-column: 1 / 2 !important;
     }
 
     .water-glass {
-        height: 24px !important;
+        height: 18px !important;
     }
 
-    div[class*="motivation"] {
+    div[class*="motivation"],
+    .right-sidebar>div:last-child {
         order: 9 !important;
-        grid-column: span 2 !important;
+        grid-column: 2 / 3 !important;
     }
 }
