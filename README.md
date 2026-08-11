@@ -6,9 +6,9 @@ E-Motion is a web-based health and wellness management platform designed for uni
 
 ## Deployments and Live Links
 
-* Frontend Application: https://e-motion-iota.vercel.app
-* Backend API Base URL: https://e-motion-7vds.onrender.com
-* Swagger OpenAPI Documentation: https://e-motion-7vds.onrender.com/apidocs
+* Frontend Application: [https://e-motion-iota.vercel.app]
+* Backend API Base URL: [https://e-motion-7vds.onrender.com]
+* Swagger OpenAPI Documentation: [https://e-motion-7vds.onrender.com/apidocs]
 
 ---
 
@@ -43,7 +43,7 @@ E-Motion is a web-based health and wellness management platform designed for uni
 ## Repository Structure
 
 ```text
-Holberton-Final-Project/
+Holberton-Final Project/
 ├── backend/
 │   ├── app.py                 # Application entry point and REST routes
 │   ├── kuds_database.db       # SQLite database file
@@ -61,3 +61,75 @@ Holberton-Final-Project/
 │   └── next.config.ts         # Next.js configuration settings
 │
 └── README.md                  # Project documentation
+```
+
+---
+
+## Environment Variables
+
+Configure the following environment variables in the `backend/.env` file:
+
+```env
+FLASK_ENV=production
+SECRET_KEY=your_jwt_secret_key
+PORT=5000
+DATABASE_URL=sqlite:///kuds_database.db
+```
+
+For the frontend application, set the backend API endpoint:
+
+```env
+NEXT_PUBLIC_API_URL=https://e-motion-7vds.onrender.com
+```
+
+---
+
+## Local Development Setup
+
+### Prerequisites
+* Python 3.10 or higher
+* Node.js 18.x or higher
+* npm or yarn package manager
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/hasanovelshan88-design/E-Motion.git
+cd "Holberton-Final Project"
+```
+
+### 2. Backend Installation
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+```
+The Flask backend will be accessible at `http://127.0.0.1:5000`.
+
+### 3. Frontend Installation
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+The Next.js client will run on `http://localhost:3000`.
+
+---
+
+## Key API Endpoints
+
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| GET | `/health` | Returns server health status and uptime |
+| GET | `/apidocs` | Renders interactive Swagger UI |
+| POST | `/api/auth/login` | Authenticates user credentials and returns JWT |
+| GET | `/api/notifications` | Fetches notification list for authenticated user |
+| POST | `/api/notifications/read-all` | Marks all active notifications as read |
+
+---
+
+## Author
+
+* Ali Hasanzada - Computer Engineering Student
+* GitHub: [https://github.com/hasanovelshan88-design]
