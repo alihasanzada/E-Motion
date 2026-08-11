@@ -43,6 +43,18 @@ swagger = Swagger(app, config=swagger_config, template=template)
 
 DB_NAME = 'kuds_database.db'
 
+# --- HEALTH CHECK ENDPOINT ---
+@app.route('/health', methods=['GET'])
+def health_check():
+    """
+    Health Check Endpoint
+    ---
+    responses:
+      200:
+        description: Server is running smoothly
+    """
+    return jsonify({"status": "ok", "message": "Server is active"}), 200
+
 # --- NOTIFICATIONS ENDPOINTS ---
 @app.route('/api/notifications', methods=['GET'])
 def get_notifications():
