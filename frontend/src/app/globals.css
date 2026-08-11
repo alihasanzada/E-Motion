@@ -500,106 +500,158 @@ svg circle {
     }
 
     .main-content {
-        padding: 8px !important;
+        padding: 6px !important;
     }
 
     .dashboard-layout {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
+        display: grid !important;
+        grid-template-columns: calc(50% - 3px) calc(50% - 3px) !important;
+        gap: 6px !important;
+        width: 100% !important;
     }
 
     .left-content,
-    .right-sidebar {
-        gap: 10px !important;
+    .right-sidebar,
+    .challenge-mental-row {
+        display: contents !important;
     }
 
     .card,
-    .welcome-banner-card {
-        padding: 10px 12px !important;
-        border-radius: 12px !important;
+    .welcome-banner {
+        padding: 8px 10px !important;
+        border-radius: 10px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
     }
 
     .card h3 {
-        font-size: 12.5px !important;
-        margin-bottom: 8px !important;
+        font-size: 11px !important;
+        margin-bottom: 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
-    .welcome-banner-card {
-        padding: 12px 14px !important;
+    .welcome-banner {
+        order: 1 !important;
+        grid-column: 1 / 2 !important;
+        min-height: 90px !important;
     }
 
     .banner-content {
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 10px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 2px !important;
     }
 
-    .banner-text {
-        max-width: 100% !important;
+    .banner-text h1,
+    .banner-text h2 {
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
     }
 
-    .banner-text h1 {
-        font-size: 14.5px !important;
-    }
-
-    .banner-text p {
-        font-size: 11px !important;
-        margin-top: 4px !important;
-    }
-
-    .banner-text button {
-        margin-top: 8px !important;
-        padding: 5px 10px !important;
-        font-size: 10.5px !important;
-    }
-
-    .banner-quote {
+    .banner-text p,
+    .banner-quote,
+    .welcome-banner button {
         display: none !important;
     }
 
-    .summary-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 6px !important;
+    div[class*="streak"],
+    .right-sidebar>div:has(h3:contains("Ardıcıl")),
+    .right-sidebar>div:nth-child(1) {
+        order: 2 !important;
+        grid-column: 2 / 3 !important;
+        min-height: 90px !important;
     }
 
-    .summary-card {
-        padding: 8px !important;
+    .summary-grid {
+        order: 3 !important;
+        grid-column: 1 / -1 !important;
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
         gap: 4px !important;
     }
 
-    .summary-card h3 {
-        font-size: 13px !important;
+    .summary-card {
+        padding: 4px 2px !important;
+        border-radius: 6px !important;
+        text-align: center !important;
+        align-items: center !important;
     }
 
-    .challenge-mental-row {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
+    .summary-card h4,
+    .summary-card p {
+        font-size: 9px !important;
+        margin: 0 !important;
+    }
+
+    .summary-card span,
+    .summary-card div[class*="value"] {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+    }
+
+    div[class*="challenge"],
+    .left-content>div:nth-child(3) {
+        order: 4 !important;
+        grid-column: 1 / 2 !important;
+    }
+
+    .events-grid,
+    div[class*="event"],
+    .right-sidebar>div:nth-child(3) {
+        order: 5 !important;
+        grid-column: 2 / 3 !important;
+    }
+
+    .events-grid>div {
+        padding: 4px !important;
+        font-size: 9px !important;
+    }
+
+    .mental-mini-grid,
+    div[class*="mental"] {
+        order: 6 !important;
+        grid-column: 1 / 2 !important;
     }
 
     .mental-mini-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 5px !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 3px !important;
     }
 
     .mental-mini-grid>div {
-        padding: 6px 3px !important;
+        padding: 4px 2px !important;
+        font-size: 8px !important;
+        border-radius: 6px !important;
     }
 
-    .mental-mini-grid h5 {
-        font-size: 9.5px !important;
+    div[class*="service"],
+    .right-sidebar>div:nth-child(2) {
+        order: 7 !important;
+        grid-column: 2 / 3 !important;
     }
 
-    .mental-mini-grid p {
-        font-size: 8.5px !important;
-    }
-
-    .events-grid {
-        grid-template-columns: 1fr !important;
-        gap: 6px !important;
+    div[class*="water"],
+    .left-content>div:nth-child(4) {
+        order: 8 !important;
+        grid-column: 1 / 2 !important;
     }
 
     .water-glass {
-        height: 30px !important;
+        height: 18px !important;
+    }
+
+    div[class*="motivation"],
+    .right-sidebar>div:last-child {
+        order: 9 !important;
+        grid-column: 2 / 3 !important;
     }
 }
