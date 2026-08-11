@@ -483,10 +483,20 @@ svg circle {
 }
 
 @media (max-width: 768px) {
+
+    .dashboard-layout,
+    .left-content,
+    .right-sidebar {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
     .header {
-        min-height: 40px !important;
-        height: 40px !important;
-        padding: 0 8px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        padding: 0 10px !important;
     }
 
     .profile-info {
@@ -494,164 +504,117 @@ svg circle {
     }
 
     .profile-img {
-        width: 30px !important;
-        height: 30px !important;
-        font-size: 12px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 13px !important;
     }
 
     .main-content {
-        padding: 6px !important;
-    }
-
-    .dashboard-layout {
-        display: grid !important;
-        grid-template-columns: calc(50% - 3px) calc(50% - 3px) !important;
-        gap: 6px !important;
-        width: 100% !important;
-    }
-
-    .left-content,
-    .right-sidebar,
-    .challenge-mental-row {
-        display: contents !important;
+        padding: 8px !important;
     }
 
     .card,
     .welcome-banner {
-        padding: 8px 10px !important;
-        border-radius: 10px !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        height: 100% !important;
+        padding: 12px !important;
+        border-radius: 12px !important;
+        width: 100% !important;
         box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
+        min-height: auto !important;
+        height: auto !important;
     }
 
     .card h3 {
-        font-size: 11px !important;
-        margin-bottom: 4px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        font-size: 13px !important;
+        margin-bottom: 8px !important;
+        white-space: normal !important;
     }
 
     .welcome-banner {
-        order: 1 !important;
-        grid-column: 1 / 2 !important;
-        min-height: 90px !important;
+        padding: 12px 14px !important;
     }
 
     .banner-content {
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 2px !important;
+        gap: 4px !important;
     }
 
     .banner-text h1,
     .banner-text h2 {
-        font-size: 12px !important;
-        line-height: 1.2 !important;
+        font-size: 15px !important;
         margin: 0 !important;
     }
 
-    .banner-text p,
+    .banner-text p {
+        font-size: 11px !important;
+        margin-top: 2px !important;
+        line-height: 1.3 !important;
+    }
+
     .banner-quote,
     .welcome-banner button {
         display: none !important;
     }
 
-    div[class*="streak"],
-    .right-sidebar>div:has(h3:contains("Ardıcıl")),
-    .right-sidebar>div:nth-child(1) {
-        order: 2 !important;
-        grid-column: 2 / 3 !important;
-        min-height: 90px !important;
+    .summary-grid {
+        display: flex !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        gap: 8px !important;
+        padding-bottom: 4px !important;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .summary-grid {
-        order: 3 !important;
-        grid-column: 1 / -1 !important;
-        display: grid !important;
-        grid-template-columns: repeat(5, 1fr) !important;
-        gap: 4px !important;
+    .summary-grid::-webkit-scrollbar {
+        display: none;
     }
 
     .summary-card {
-        padding: 4px 2px !important;
-        border-radius: 6px !important;
-        text-align: center !important;
-        align-items: center !important;
+        flex: 0 0 calc(40% - 6px) !important;
+        scroll-snap-align: start !important;
+        padding: 8px 10px !important;
+        border-radius: 10px !important;
+        box-sizing: border-box !important;
     }
 
     .summary-card h4,
     .summary-card p {
-        font-size: 9px !important;
-        margin: 0 !important;
+        font-size: 10px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .summary-card span,
     .summary-card div[class*="value"] {
-        font-size: 11px !important;
+        font-size: 14px !important;
         font-weight: 700 !important;
-    }
-
-    div[class*="challenge"],
-    .left-content>div:nth-child(3) {
-        order: 4 !important;
-        grid-column: 1 / 2 !important;
-    }
-
-    .events-grid,
-    div[class*="event"],
-    .right-sidebar>div:nth-child(3) {
-        order: 5 !important;
-        grid-column: 2 / 3 !important;
-    }
-
-    .events-grid>div {
-        padding: 4px !important;
-        font-size: 9px !important;
-    }
-
-    .mental-mini-grid,
-    div[class*="mental"] {
-        order: 6 !important;
-        grid-column: 1 / 2 !important;
     }
 
     .mental-mini-grid {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 3px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
     }
 
     .mental-mini-grid>div {
-        padding: 4px 2px !important;
-        font-size: 8px !important;
-        border-radius: 6px !important;
+        padding: 8px !important;
+        border-radius: 8px !important;
+        font-size: 10px !important;
     }
 
-    div[class*="service"],
-    .right-sidebar>div:nth-child(2) {
-        order: 7 !important;
-        grid-column: 2 / 3 !important;
+    .events-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
     }
 
-    div[class*="water"],
-    .left-content>div:nth-child(4) {
-        order: 8 !important;
-        grid-column: 1 / 2 !important;
+    .events-grid>div {
+        padding: 8px !important;
+        font-size: 10px !important;
     }
 
     .water-glass {
-        height: 18px !important;
-    }
-
-    div[class*="motivation"],
-    .right-sidebar>div:last-child {
-        order: 9 !important;
-        grid-column: 2 / 3 !important;
+        height: 22px !important;
     }
 }
