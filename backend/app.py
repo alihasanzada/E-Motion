@@ -237,6 +237,14 @@ def get_user_profile():
         return jsonify(dict(user)), 200
     return jsonify({"error": "İstifadəçi tapılmadı"}), 404
 
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        "message": "E-Motion API Server is running",
+        "docs": "/apidocs",
+        "health": "/health"
+    }), 200
+
 # Mərkəzləşdirilmiş Xəta İdarəediciləri
 @app.errorhandler(400)
 def bad_request(error):
