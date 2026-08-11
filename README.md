@@ -6,9 +6,9 @@ E-Motion is a web-based health and wellness management platform designed for uni
 
 ## Deployments and Live Links
 
-* Frontend Application: `https://e-motion-iota.vercel.app`
-* Backend API Base URL: `https://e-motion-7vds.onrender.com`
-* Swagger OpenAPI Documentation: `https://e-motion-7vds.onrender.com/apidocs`
+* Frontend Application: https://e-motion-iota.vercel.app
+* Backend API Base URL: https://e-motion-7vds.onrender.com
+* Swagger OpenAPI Documentation: https://e-motion-7vds.onrender.com/apidocs
 
 ---
 
