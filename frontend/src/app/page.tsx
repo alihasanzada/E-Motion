@@ -44,9 +44,12 @@ export default function Dashboard() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  const [stepsCount, setStepsCount] = useState(7200);
-  const [sleepHours, setSleepHours] = useState(7.5);
-  const [caloriesCount, setCaloriesCount] = useState(420);
+  const [stepsCount, setStepsCount] = useState(0);
+  const [sleepHours, setSleepHours] = useState(0);
+  const [caloriesCount, setCaloriesCount] = useState(0);
+  const [streakDays, setStreakDays] = useState(0);
+  const [activityMinutes, setActivityMinutes] = useState(0);
+  const [waterCount, setWaterCount] = useState(0);
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
@@ -175,7 +178,6 @@ export default function Dashboard() {
     course: number;
   } | null>(null);
 
-  const [waterCount, setWaterCount] = useState<number>(4);
 
   useEffect(() => {
     const fetchWater = async () => {
@@ -997,10 +999,10 @@ export default function Dashboard() {
                 <div className="summary-grid">
                   {[
                     { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: darkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
-                    { id: 'activity', title: 'Aktivlik', value: '35 dəq', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: darkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: 58 },
+                    { id: 'activity', title: 'Aktivlik', value: `${activityMinutes} dəq`, sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: darkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
                     { id: 'nutrition', title: 'Kalori', value: `${caloriesCount} kkal`, sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: darkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
                     { id: 'nutrition', title: 'Su qəbulu', value: `${waterCount} stəkan`, sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: darkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
-                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: darkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) }
+                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: darkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
                   ].map((card, idx) => (
                     <div
                       key={idx}
@@ -1138,7 +1140,7 @@ export default function Dashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
                     <div style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', background: darkMode ? '#78350F' : '#FEF3C7' }}>🔥</div>
                     <div>
-                      <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary }}>7 gün</h4>
+                      <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary }}>{streakDays} gün</h4>
                       <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary }}>Mükəmməl! Davam et!</p>
                     </div>
                   </div>
