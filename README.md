@@ -6,9 +6,9 @@ E-Motion is a web-based health and wellness management platform designed for uni
 
 ## Deployments and Live Links
 
-* Frontend Application: [https://e-motion-iota.vercel.app]
-* Backend API Base URL: [https://e-motion-7vds.onrender.com]
-* Swagger OpenAPI Documentation: [https://e-motion-7vds.onrender.com/apidocs]
+* Frontend Application: `https://e-motion-iota.vercel.app`
+* Backend API Base URL: `https://e-motion-7vds.onrender.com`
+* Swagger OpenAPI Documentation: `https://e-motion-7vds.onrender.com/apidocs`
 
 ---
 
@@ -72,7 +72,7 @@ Configure the following environment variables in the `backend/.env` file:
 ```env
 FLASK_ENV=production
 SECRET_KEY=your_jwt_secret_key
-PORT=5000
+PORT=5050
 DATABASE_URL=sqlite:///kuds_database.db
 ```
 
@@ -93,7 +93,7 @@ NEXT_PUBLIC_API_URL=https://e-motion-7vds.onrender.com
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/hasanovelshan88-design/E-Motion.git
+git clone https://github.com/alihasanzada/E-Motion.git
 cd "Holberton-Final Project"
 ```
 
@@ -105,7 +105,7 @@ source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
-The Flask backend will be accessible at `http://127.0.0.1:5000`.
+The Flask backend will be accessible at `http://127.0.0.1:5050`.
 
 ### 3. Frontend Installation
 ```bash
@@ -129,7 +129,9 @@ The Next.js client will run on `http://localhost:3000`.
 
 ---
 
-## Author
+## Authors & Team
 
-* Ali Hasanzada - Computer Engineering Student
-* GitHub: [https://github.com/hasanovelshan88-design]
+* Ali Hasanzada - https://github.com/alihasanzada
+* Akbar Aliyev - https://github.com/akbar-ako
+* Laman Azizli - https://github.com/lemazizli
+* Murad Quliyev - https://github.com/QuliyevMR
