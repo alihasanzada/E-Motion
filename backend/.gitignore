@@ -1,4 +1,17 @@
+# Virtual Environment
 venv/
+.venv/
+env/
+
+# Environment Variables
 .env
+
+# Database
 *.db
+*.sqlite3
+
+# Python Cache & Compiled Files
 __pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
