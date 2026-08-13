@@ -123,7 +123,7 @@ The Next.js client will run on `http://localhost:3000`.
 | :--- | :--- | :--- |
 | GET | `/health` | Returns server health status and uptime |
 | GET | `/apidocs` | Renders interactive Swagger UI |
-| POST | `/api/auth/login` | Authenticates user credentials and returns JWT |
+| POST | `/api/login` | Authenticates user credentials and returns JWT |
 | GET | `/api/notifications` | Fetches notification list for authenticated user |
 | POST | `/api/notifications/read-all` | Marks all active notifications as read |
 
