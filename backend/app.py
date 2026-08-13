@@ -48,6 +48,8 @@ DB_NAME = 'kuds_database.db'
 def health_check():
     """
     Health Check Endpoint
+    tags:
+        - System
     ---
     responses:
       200:
@@ -61,6 +63,8 @@ def get_notifications():
     """
     Get all notifications
     ---
+    tags:
+      - Notifications
     responses:
       200:
         description: List of notifications
@@ -80,11 +84,13 @@ def get_notifications():
         })
     return jsonify(result), 200
 
-@app.route('/api/notifications/read-all', methods=['PUT', 'POST', 'OPTIONS'])
+@app.route('/api/notifications/read-all', methods=['POST', 'OPTIONS'])
 def read_all_notifications():
     """
     Mark all notifications as read
     ---
+    tags:
+        - Notifications
     responses:
       200:
         description: Success status and updated notifications
@@ -226,6 +232,8 @@ def get_user_profile():
     """
     Get active user profile details
     ---
+    tags:
+      - User
     responses:
       200:
         description: User profile information
@@ -449,7 +457,7 @@ init_db()
 @app.route('/api/register', methods=['POST'])
 def register():
     """
-    İstifadəçi Qeydiyyatı
+    User registration
     ---
     tags:
       - Authentication
@@ -487,7 +495,7 @@ def register():
 
     email_pattern = r'^(?i:s|st)\d{6}@qu\.edu\.az$'
     if not re.match(email_pattern, email):
-        return jsonify({"message": "Keçərsiz e-poçt formatı! Yalnız S123456@qu.edu.az formatında e-poçtlar qəbul edilir."}), 400
+        return jsonify({"message": "Keçərsiz e-poçt formatı! Yalnız st123456@qu.edu.az formatında e-poçtlar qəbul edilir."}), 400
 
     hashed_password = generate_password_hash(password)
     conn = get_db_connection()
@@ -512,7 +520,7 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def login():
     """
-    İstifadəçi Girişi
+    User login
     ---
     tags:
       - Authentication
@@ -531,9 +539,9 @@ def login():
               example: "secret123"
     responses:
       200:
-        description: Giriş uğurludur
+        description: Login successful
       401:
-        description: E-poçt və ya şifrə yanlışdır
+        description: Email or password is incorrect
     """
     data = request.get_json() or {}
     email = data.get('email')
@@ -580,13 +588,13 @@ def login():
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     """
-    Ümumi Statistika Məlumatları
+    Get overall platform statistics
     ---
     tags:
       - Stats
     responses:
       200:
-        description: Statistika uğurla gətirildi
+        description: Statistics successfully imported
     """
     conn = get_db_connection()
     students_count = conn.execute('SELECT COUNT(*) FROM students').fetchone()[0]
@@ -607,13 +615,13 @@ def get_stats():
 @app.route('/api/students', methods=['GET'])
 def get_students():
     """
-    Tələbələrin Siyahısı
+    Get list of students
     ---
     tags:
       - Students
     responses:
       200:
-        description: Tələbələr siyahısı
+        description: List of students retrieved successfully
     """
     conn = get_db_connection()
     students = conn.execute('SELECT * FROM students').fetchall()
@@ -623,7 +631,7 @@ def get_students():
 @app.route('/api/students', methods=['POST'])
 def add_student():
     """
-    Yeni Tələbə Əlavə Etmə
+    Add a new student
     ---
     tags:
       - Students
@@ -644,7 +652,7 @@ def add_student():
               type: integer
     responses:
       201:
-        description: Tələbə əlavə edildi
+        description: Student added successfully
     """
     data = request.get_json() or {}
     conn = get_db_connection()
@@ -664,7 +672,7 @@ def add_student():
 @app.route('/api/students/<int:id>', methods=['DELETE'])
 def delete_student(id):
     """
-    Tələbəni Silmə
+    Delete student profile by ID
     ---
     tags:
       - Students
@@ -673,12 +681,12 @@ def delete_student(id):
         in: path
         type: integer
         required: true
-        description: Silinəcək tələbənin ID-si
+        description: ID of the student to be deleted
     responses:
       200:
-        description: Tələbə silindi
+        description: Student deleted successfully
       404:
-        description: Tələbə tapılmadı
+        description: Student not found
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -696,13 +704,13 @@ def delete_student(id):
 @app.route('/api/courses', methods=['GET'])
 def get_courses():
     """
-    Fənlərin Siyahısı
+    Get list of courses
     ---
     tags:
       - Courses
     responses:
       200:
-        description: Fənlər siyahısı
+        description: List of subjects retrieved successfully
     """
     conn = get_db_connection()
     courses = conn.execute('SELECT * FROM courses').fetchall()
@@ -712,7 +720,7 @@ def get_courses():
 @app.route('/api/courses', methods=['POST'])
 def add_course():
     """
-    Yeni Fənn Əlavə Etmə
+    Add a new course
     ---
     tags:
       - Courses
@@ -731,7 +739,7 @@ def add_course():
               type: integer
     responses:
       201:
-        description: Fənn əlavə edildi
+        description: Subject added successfully
     """
     data = request.get_json() or {}
     conn = get_db_connection()
@@ -753,13 +761,13 @@ def add_course():
 @app.route('/api/events', methods=['GET'])
 def get_events():
     """
-    Tədbirlərin Siyahısı
+    Retrieve all campus events
     ---
     tags:
       - Events
     responses:
       200:
-        description: Tədbirlər siyahısı
+        description: List of events retrieved successfully
     """
     conn = get_db_connection()
     events = conn.execute('SELECT * FROM events').fetchall()
@@ -769,7 +777,7 @@ def get_events():
 @app.route('/api/events', methods=['POST'])
 def add_event():
     """
-    Yeni Tədbir Əlavə Etmə
+    Add a new campus event
     ---
     tags:
       - Events
@@ -788,7 +796,7 @@ def add_event():
               type: string
     responses:
       201:
-        description: Tədbir əlavə edildi
+        description: Event added successfully
     """
     data = request.get_json() or {}
     title = data.get('title')
@@ -812,13 +820,13 @@ def add_event():
 @app.route('/api/resources', methods=['GET'])
 def get_resources():
     """
-    Resursların Siyahısı
+    Get list of resources
     ---
     tags:
       - Resources
     responses:
       200:
-        description: Resurslar siyahısı
+        description: List of resources retrieved successfully
     """
     conn = get_db_connection()
     resources = conn.execute('SELECT * FROM resources').fetchall()
@@ -828,7 +836,7 @@ def get_resources():
 @app.route('/api/resources', methods=['POST'])
 def add_resource():
     """
-    Yeni Resurs Əlavə Etmə
+    Add a new resource
     ---
     tags:
       - Resources
@@ -847,7 +855,7 @@ def add_resource():
               type: string
     responses:
       201:
-        description: Resurs əlavə edildi
+        description: Resource added successfully
     """
     data = request.get_json() or {}
     title = data.get('title')
@@ -937,13 +945,13 @@ def update_activity():
 @app.route('/api/moods', methods=['GET'])
 def get_moods():
     """
-    Son 5 emosiya qeydini gətirir
+    Get last 5 mood logs
     ---
     tags:
       - Health & Activity
     responses:
       200:
-        description: Emosiya siyahısı uğurla gətirildi
+        description: Emotion list successfully retrieved
     """
     conn = get_db_connection()
     moods = conn.execute('SELECT * FROM mood_logs ORDER BY id DESC LIMIT 5').fetchall()
@@ -953,7 +961,7 @@ def get_moods():
 @app.route('/api/moods', methods=['POST'])
 def add_mood():
     """
-    Yeni emosiya qeydi əlavə edir
+    Log a new mood entry
     ---
     tags:
       - Health & Activity
@@ -972,7 +980,7 @@ def add_mood():
               example: "Bu gün dərslər əla keçdi."
     responses:
       201:
-        description: Mental vəziyyət uğurla qeyd olundu
+        description: Mood entry successfully logged
     """
     data = request.get_json() or {}
     mood = data.get('mood')
@@ -995,13 +1003,13 @@ def add_mood():
 @app.route('/api/nutrition', methods=['GET'])
 def get_nutrition():
     """
-    Son 5 qidalanma logunu gətirir
+    Get last 5 nutrition logs
     ---
     tags:
       - Health & Activity
     responses:
       200:
-        description: Qidalanma siyahısı uğurla gətirildi
+        description: Nutrition logs successfully retrieved
     """
     conn = get_db_connection()
     logs = conn.execute('SELECT * FROM nutrition ORDER BY id DESC LIMIT 5').fetchall()
@@ -1011,7 +1019,7 @@ def get_nutrition():
 @app.route('/api/nutrition', methods=['POST'])
 def add_nutrition():
     """
-    Yeni yemək və kalori qeydi əlavə edir
+    Add nutrition and calorie record
     ---
     tags:
       - Health & Activity
@@ -1030,7 +1038,7 @@ def add_nutrition():
               example: 650
     responses:
       201:
-        description: Qidalanma qeydi əlavə edildi
+        description: Nutrition log added successfully
     """
     data = request.get_json() or {}
     meal = data.get('meal')
@@ -1053,13 +1061,13 @@ def add_nutrition():
 @app.route('/api/challenges', methods=['GET'])
 def get_challenges():
     """
-    Mövcud çağırışların siyahısını gətirir
+    Get list of all active wellness challenges
     ---
     tags:
       - Health & Activity
     responses:
       200:
-        description: Çağırışlar uğurla gətirildi
+        description: List of challenges successfully retrieved
     """
     conn = get_db_connection()
     challenges = conn.execute('SELECT * FROM challenges').fetchall()
@@ -1069,7 +1077,7 @@ def get_challenges():
 @app.route('/api/challenges/<int:challenge_id>/toggle', methods=['POST'])
 def toggle_challenge(challenge_id):
     """
-    Çağırışın statusunu dəyişir (Tamamlandı/Tamamlanmadı)
+    Toggle challenge status (Completed/Pending)
     ---
     tags:
       - Health & Activity
@@ -1080,7 +1088,7 @@ def toggle_challenge(challenge_id):
         required: true
     responses:
       200:
-        description: Status yeniləndi
+        description: Challenge status updated successfully
     """
     conn = get_db_connection()
     cursor = conn.cursor()
