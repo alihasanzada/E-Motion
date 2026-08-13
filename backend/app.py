@@ -49,7 +49,7 @@ def health_check():
     """
     Health Check Endpoint
     ---
-        tags:
+    tags:
         - System
     responses:
       200:
