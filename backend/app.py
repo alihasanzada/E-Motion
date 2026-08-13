@@ -34,7 +34,7 @@ template = {
     "swagger": "2.0",
     "info": {
         "title": "E-motion API",
-        "description": "E-motion Platformasının Backend REST API Sənədləşməsi",
+        "description": "E-motion Platform Backend REST API Documentation",
         "version": "1.0.0"
     }
 }
@@ -48,9 +48,9 @@ DB_NAME = 'kuds_database.db'
 def health_check():
     """
     Health Check Endpoint
-    tags:
-        - System
     ---
+        tags:
+        - System
     responses:
       200:
         description: Server is running smoothly
