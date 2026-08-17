@@ -1132,7 +1132,7 @@ export default function Dashboard() {
 
               </div>
 
-              {/* Right Sidebar */}------------------------------------------------------------
+              {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                 <div
@@ -1142,7 +1142,31 @@ export default function Dashboard() {
                 >
                   <h3 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Ardıcıl sağlamlıq günləri</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', background: darkMode ? '#78350F' : '#FEF3C7' }}>🔥</div>
+                    <div style={{ position: 'relative', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="38" height="38" viewBox="0 0 38 38" style={{ transform: 'rotate(-90deg)' }}>
+                        <circle
+                          cx="19"
+                          cy="19"
+                          r="16"
+                          stroke={darkMode ? '#374151' : '#E5E7EB'}
+                          strokeWidth="2.5"
+                          fill="transparent"
+                        />
+                        <circle
+                          cx="19"
+                          cy="19"
+                          r="16"
+                          stroke="#F59E0B"
+                          strokeWidth="2.5"
+                          fill="transparent"
+                          strokeDasharray={2 * Math.PI * 16}
+                          strokeDashoffset={(2 * Math.PI * 16) - ((Math.min(100, ((streakDays || 0) / 30) * 100) / 100) * (2 * Math.PI * 16))}
+                          strokeLinecap="round"
+                          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                        />
+                      </svg>
+                      <span style={{ position: 'absolute', fontSize: '17px' }}>🔥</span>
+                    </div>
                     <div>Gözləyirəm! Sınaqdan keçir, görək böyük ekranda təəssürat necə olur. Uğurlar və xoş istifadələr! 🚀🎮
                       <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary }}>{streakDays} gün</h4>
                       <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary }}>Mükəmməl! Davam et!</p>
