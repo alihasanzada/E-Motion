@@ -122,75 +122,75 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
 
-      {/* 1. Hero Banner */}
+      {/* Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #2E5B4E 0%, #44766C 100%)',
-        borderRadius: '20px',
-        padding: '28px 32px',
+        borderRadius: '14px',
+        padding: '16px 20px',
         color: '#FFFFFF',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: '0 10px 25px -5px rgba(68, 118, 108, 0.3)'
+        boxShadow: '0 6px 16px -4px rgba(68, 118, 108, 0.25)'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Sparkles size={13} /> Gündəlik Status
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <span style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '3px 8px', borderRadius: '16px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Sparkles size={12} /> Gündəlik Status
             </span>
           </div>
-          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>
-            Hədəflərinə doğru əla irəliləyirsən! 🎯
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', letterSpacing: '-0.3px' }}>
+            Hədəflərinə doğru əla irəliləyirsən!
           </h2>
-          <p style={{ margin: '6px 0 0 0', fontSize: '13.5px', opacity: 0.9, maxWidth: '500px', lineHeight: '1.5' }}>
+          <p style={{ margin: '2px 0 0 0', fontSize: '12px', opacity: 0.9, maxWidth: '480px', lineHeight: '1.4' }}>
             Bədənini hərəkətdə saxla və su balansını tənzimlə. Kiçik addımlar böyük nəticələr verir.
           </p>
         </div>
-        <div style={{ display: 'block', textAlign: 'right', background: 'rgba(255,255,255,0.1)', padding: '16px 20px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)' }}>
-          <span style={{ fontSize: '12px', opacity: 0.8, display: 'block' }}>Ümumi Gedişat</span>
-          <span style={{ fontSize: '22px', fontWeight: '700', color: '#A7F3D0' }}>{Math.round((stepPercentage + waterPercentage) / 2)}%</span>
+        <div style={{ display: 'block', textAlign: 'right', background: 'rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)' }}>
+          <span style={{ fontSize: '11px', opacity: 0.8, display: 'block' }}>Ümumi Gedişat</span>
+          <span style={{ fontSize: '20px', fontWeight: '700', color: '#A7F3D0' }}>{Math.round((stepPercentage + waterPercentage) / 2)}%</span>
         </div>
       </div>
 
-      {/* 2. Metrika Kartları */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      {/* Metric Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px' }}>
 
         {/* Addım Kartı */}
         <div style={{
           backgroundColor: theme.cardBg,
-          padding: '24px',
-          borderRadius: '20px',
+          padding: '16px',
+          borderRadius: '14px',
           border: `1px solid ${theme.border}`,
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 10px -2px rgba(0, 0, 0, 0.04)',
           position: 'relative',
           overflow: 'hidden'
         }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #44766C, #A7F3D0)' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #44766C, #A7F3D0)' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ backgroundColor: theme.iconBgStep, padding: '12px', borderRadius: '14px', color: '#44766C' }}>
-                <Footprints size={22} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ backgroundColor: theme.iconBgStep, padding: '8px', borderRadius: '10px', color: '#44766C' }}>
+                <Footprints size={18} />
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Atılan Addım</h4>
-                <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hədəf: {stepGoal.toLocaleString()}</span>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: theme.textPrimary }}>Atılan Addım</h4>
+                <span style={{ fontSize: '11px', color: theme.textSecondary }}>Hədəf: {stepGoal.toLocaleString()}</span>
               </div>
             </div>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.15)', padding: '6px 12px', borderRadius: '20px' }}>
+            <span style={{ fontSize: '11.5px', fontWeight: '700', color: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.15)', padding: '4px 10px', borderRadius: '16px' }}>
               {stepPercentage}%
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '16px 0' }}>
-            <span style={{ fontSize: '36px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-1px' }}>{steps.toLocaleString()}</span>
-            <span style={{ fontSize: '14px', color: theme.textSecondary, fontWeight: '600' }}>addım</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', margin: '8px 0' }}>
+            <span style={{ fontSize: '26px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>{steps.toLocaleString()}</span>
+            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>addım</span>
           </div>
 
           {/* Progress Bar */}
-          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '10px', borderRadius: '6px', overflow: 'hidden', marginBottom: '16px' }}>
+          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '8px', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px' }}>
             <div style={{
               width: `${stepPercentage}%`,
               background: 'linear-gradient(90deg, #44766C, #619B8D)',
@@ -204,13 +204,13 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => handleQuickAdd(500, 0)}
-              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '7px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
               +500 addım
             </button>
             <button
               onClick={() => handleQuickAdd(1000, 0)}
-              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.3)', backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '7px', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.3)', backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
               +1,000 addım
             </button>
@@ -220,40 +220,40 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
         {/* Su Kartı */}
         <div style={{
           backgroundColor: theme.cardBg,
-          padding: '24px',
-          borderRadius: '20px',
+          padding: '16px',
+          borderRadius: '14px',
           border: `1px solid ${theme.border}`,
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 10px -2px rgba(0, 0, 0, 0.04)',
           position: 'relative',
           overflow: 'hidden'
         }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #0284C7, #7DD3FC)' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #44766C, #A7F3D0)' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ backgroundColor: theme.iconBgWater, padding: '12px', borderRadius: '14px', color: '#38BDF8' }}>
-                <Droplet size={22} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ backgroundColor: theme.iconBgStep || 'rgba(52, 211, 153, 0.15)', padding: '8px', borderRadius: '10px', color: '#44766C' }}>
+                <Droplet size={18} />
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>İçilən Su</h4>
-                <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hədəf: 2000 ml</span>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: theme.textPrimary }}>İçilən Su</h4>
+                <span style={{ fontSize: '11px', color: theme.textSecondary }}>Hədəf: 2000 ml</span>
               </div>
             </div>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: '#38BDF8', backgroundColor: 'rgba(56, 189, 248, 0.15)', padding: '6px 12px', borderRadius: '20px' }}>
+            <span style={{ fontSize: '11.5px', fontWeight: '700', color: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.15)', padding: '4px 10px', borderRadius: '16px' }}>
               {Math.min(Math.round((water / 2000) * 100), 100)}%
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '16px 0' }}>
-            <span style={{ fontSize: '36px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-1px' }}>{water.toLocaleString()}</span>
-            <span style={{ fontSize: '14px', color: theme.textSecondary, fontWeight: '600' }}>ml</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', margin: '8px 0' }}>
+            <span style={{ fontSize: '26px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>{water.toLocaleString()}</span>
+            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>ml</span>
           </div>
 
           {/* Progress Bar */}
-          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '10px', borderRadius: '6px', overflow: 'hidden', marginBottom: '16px' }}>
+          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '8px', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px' }}>
             <div style={{
               width: `${waterPercentage}%`,
-              background: 'linear-gradient(90deg, #0284C7, #38BDF8)',
+              background: 'linear-gradient(90deg, #44766C, #619B8D)',
               height: '100%',
               borderRadius: '6px',
               transition: 'width 0.5s ease'
@@ -261,16 +261,16 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           </div>
 
           {/* Sürətli Əlavə Et Düymələri */}
-          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => handleQuickAdd(0, 250)}
-              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '7px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
               +250 ml (Stəkan)
             </button>
             <button
               onClick={() => handleQuickAdd(0, 500)}
-              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.3)', backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '7px', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.3)', backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
               +500 ml (Şüşə)
             </button>
@@ -279,27 +279,27 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
       </div>
 
-      {/* 3. Manual Dəyər Daxiletmə Formu */}
+      {/* Manual Dəyər Daxiletmə Formu */}
       <div style={{
         backgroundColor: theme.cardBg,
-        padding: '28px',
-        borderRadius: '20px',
+        padding: '16px 20px',
+        borderRadius: '14px',
         border: `1px solid ${theme.border}`,
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)'
+        boxShadow: '0 4px 10px -2px rgba(0, 0, 0, 0.04)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-          <div style={{ backgroundColor: theme.progressBg, padding: '8px', borderRadius: '10px', color: theme.textPrimary }}>
-            <RefreshCw size={18} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <div style={{ backgroundColor: theme.progressBg, padding: '6px', borderRadius: '8px', color: theme.textPrimary }}>
+            <RefreshCw size={16} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Manual Dəyər Daxil Et</h3>
-            <p style={{ margin: 0, fontSize: '12.5px', color: theme.textSecondary }}>İstədiyiniz dəqiq miqdarı əlavə edin.</p>
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Manual Dəyər Daxil Et</h3>
+            <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary }}>İstədiyiniz dəqiq miqdarı əlavə edin.</p>
           </div>
         </div>
 
-        <form onSubmit={handleUpdate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', alignItems: 'end' }}>
+        <form onSubmit={handleUpdate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', alignItems: 'end' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: theme.textSecondary, marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textSecondary, marginBottom: '6px' }}>
               Addım Əlavə Et
             </label>
             <input
@@ -309,10 +309,10 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               onChange={(e) => setInputSteps(e.target.value)}
               style={{
                 width: '100%',
-                padding: '12px 16px',
-                borderRadius: '12px',
+                padding: '9px 12px',
+                borderRadius: '8px',
                 border: `1px solid ${theme.inputBorder}`,
-                fontSize: '14px',
+                fontSize: '13px',
                 outline: 'none',
                 backgroundColor: theme.inputBg,
                 color: theme.textPrimary,
@@ -322,7 +322,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: theme.textSecondary, marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textSecondary, marginBottom: '6px' }}>
               Su Əlavə Et (ml)
             </label>
             <input
@@ -332,10 +332,10 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               onChange={(e) => setInputWater(e.target.value)}
               style={{
                 width: '100%',
-                padding: '12px 16px',
-                borderRadius: '12px',
+                padding: '9px 12px',
+                borderRadius: '8px',
                 border: `1px solid ${theme.inputBorder}`,
-                fontSize: '14px',
+                fontSize: '13px',
                 outline: 'none',
                 backgroundColor: theme.inputBg,
                 color: theme.textPrimary,
@@ -350,19 +350,19 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               backgroundColor: '#44766C',
               color: '#FFFFFF',
               border: 'none',
-              padding: '13px 24px',
-              borderRadius: '12px',
-              fontSize: '14px',
+              padding: '9px 18px',
+              borderRadius: '8px',
+              fontSize: '13px',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(68, 118, 108, 0.25)'
+              gap: '6px',
+              boxShadow: '0 4px 10px rgba(68, 118, 108, 0.2)'
             }}
           >
-            <Plus size={18} />
+            <Plus size={16} />
             Məlumatı Yenilə
           </button>
         </form>
