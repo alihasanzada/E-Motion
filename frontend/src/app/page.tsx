@@ -1167,7 +1167,7 @@ export default function Dashboard() {
                       </svg>
                       <span style={{ position: 'absolute', fontSize: '17px' }}>🔥</span>
                     </div>
-                    <div>Gözləyirəm! Sınaqdan keçir, görək böyük ekranda təəssürat necə olur. Uğurlar və xoş istifadələr! 🚀🎮
+                    <div>
                       <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary }}>{streakDays} gün</h4>
                       <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary }}>Mükəmməl! Davam et!</p>
                     </div>
