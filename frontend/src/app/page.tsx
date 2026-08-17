@@ -1140,36 +1140,37 @@ export default function Dashboard() {
                   className="card"
                   style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, cursor: 'pointer' }}
                 >
-                  <h3 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Ardıcıl sağlamlıq günləri</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-                    <div style={{ position: 'relative', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <svg width="38" height="38" viewBox="0 0 38 38" style={{ transform: 'rotate(-90deg)' }}>
+                  <h3 style={{ margin: '0 0 14px 0', fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Ardıcıl sağlamlıq günləri</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{ position: 'relative', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="50" height="50" viewBox="0 0 50 50" style={{ transform: 'rotate(-90deg)' }}>
                         <circle
-                          cx="19"
-                          cy="19"
-                          r="16"
+                          cx="25"
+                          cy="25"
+                          r="21"
                           stroke={darkMode ? '#374151' : '#E5E7EB'}
-                          strokeWidth="2.5"
+                          strokeWidth="4"
                           fill="transparent"
                         />
                         <circle
-                          cx="19"
-                          cy="19"
-                          r="16"
-                          stroke="#F59E0B"
-                          strokeWidth="2.5"
+                          cx="25"
+                          cy="25"
+                          r="21"
+                          stroke="#F97316"
+                          strokeWidth="4"
                           fill="transparent"
-                          strokeDasharray={2 * Math.PI * 16}
-                          strokeDashoffset={(2 * Math.PI * 16) - ((Math.min(100, ((streakDays || 0) / 30) * 100) / 100) * (2 * Math.PI * 16))}
+                          strokeDasharray={2 * Math.PI * 21}
+                          strokeDashoffset={2 * Math.PI * 21 * (1 - Math.min(1, (streakDays || 0) / 30))}
                           strokeLinecap="round"
-                          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
                         />
                       </svg>
-                      <span style={{ position: 'absolute', fontSize: '17px' }}>🔥</span>
+                      <span style={{ position: 'absolute', fontSize: '22px' }}>🔥</span>
                     </div>
+
                     <div>
-                      <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary }}>{streakDays} gün</h4>
-                      <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary }}>Mükəmməl! Davam et!</p>
+                      <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: theme.textPrimary }}>{streakDays || 0} gün</h4>
+                      <p style={{ margin: '2px 0 0 0', fontSize: '11.5px', color: theme.textSecondary }}>Mükəmməl! Davam et!</p>
                     </div>
                   </div>
                 </div>
