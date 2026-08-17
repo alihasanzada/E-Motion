@@ -182,16 +182,20 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchWater = async () => {
       const savedWater = localStorage.getItem('waterCount');
+
       if (savedWater !== null) {
         setWaterCount(Number(savedWater));
+      } else {
+        setWaterCount(0);
       }
 
       try {
         const res = await fetch(`${API_BASE_URL}/api/water`);
         if (res.ok) {
           const data = await res.json();
-          setWaterCount(data.count);
-          localStorage.setItem('waterCount', data.count.toString());
+          const count = data.count ?? 0;
+          setWaterCount(count);
+          localStorage.setItem('waterCount', count.toString());
         }
       } catch (err) {
         console.warn('Backend-dən su məlumatı alınmadı:', err);
@@ -1128,7 +1132,7 @@ export default function Dashboard() {
 
               </div>
 
-              {/* Right Sidebar */}
+              {/* Right Sidebar */}------------------------------------------------------------
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                 <div
@@ -1139,7 +1143,7 @@ export default function Dashboard() {
                   <h3 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Ardıcıl sağlamlıq günləri</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
                     <div style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', background: darkMode ? '#78350F' : '#FEF3C7' }}>🔥</div>
-                    <div>
+                    <div>Gözləyirəm! Sınaqdan keçir, görək böyük ekranda təəssürat necə olur. Uğurlar və xoş istifadələr! 🚀🎮
                       <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: '700', color: theme.textPrimary }}>{streakDays} gün</h4>
                       <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary }}>Mükəmməl! Davam et!</p>
                     </div>
