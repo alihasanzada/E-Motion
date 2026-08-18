@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Footprints, Droplet, Plus, RefreshCw, Sparkles } from 'lucide-react';
+import { Footprints, Droplet, Plus, RefreshCw, Sparkles, Flame, Clock } from 'lucide-react';
 
 interface ActivityPanelProps {
   isDarkMode?: boolean;
@@ -366,6 +366,55 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
             Məlumatı Yenilə
           </button>
         </form>
+      </div>
+
+      {/* Alt Boşluğu Dolduran Əlavə İcmal Kartları */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+
+        {/* Yandırılan Kalori */}
+        <div style={{
+          backgroundColor: theme.cardBg,
+          padding: '12px 16px',
+          borderRadius: '12px',
+          border: `1px solid ${theme.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', padding: '8px', borderRadius: '10px', color: '#F59E0B' }}>
+              <Flame size={18} />
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', color: theme.textSecondary, display: 'block' }}>Yandırılan Kalori</span>
+              <span style={{ fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>320 kcal</span>
+            </div>
+          </div>
+          <span style={{ fontSize: '11px', color: theme.textSecondary }}>Hədəf: 500 kcal</span>
+        </div>
+
+        {/* Aktiv Müddət */}
+        <div style={{
+          backgroundColor: theme.cardBg,
+          padding: '12px 16px',
+          borderRadius: '12px',
+          border: `1px solid ${theme.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ backgroundColor: 'rgba(99, 102, 241, 0.15)', padding: '8px', borderRadius: '10px', color: '#6366F1' }}>
+              <Clock size={18} />
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', color: theme.textSecondary, display: 'block' }}>Aktiv Müddət</span>
+              <span style={{ fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>45 dəq</span>
+            </div>
+          </div>
+          <span style={{ fontSize: '11px', color: theme.textSecondary }}>Hədəf: 60 dəq</span>
+        </div>
+
       </div>
 
     </div>
