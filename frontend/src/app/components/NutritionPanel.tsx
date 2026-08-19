@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Utensils, Plus, Flame, Trash2, Droplet, Coffee, Sun, Moon, Cookie, Zap, RotateCcw } from 'lucide-react';
+import { Utensils, Plus, Flame, Trash2, Zap, Apple, Egg, UtensilsCrossed, Coffee, Cookie } from 'lucide-react';
 
 interface Meal {
   id: number;
@@ -37,10 +37,8 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     protein: 130,
     carbs: 220,
     fat: 65,
-    water: 2500,
   };
 
-  const [waterIntake, setWaterIntake] = useState<number>(1250);
   const [mealName, setMealName] = useState('');
   const [calories, setCalories] = useState('');
   const [mealType, setMealType] = useState('Günorta');
@@ -62,7 +60,31 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   const proteinPercent = Math.min(Math.round((totalProtein / goals.protein) * 100), 100);
   const carbsPercent = Math.min(Math.round((totalCarbs / goals.carbs) * 100), 100);
   const fatPercent = Math.min(Math.round((totalFat / goals.fat) * 100), 100);
-  const waterPercent = Math.min(Math.round((waterIntake / goals.water) * 100), 100);
+
+  const getFoodIcon = (name: string) => {
+    const lowerName = name.toLowerCase();
+
+    if (lowerName.includes('shake') || lowerName.includes('protein')) {
+      return <Zap size={18} color="#EC4899" />;
+    }
+    if (lowerName.includes('yumurta') || lowerName.includes('omlet')) {
+      return <Egg size={18} color="#F59E0B" />;
+    }
+    if (lowerName.includes('toyuq') || lowerName.includes('ət') || lowerName.includes('düyü') || lowerName.includes('balıq')) {
+      return <UtensilsCrossed size={18} color="#10B981" />;
+    }
+    if (lowerName.includes('alma') || lowerName.includes('giləmeyvə') || lowerName.includes('yulaf') || lowerName.includes('meyvə')) {
+      return <Apple size={18} color="#EF4444" />;
+    }
+    if (lowerName.includes('qəhvə') || lowerName.includes('kofe') || lowerName.includes('çay')) {
+      return <Coffee size={18} color="#8B5CF6" />;
+    }
+    if (lowerName.includes('peçenye') || lowerName.includes('tort') || lowerName.includes('şirniyyat')) {
+      return <Cookie size={18} color="#D97706" />;
+    }
+
+    return <Apple size={18} color={isDarkMode ? '#4ADE80' : '#2E5B4E'} />;
+  };
 
   const handleAddMeal = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,15 +135,6 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     setMeals(meals.filter(m => m.id !== id));
   };
 
-  const getMealIcon = (type: string) => {
-    switch (type) {
-      case 'Səhər': return <Coffee size={18} color="#F59E0B" />;
-      case 'Günorta': return <Sun size={18} color="#10B981" />;
-      case 'Şam': return <Moon size={18} color="#6366F1" />;
-      default: return <Cookie size={18} color="#EC4899" />;
-    }
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
 
@@ -143,11 +156,11 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         border: `1px solid ${theme.borderColor}`,
         boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '24px',
         alignItems: 'center'
       }}>
-        {/* Kalori Hədəfi */}
+        {/* Sol: Kalori Hədəfi */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '13px', fontWeight: '700', color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -169,20 +182,20 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
           </div>
         </div>
 
-        {/* Dinamik Makronutrientlər */}
+        {/* Sağ: Dinamik Makronutrientlər */}
         <div style={{ display: 'flex', justifyContent: 'space-around', borderLeft: `1px solid ${theme.macroBorder}`, paddingLeft: '16px' }}>
           <div style={{ textAlign: 'center' }}>
             <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>ZÜLAL</span>
             <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalProtein}g <span style={{ fontSize: '10px', color: theme.textSecondary }}>/ {goals.protein}g</span></strong>
-            <div style={{ width: '48px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
+            <div style={{ width: '54px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
               <div style={{ width: `${proteinPercent}%`, height: '100%', backgroundColor: '#3B82F6', borderRadius: '4px', transition: 'width 0.3s' }} />
             </div>
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>KARBO</span>
+            <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>KARBOHİDRAT</span>
             <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalCarbs}g <span style={{ fontSize: '10px', color: theme.textSecondary }}>/ {goals.carbs}g</span></strong>
-            <div style={{ width: '48px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
+            <div style={{ width: '54px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
               <div style={{ width: `${carbsPercent}%`, height: '100%', backgroundColor: '#F59E0B', borderRadius: '4px', transition: 'width 0.3s' }} />
             </div>
           </div>
@@ -190,60 +203,9 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
           <div style={{ textAlign: 'center' }}>
             <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>YAĞ</span>
             <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalFat}g <span style={{ fontSize: '10px', color: theme.textSecondary }}>/ {goals.fat}g</span></strong>
-            <div style={{ width: '48px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
+            <div style={{ width: '54px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
               <div style={{ width: `${fatPercent}%`, height: '100%', backgroundColor: '#EC4899', borderRadius: '4px', transition: 'width 0.3s' }} />
             </div>
-          </div>
-        </div>
-
-        {/* Dinamik Su İzləyicisi */}
-        <div style={{ borderLeft: `1px solid ${theme.macroBorder}`, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Droplet size={15} color="#3B82F6" /> Su Qəbulu
-            </span>
-            <span style={{ fontSize: '12px', fontWeight: '800', color: '#3B82F6' }}>{(waterIntake / 1000).toFixed(2)}L / {(goals.water / 1000).toFixed(1)}L ({waterPercent}%)</span>
-          </div>
-
-          <div style={{ width: '100%', height: '6px', backgroundColor: theme.progressBg, borderRadius: '6px', overflow: 'hidden' }}>
-            <div style={{ width: `${waterPercent}%`, height: '100%', backgroundColor: '#3B82F6', borderRadius: '6px', transition: 'width 0.3s' }} />
-          </div>
-
-          <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
-            <button
-              onClick={() => setWaterIntake(prev => Math.min(prev + 250, 4000))}
-              style={{
-                flex: 1,
-                backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                color: '#3B82F6',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
-                padding: '5px 8px',
-                borderRadius: '8px',
-                fontSize: '11.5px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '4px'
-              }}
-            >
-              <Plus size={12} /> +250 ml
-            </button>
-            <button
-              onClick={() => setWaterIntake(0)}
-              title="Su qəbulunu sıfırla"
-              style={{
-                backgroundColor: theme.inputBg,
-                color: theme.textSecondary,
-                border: `1px solid ${theme.borderColor}`,
-                padding: '5px 8px',
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              <RotateCcw size={12} />
-            </button>
           </div>
         </div>
       </div>
@@ -353,7 +315,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, marginBottom: '3px' }}>Karbo (g)</label>
+                <label style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, marginBottom: '3px' }}>Karbohidrat (g)</label>
                 <input
                   type="number"
                   placeholder="Avto"
@@ -476,7 +438,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                       justifyContent: 'center',
                       border: `1px solid ${theme.borderColor}`
                     }}>
-                      {getMealIcon(item.type)}
+                      {getFoodIcon(item.name)}
                     </div>
                     <div>
                       <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>{item.name}</h4>
