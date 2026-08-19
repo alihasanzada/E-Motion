@@ -47,8 +47,8 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   const [fatInput, setFatInput] = useState('');
 
   const [meals, setMeals] = useState<Meal[]>([
-    { id: 1, name: 'Toyuq və Düyü', calories: 650, type: 'Günorta', time: '13:30', protein: 45, carbs: 75, fat: 12 },
-    { id: 2, name: 'Yulaf və Giləmeyvə', calories: 350, type: 'Səhər', time: '08:45', protein: 12, carbs: 50, fat: 6 }
+    { id: 1, name: 'Toyuq və Düyü (150g + 150g)', calories: 430, type: 'Günorta', time: '13:30', protein: 40, carbs: 45, fat: 4 },
+    { id: 2, name: 'Yulaf və Giləmeyvə', calories: 280, type: 'Səhər', time: '08:45', protein: 10, carbs: 45, fat: 5 }
   ]);
 
   const totalCalories = meals.reduce((acc, curr) => acc + curr.calories, 0);
@@ -258,7 +258,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                 <input
                   type="number"
                   required
-                  placeholder="Məl. 650"
+                  placeholder="Məl. 430"
                   value={calories}
                   onChange={(e) => setCalories(e.target.value)}
                   style={{
@@ -370,21 +370,21 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                onClick={() => handleAddPreset('Yumurta (2 ədəd)', 155, 13, 1, 11, 'Səhər')}
+                onClick={() => handleAddPreset('Yumurta (1 ədəd)', 75, 6, 1, 5, 'Səhər')}
                 style={{ backgroundColor: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.textPrimary, padding: '5px 9px', borderRadius: '8px', fontSize: '11.5px', cursor: 'pointer' }}
               >
-                + Yumurta (155 kcal)
+                + Yumurta (75 kcal)
               </button>
               <button
                 type="button"
-                onClick={() => handleAddPreset('Alma (1 ədəd)', 80, 0, 21, 0, 'Qəlyanaltı')}
+                onClick={() => handleAddPreset('Alma (1 ədəd)', 95, 1, 25, 0, 'Qəlyanaltı')}
                 style={{ backgroundColor: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.textPrimary, padding: '5px 9px', borderRadius: '8px', fontSize: '11.5px', cursor: 'pointer' }}
               >
-                + Alma (80 kcal)
+                + Alma (95 kcal)
               </button>
               <button
                 type="button"
-                onClick={() => handleAddPreset('Protein Shake', 200, 25, 5, 3, 'Qəlyanaltı')}
+                onClick={() => handleAddPreset('Protein Shake (Süd ilə)', 200, 25, 12, 3, 'Qəlyanaltı')}
                 style={{ backgroundColor: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.textPrimary, padding: '5px 9px', borderRadius: '8px', fontSize: '11.5px', cursor: 'pointer' }}
               >
                 + Shake (200 kcal)
