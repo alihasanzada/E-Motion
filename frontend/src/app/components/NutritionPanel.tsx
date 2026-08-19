@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Utensils, Plus, Flame, Trash2, Zap, Apple, Egg, UtensilsCrossed, Coffee, Cookie, Sparkles } from 'lucide-react';
+import { Utensils, Plus, Flame, Trash2, Zap, Apple, Egg, UtensilsCrossed, Coffee, Sparkles } from 'lucide-react';
 
 interface Meal {
   id: number;
@@ -17,42 +17,49 @@ interface NutritionPanelProps {
   isDarkMode?: boolean;
 }
 
-// Genişləndirilmiş Lokal Qida Bazası
-const FOOD_DICTIONARY: Record<string, { cal: number; p: number; c: number; f: number; isPiece?: boolean }> = {
-  'toyuq': { cal: 165, p: 31, c: 0, f: 3.6 },
-  'düyü': { cal: 130, p: 2.7, c: 28, f: 0.3 },
-  'yumurta': { cal: 75, p: 6, c: 0.6, f: 5, isPiece: true },
-  'ət': { cal: 250, p: 26, c: 0, f: 15 },
-  'mal əti': { cal: 250, p: 26, c: 0, f: 15 },
-  'balıq': { cal: 206, p: 22, c: 0, f: 12 },
-  'kəsmik': { cal: 98, p: 11, c: 3.4, f: 4.3 },
-  'süzmə': { cal: 98, p: 11, c: 3.4, f: 4.3 },
-  'protein': { cal: 380, p: 80, c: 6, f: 3 },
-  'shake': { cal: 200, p: 25, c: 12, f: 3, isPiece: true },
+interface FoodItem {
+  cal: number; // 100g və ya 1 ədəd üçün kalori
+  p: number;   // zülal
+  c: number;   // karbohidrat
+  f: number;   // yağ
+  isPiece?: boolean;
+  aliases: string[];
+}
 
-  'dönər': { cal: 215, p: 12, c: 22, f: 9 },
-  'plov': { cal: 180, p: 4, c: 26, f: 7 },
-  'dolma': { cal: 150, p: 8, c: 10, f: 8 },
-  'qutab': { cal: 220, p: 6, c: 30, f: 9, isPiece: true },
-  'xəngəl': { cal: 210, p: 7, c: 32, f: 6 },
-  'ləvəngi': { cal: 230, p: 18, c: 4, f: 16 },
-  'pizzas': { cal: 266, p: 11, c: 33, f: 10 },
-  'burger': { cal: 295, p: 17, c: 30, f: 12, isPiece: true },
+// REAL USDA VƏ MİLLİ QİDA STANDARTLARI BAZASI
+const COMPREHENSIVE_FOOD_DATABASE: FoodItem[] = [
+  { aliases: ['toyuq', 'toyuq əti', 'toyuq filəsi', 'çolpa'], cal: 165, p: 31, c: 0, f: 3.6 },
+  { aliases: ['mal əti', 'dana əti', 'ət'], cal: 250, p: 26, c: 0, f: 15 },
+  { aliases: ['qoyun əti', 'tikə ət'], cal: 294, p: 25, c: 0, f: 21 },
+  { aliases: ['balıq', 'somon', 'forel', 'nərə'], cal: 206, p: 22, c: 0, f: 12 },
+  { aliases: ['yumurta', 'qayğanaq', 'omlet'], cal: 75, p: 6, c: 0.6, f: 5, isPiece: true },
+  { aliases: ['kəsmik', 'tvoroq', 'süzmə'], cal: 98, p: 11, c: 3.4, f: 4.3 },
+  { aliases: ['protein', 'protein tozu', 'whey'], cal: 120, p: 24, c: 3, f: 1.5, isPiece: true },
+  { aliases: ['shake', 'protein shake'], cal: 210, p: 25, c: 15, f: 3, isPiece: true },
 
-  'yulaf': { cal: 389, p: 16.9, c: 66, f: 6.9 },
-  'çörək': { cal: 265, p: 9, c: 49, f: 3.2 },
-  'kartof': { cal: 77, p: 2, c: 17, f: 0.1 },
-  'makaron': { cal: 131, p: 5, c: 25, f: 1.1 },
-  'pendir': { cal: 402, p: 25, c: 1.3, f: 33 },
-  'xiyar': { cal: 15, p: 0.7, c: 3.6, f: 0.1 },
-  'pomidor': { cal: 18, p: 0.9, c: 3.9, f: 0.2 },
+  { aliases: ['dönər', 'lavaş dönər', 'çörək dönər'], cal: 480, p: 24, c: 50, f: 18, isPiece: true },
+  { aliases: ['plov', 'aşı'], cal: 210, p: 5, c: 30, f: 8 },
+  { aliases: ['dolma', 'yarpaq dolması'], cal: 160, p: 8, c: 9, f: 9 },
+  { aliases: ['qutab', 'ət qutabı', 'göy qutabı'], cal: 190, p: 6, c: 26, f: 7, isPiece: true },
+  { aliases: ['xəngəl', 'yarpaq xəngəli'], cal: 230, p: 7, c: 35, f: 6 },
+  { aliases: ['pizza'], cal: 266, p: 11, c: 33, f: 10, isPiece: true },
+  { aliases: ['burger', 'humburger'], cal: 310, p: 16, c: 32, f: 13, isPiece: true },
 
-  'alma': { cal: 52, p: 0.3, c: 14, f: 0.2, isPiece: true },
-  'banan': { cal: 89, p: 1.1, c: 23, f: 0.3, isPiece: true },
-  'süd': { cal: 42, p: 3.4, c: 5, f: 1 },
-  'qəhvə': { cal: 2, p: 0.3, c: 0, f: 0, isPiece: true },
-  'çay': { cal: 1, p: 0, c: 0.2, f: 0, isPiece: true }
-};
+  { aliases: ['düyü', 'bişmiş düyü'], cal: 130, p: 2.7, c: 28, f: 0.3 },
+  { aliases: ['yulaf', 'gerkules', 'oatmeal'], cal: 389, p: 16.9, c: 66, f: 6.9 },
+  { aliases: ['çörək', 'qara çörək', 'ağ çörək'], cal: 265, p: 9, c: 49, f: 3.2 },
+  { aliases: ['kartof', 'kartof fri', 'bişmiş kartof'], cal: 87, p: 2, c: 20, f: 0.1 },
+  { aliases: ['makaron', 'spagetti', 'pasta'], cal: 131, p: 5, c: 25, f: 1.1 },
+  { aliases: ['pendir', 'şor'], cal: 350, p: 22, c: 2, f: 28 },
+
+  { aliases: ['alma'], cal: 52, p: 0.3, c: 14, f: 0.2, isPiece: true },
+  { aliases: ['banan'], cal: 89, p: 1.1, c: 23, f: 0.3, isPiece: true },
+  { aliases: ['xiyar'], cal: 15, p: 0.7, c: 3.6, f: 0.1 },
+  { aliases: ['pomidor'], cal: 18, p: 0.9, c: 3.9, f: 0.2 },
+  { aliases: ['süd'], cal: 50, p: 3.3, c: 4.8, f: 2 },
+  { aliases: ['qəhvə', 'kofe', 'espresso'], cal: 2, p: 0.3, c: 0, f: 0, isPiece: true },
+  { aliases: ['çay'], cal: 1, p: 0, c: 0.2, f: 0, isPiece: true }
+];
 
 export default function NutritionPanel({ isDarkMode = false }: NutritionPanelProps) {
   const theme = {
@@ -91,38 +98,61 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     }
 
     const inputLower = mealName.toLowerCase();
-    const gramMatch = inputLower.match(/(\d+)\s*(g|gr|qram)/);
-    const pieceMatch = inputLower.match(/(\d+)\s*(eded|ədəd|dənə|pay)/);
-    const rawNumberMatch = inputLower.match(/^(\d+)\s+/);
 
-    let amount = 100;
-    let isPieceCount = false;
+    const segments = inputLower.split(/[,+\&]|\bvə\b/);
 
-    if (gramMatch) {
-      amount = parseFloat(gramMatch[1]);
-    } else if (pieceMatch) {
-      amount = parseFloat(pieceMatch[1]);
-      isPieceCount = true;
-    } else if (rawNumberMatch) {
-      amount = parseFloat(rawNumberMatch[1]);
-    }
+    let totalCal = 0;
+    let totalP = 0;
+    let totalC = 0;
+    let totalF = 0;
+    let matchesFound = 0;
 
-    let foundKey = Object.keys(FOOD_DICTIONARY).find(key => inputLower.includes(key));
+    segments.forEach((segment) => {
+      const seg = segment.trim();
+      if (!seg) return;
 
-    if (foundKey) {
-      const foodData = FOOD_DICTIONARY[foundKey];
-      let multiplier = 1;
+      const gramMatch = seg.match(/(\d+)\s*(g|gr|qram|q)/);
+      const pieceMatch = seg.match(/(\d+)\s*(eded|ədəd|dənə|pay|dilim)/);
+      const rawNumberMatch = seg.match(/^(\d+)\s+/);
 
-      if (foodData.isPiece || isPieceCount) {
-        multiplier = amount > 10 ? amount / 100 : amount;
-      } else {
-        multiplier = amount / 100;
+      let amount = 100;
+      let isExplicitPiece = false;
+
+      if (gramMatch) {
+        amount = parseFloat(gramMatch[1]);
+      } else if (pieceMatch) {
+        amount = parseFloat(pieceMatch[1]);
+        isExplicitPiece = true;
+      } else if (rawNumberMatch) {
+        amount = parseFloat(rawNumberMatch[1]);
       }
 
-      setCalories(Math.round(foodData.cal * multiplier).toString());
-      setProteinInput(Math.round(foodData.p * multiplier).toString());
-      setCarbsInput(Math.round(foodData.c * multiplier).toString());
-      setFatInput(Math.round(foodData.f * multiplier).toString());
+      const foundItem = COMPREHENSIVE_FOOD_DATABASE.find(item =>
+        item.aliases.some(alias => seg.includes(alias))
+      );
+
+      if (foundItem) {
+        matchesFound++;
+        let multiplier = 1;
+
+        if (foundItem.isPiece || isExplicitPiece) {
+          multiplier = amount > 10 ? amount / 100 : amount;
+        } else {
+          multiplier = amount / 100;
+        }
+
+        totalCal += foundItem.cal * multiplier;
+        totalP += foundItem.p * multiplier;
+        totalC += foundItem.c * multiplier;
+        totalF += foundItem.f * multiplier;
+      }
+    });
+
+    if (matchesFound > 0) {
+      setCalories(Math.round(totalCal).toString());
+      setProteinInput(Math.round(totalP).toString());
+      setCarbsInput(Math.round(totalC).toString());
+      setFatInput(Math.round(totalF).toString());
       setAutoDetected(true);
     } else {
       setAutoDetected(false);
@@ -157,7 +187,6 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const calNum = Number(calories);
 
-    // Smart Fallback: Bazada olmayan qidalar üçün avto-təxmini makro hesablama (20% P, 50% C, 30% F)
     const pVal = proteinInput !== '' ? Number(proteinInput) : Math.round((calNum * 0.20) / 4);
     const cVal = carbsInput !== '' ? Number(carbsInput) : Math.round((calNum * 0.50) / 4);
     const fVal = fatInput !== '' ? Number(fatInput) : Math.round((calNum * 0.30) / 9);
@@ -201,7 +230,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         </p>
       </div>
 
-      {/* İcmal Paneli */}
+      {/* Dinamik İcmal Paneli */}
       <div style={{
         backgroundColor: theme.cardBg,
         borderRadius: '20px',
@@ -290,7 +319,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
               <input
                 type="text"
                 required
-                placeholder="Məl. 200g dönər, 150g düyü, 2 ədəd yumurta..."
+                placeholder="Məl. 200g toyuq və 150g düyü, 2 ədəd yumurta..."
                 value={mealName}
                 onChange={(e) => setMealName(e.target.value)}
                 style={{
