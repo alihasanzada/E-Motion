@@ -17,26 +17,39 @@ interface NutritionPanelProps {
   isDarkMode?: boolean;
 }
 
-// Standart 100g və ya 1 ədəd üçün Lokal Qida Bazası (USDA göstəriciləri)
+// Genişləndirilmiş Lokal Qida Bazası
 const FOOD_DICTIONARY: Record<string, { cal: number; p: number; c: number; f: number; isPiece?: boolean }> = {
   'toyuq': { cal: 165, p: 31, c: 0, f: 3.6 },
   'düyü': { cal: 130, p: 2.7, c: 28, f: 0.3 },
   'yumurta': { cal: 75, p: 6, c: 0.6, f: 5, isPiece: true },
-  'yulaf': { cal: 389, p: 16.9, c: 66, f: 6.9 },
-  'alma': { cal: 52, p: 0.3, c: 14, f: 0.2 },
-  'banan': { cal: 89, p: 1.1, c: 23, f: 0.3 },
   'ət': { cal: 250, p: 26, c: 0, f: 15 },
   'mal əti': { cal: 250, p: 26, c: 0, f: 15 },
   'balıq': { cal: 206, p: 22, c: 0, f: 12 },
-  'çörək': { cal: 265, p: 9, c: 49, f: 3.2 },
-  'süd': { cal: 42, p: 3.4, c: 5, f: 1 },
   'kəsmik': { cal: 98, p: 11, c: 3.4, f: 4.3 },
   'süzmə': { cal: 98, p: 11, c: 3.4, f: 4.3 },
   'protein': { cal: 380, p: 80, c: 6, f: 3 },
   'shake': { cal: 200, p: 25, c: 12, f: 3, isPiece: true },
+
+  'dönər': { cal: 215, p: 12, c: 22, f: 9 },
+  'plov': { cal: 180, p: 4, c: 26, f: 7 },
+  'dolma': { cal: 150, p: 8, c: 10, f: 8 },
+  'qutab': { cal: 220, p: 6, c: 30, f: 9, isPiece: true },
+  'xəngəl': { cal: 210, p: 7, c: 32, f: 6 },
+  'ləvəngi': { cal: 230, p: 18, c: 4, f: 16 },
+  'pizzas': { cal: 266, p: 11, c: 33, f: 10 },
+  'burger': { cal: 295, p: 17, c: 30, f: 12, isPiece: true },
+
+  'yulaf': { cal: 389, p: 16.9, c: 66, f: 6.9 },
+  'çörək': { cal: 265, p: 9, c: 49, f: 3.2 },
   'kartof': { cal: 77, p: 2, c: 17, f: 0.1 },
   'makaron': { cal: 131, p: 5, c: 25, f: 1.1 },
   'pendir': { cal: 402, p: 25, c: 1.3, f: 33 },
+  'xiyar': { cal: 15, p: 0.7, c: 3.6, f: 0.1 },
+  'pomidor': { cal: 18, p: 0.9, c: 3.9, f: 0.2 },
+
+  'alma': { cal: 52, p: 0.3, c: 14, f: 0.2, isPiece: true },
+  'banan': { cal: 89, p: 1.1, c: 23, f: 0.3, isPiece: true },
+  'süd': { cal: 42, p: 3.4, c: 5, f: 1 },
   'qəhvə': { cal: 2, p: 0.3, c: 0, f: 0, isPiece: true },
   'çay': { cal: 1, p: 0, c: 0.2, f: 0, isPiece: true }
 };
@@ -60,18 +73,17 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
 
   const [mealName, setMealName] = useState('');
   const [calories, setCalories] = useState('');
-  const [mealType, setMealType] = useState('Günorta');
+  const [mealType, setMealType] = useState('Günorta Yeməyi');
   const [proteinInput, setProteinInput] = useState('');
   const [carbsInput, setCarbsInput] = useState('');
   const [fatInput, setFatInput] = useState('');
   const [autoDetected, setAutoDetected] = useState(false);
 
   const [meals, setMeals] = useState<Meal[]>([
-    { id: 1, name: 'Toyuq və Düyü (150g + 150g)', calories: 430, type: 'Günorta', time: '13:30', protein: 40, carbs: 45, fat: 4 },
-    { id: 2, name: 'Yulaf və Giləmeyvə', calories: 280, type: 'Səhər', time: '08:45', protein: 10, carbs: 45, fat: 5 }
+    { id: 1, name: 'Toyuq və Düyü (150g + 150g)', calories: 430, type: 'Günorta Yeməyi', time: '13:30', protein: 40, carbs: 45, fat: 4 },
+    { id: 2, name: 'Yulaf və Giləmeyvə', calories: 280, type: 'Səhər Yeməyi', time: '08:45', protein: 10, carbs: 45, fat: 5 }
   ]);
 
-  // Avto-Axtarış və Çəki Hesablama Məntiqi
   useEffect(() => {
     if (!mealName.trim()) {
       setAutoDetected(false);
@@ -79,13 +91,11 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     }
 
     const inputLower = mealName.toLowerCase();
-
-    // Qram və ya Ədəd təyini (məs. "200g", "200 gr", "2 eded", "2 ədəd")
     const gramMatch = inputLower.match(/(\d+)\s*(g|gr|qram)/);
-    const pieceMatch = inputLower.match(/(\d+)\s*(eded|ədəd|dənə)/);
+    const pieceMatch = inputLower.match(/(\d+)\s*(eded|ədəd|dənə|pay)/);
     const rawNumberMatch = inputLower.match(/^(\d+)\s+/);
 
-    let amount = 100; // Standart 100qram
+    let amount = 100;
     let isPieceCount = false;
 
     if (gramMatch) {
@@ -97,7 +107,6 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       amount = parseFloat(rawNumberMatch[1]);
     }
 
-    // Bazadan açar sözün axtarılması
     let foundKey = Object.keys(FOOD_DICTIONARY).find(key => inputLower.includes(key));
 
     if (foundKey) {
@@ -105,9 +114,9 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       let multiplier = 1;
 
       if (foodData.isPiece || isPieceCount) {
-        multiplier = amount > 10 ? amount / 100 : amount; // Əgər 10-dan böyük ədəd yazılmayıbsa, ədəd sayılır
+        multiplier = amount > 10 ? amount / 100 : amount;
       } else {
-        multiplier = amount / 100; // Qrama görə nisbət
+        multiplier = amount / 100;
       }
 
       setCalories(Math.round(foodData.cal * multiplier).toString());
@@ -134,8 +143,8 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     const lowerName = name.toLowerCase();
     if (lowerName.includes('shake') || lowerName.includes('protein')) return <Zap size={18} color="#EC4899" />;
     if (lowerName.includes('yumurta') || lowerName.includes('omlet')) return <Egg size={18} color="#F59E0B" />;
-    if (lowerName.includes('toyuq') || lowerName.includes('ət') || lowerName.includes('düyü') || lowerName.includes('balıq')) return <UtensilsCrossed size={18} color="#10B981" />;
-    if (lowerName.includes('alma') || lowerName.includes('giləmeyvə') || lowerName.includes('yulaf') || lowerName.includes('banan')) return <Apple size={18} color="#EF4444" />;
+    if (lowerName.includes('toyuq') || lowerName.includes('ət') || lowerName.includes('düyü') || lowerName.includes('balıq') || lowerName.includes('dönər') || lowerName.includes('plov')) return <UtensilsCrossed size={18} color="#10B981" />;
+    if (lowerName.includes('alma') || lowerName.includes('banan') || lowerName.includes('yulaf')) return <Apple size={18} color="#EF4444" />;
     if (lowerName.includes('qəhvə') || lowerName.includes('çay')) return <Coffee size={18} color="#8B5CF6" />;
     return <Apple size={18} color={isDarkMode ? '#4ADE80' : '#2E5B4E'} />;
   };
@@ -148,15 +157,20 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const calNum = Number(calories);
 
+    // Smart Fallback: Bazada olmayan qidalar üçün avto-təxmini makro hesablama (20% P, 50% C, 30% F)
+    const pVal = proteinInput !== '' ? Number(proteinInput) : Math.round((calNum * 0.20) / 4);
+    const cVal = carbsInput !== '' ? Number(carbsInput) : Math.round((calNum * 0.50) / 4);
+    const fVal = fatInput !== '' ? Number(fatInput) : Math.round((calNum * 0.30) / 9);
+
     const newMeal: Meal = {
       id: Date.now(),
       name: mealName,
       calories: calNum,
       type: mealType,
       time: timeStr,
-      protein: proteinInput !== '' ? Number(proteinInput) : 0,
-      carbs: carbsInput !== '' ? Number(carbsInput) : 0,
-      fat: fatInput !== '' ? Number(fatInput) : 0
+      protein: pVal,
+      carbs: cVal,
+      fat: fVal
     };
 
     setMeals([newMeal, ...meals]);
@@ -171,7 +185,6 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   const handleAddPreset = (name: string, cal: number, p: number, c: number, f: number, type: string) => {
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
     setMeals([{ id: Date.now(), name, calories: cal, type, time: timeStr, protein: p, carbs: c, fat: f }, ...meals]);
   };
 
@@ -188,7 +201,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         </p>
       </div>
 
-      {/* Dinamik İcmal Paneli */}
+      {/* İcmal Paneli */}
       <div style={{
         backgroundColor: theme.cardBg,
         borderRadius: '20px',
@@ -277,7 +290,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
               <input
                 type="text"
                 required
-                placeholder="Məl. 200g toyuq, 150g düyü, 2 ədəd yumurta..."
+                placeholder="Məl. 200g dönər, 150g düyü, 2 ədəd yumurta..."
                 value={mealName}
                 onChange={(e) => setMealName(e.target.value)}
                 style={{
@@ -338,9 +351,9 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                     boxSizing: 'border-box'
                   }}
                 >
-                  <option value="Səhər">Səhər Yeməyi</option>
-                  <option value="Günorta">Günorta Yeməyi</option>
-                  <option value="Şam">Şam Yeməyi</option>
+                  <option value="Səhər Yeməyi">Səhər Yeməyi</option>
+                  <option value="Günorta Yeməyi">Günorta Yeməyi</option>
+                  <option value="Şam Yeməyi">Şam Yeməyi</option>
                   <option value="Qəlyanaltı">Qəlyanaltı</option>
                 </select>
               </div>
@@ -351,7 +364,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                 <label style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, marginBottom: '3px' }}>Zülal (g)</label>
                 <input
                   type="number"
-                  placeholder="0"
+                  placeholder="Avto"
                   value={proteinInput}
                   onChange={(e) => setProteinInput(e.target.value)}
                   style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: `1px solid ${theme.inputBorder}`, fontSize: '12px', outline: 'none', backgroundColor: theme.inputBg, color: theme.textPrimary, boxSizing: 'border-box' }}
@@ -361,7 +374,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                 <label style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, marginBottom: '3px' }}>Karbohidrat (g)</label>
                 <input
                   type="number"
-                  placeholder="0"
+                  placeholder="Avto"
                   value={carbsInput}
                   onChange={(e) => setCarbsInput(e.target.value)}
                   style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: `1px solid ${theme.inputBorder}`, fontSize: '12px', outline: 'none', backgroundColor: theme.inputBg, color: theme.textPrimary, boxSizing: 'border-box' }}
@@ -371,7 +384,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                 <label style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, marginBottom: '3px' }}>Yağ (g)</label>
                 <input
                   type="number"
-                  placeholder="0"
+                  placeholder="Avto"
                   value={fatInput}
                   onChange={(e) => setFatInput(e.target.value)}
                   style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: `1px solid ${theme.inputBorder}`, fontSize: '12px', outline: 'none', backgroundColor: theme.inputBg, color: theme.textPrimary, boxSizing: 'border-box' }}
@@ -410,7 +423,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                onClick={() => handleAddPreset('Yumurta (1 ədəd)', 75, 6, 1, 5, 'Səhər')}
+                onClick={() => handleAddPreset('Yumurta (1 ədəd)', 75, 6, 1, 5, 'Səhər Yeməyi')}
                 style={{ backgroundColor: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.textPrimary, padding: '5px 9px', borderRadius: '8px', fontSize: '11.5px', cursor: 'pointer' }}
               >
                 + Yumurta
