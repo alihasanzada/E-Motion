@@ -1295,32 +1295,34 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Add Modal Button */}
-      <button
-        onClick={() => setIsQuickAddOpen(true)}
-        title="Sürətli məlumat əlavə et"
-        style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          width: '50px',
-          height: '50px',
-          borderRadius: '50%',
-          backgroundColor: '#44766C',
-          color: '#FFFFFF',
-          border: 'none',
-          boxShadow: '0 8px 20px rgba(68, 118, 108, 0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          zIndex: 90,
-          transition: 'transform 0.2s ease'
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        <Plus size={24} />
-      </button>
+      {(activeTab === 'dashboard' || activeTab === 'idare-paneli' || activeTab === 'İdarə paneli') && (
+        <button
+          onClick={() => setIsQuickAddOpen(true)}
+          title="Sürətli məlumat əlavə et"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            backgroundColor: '#44766C',
+            color: '#FFFFFF',
+            border: 'none',
+            boxShadow: '0 8px 20px rgba(68, 118, 108, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 90,
+            transition: 'transform 0.2s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <Plus size={24} />
+        </button>
+      )}
 
       {/* Quick Add Modal */}
       {isQuickAddOpen && (
