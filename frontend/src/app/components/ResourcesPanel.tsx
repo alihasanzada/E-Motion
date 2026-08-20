@@ -270,7 +270,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
               <input
                 type="text"
                 required
-                placeholder="Məl. Next.js Official Docs"
+                placeholder="Məsələn: Next.js Official Docs"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={{
@@ -289,7 +289,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
 
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
-                Qısa Açıqlama <span style={{ opacity: 0.6 }}>(isteğe bağlı)</span>
+                Qısa Açıqlama <span style={{ opacity: 0.6 }}>(istəyə bağlı)</span>
               </label>
               <textarea
                 rows={2}
