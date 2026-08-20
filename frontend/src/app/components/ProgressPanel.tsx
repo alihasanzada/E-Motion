@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Flame, Award, CheckCircle2, Circle, Trophy, Star, Zap, Target, Plus, Trash2, Lock, Sparkles } from 'lucide-react';
 
 interface ProgressPanelProps {
@@ -12,6 +12,13 @@ interface Goal {
   completed: boolean;
   category: string;
 }
+
+const INITIAL_GOALS: Goal[] = [
+  { id: 1, title: 'Həftəlik 3 dəfə fiziki aktivlik etmək', completed: true, category: 'Fiziki Aktivlik' },
+  { id: 2, title: 'Gündəlik 2L su içmək (7 gün)', completed: true, category: 'Sağlamlıq' },
+  { id: 3, title: 'Ən azı 1 Kampus Tədbirində iştirak etmək', completed: false, category: 'Sosial' },
+  { id: 4, title: 'Həftədə 2 dəfə qidalanma menyusunu qeyd etmək', completed: false, category: 'Qidalanma' },
+];
 
 export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps) {
   const theme = {
@@ -26,9 +33,9 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
     awardBg: isDarkMode ? 'rgba(79, 70, 229, 0.15)' : '#E0E7FF',
     goalBg: isDarkMode ? '#27272A' : '#F8FAFC',
     goalBorder: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#F1F5F9',
-    goalCompletedBg: isDarkMode ? 'rgba(22, 163, 74, 0.12)' : '#F0FDF4',
-    goalCompletedBorder: isDarkMode ? 'rgba(22, 163, 74, 0.25)' : '#DCFCE7',
-    goalCompletedText: isDarkMode ? '#86EFAC' : '#166534',
+    goalCompletedBg: isDarkMode ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
+    goalCompletedBorder: isDarkMode ? 'rgba(22, 163, 74, 0.3)' : '#DCFCE7',
+    goalCompletedText: isDarkMode ? '#CBD5E1' : '#1E293B',
     badgeBg: isDarkMode ? '#27272A' : '#F8FAFC',
     badgeBorder: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#E2E8F0',
     badgeLockedBg: isDarkMode ? '#18181B' : '#FAFAFA',
@@ -52,14 +59,26 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
     { day: 'B', active: false },
   ];
 
-  const [goals, setGoals] = useState<Goal[]>([
-    { id: 1, title: 'Həftəlik 3 dəfə fiziki aktivlik etmək', completed: true, category: 'Fiziki Aktivlik' },
-    { id: 2, title: 'Gündəlik 2L su içmək (7 gün)', completed: true, category: 'Sağlamlıq' },
-    { id: 3, title: 'Ən azı 1 Kampus Tədbirində iştirak etmək', completed: false, category: 'Sosial' },
-    { id: 4, title: 'Həftədə 2 dəfə qidalanma menyusunu qeyd etmək', completed: false, category: 'Qidalanma' },
-  ]);
+  const [goals, setGoals] = useState<Goal[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('e_motion_goals');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return INITIAL_GOALS;
+        }
+      }
+    }
+    return INITIAL_GOALS;
+  });
 
-  // Yeni Hədəf Formu State-ləri
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('e_motion_goals', JSON.stringify(goals));
+    }
+  }, [goals]);
+
   const [isAddingGoal, setIsAddingGoal] = useState(false);
   const [newGoalTitle, setNewGoalTitle] = useState('');
   const [newGoalCategory, setNewGoalCategory] = useState('Sağlamlıq');
@@ -127,7 +146,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         gap: '24px',
         alignItems: 'center'
       }}>
-        {/* Level İkonu və Ədədi */}
+        {/* Level İkonu */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{
             width: '56px',
@@ -171,7 +190,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
             }} />
           </div>
           <span style={{ fontSize: '11px', color: theme.textSecondary, marginTop: '6px', display: 'block' }}>
-            Növbəti səviyyəyə çatxmağa {nextLevelXP - currentXP} XP qaldı 🚀
+            Növbəti səviyyəyə çatmağa {nextLevelXP - currentXP} XP qaldı 🚀
           </span>
         </div>
       </div>
@@ -179,7 +198,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
       {/* Vərdiş Zənciri və Qazanılan Nişanlar Kartları */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
 
-        {/* Vərdiş Zənciri + Günlük İzləyici */}
+        {/* Vərdiş Zənciri */}
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '20px',
@@ -204,7 +223,6 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
             </div>
           </div>
 
-          {/* Həftəlik Günlük İzləyici */}
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '10px', borderTop: `1px dashed ${theme.borderColor}` }}>
             {weekDays.map((item, idx) => (
               <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
@@ -278,7 +296,6 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
           flexDirection: 'column',
           gap: '16px'
         }}>
-          {/* Hədəf Bölməsi Başlığı */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -311,7 +328,6 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
             </button>
           </div>
 
-          {/* Yeni Hədəf Əlavə Etmə Formu */}
           {isAddingGoal && (
             <form onSubmit={handleAddGoal} style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '12px', backgroundColor: theme.inputBg, borderRadius: '12px' }}>
               <input
@@ -369,7 +385,6 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
             </form>
           )}
 
-          {/* Hədəflər Siyahısı */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {goals.map((goal) => (
               <div
@@ -401,16 +416,15 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
                     fontWeight: '600',
                     color: goal.completed ? theme.goalCompletedText : theme.textPrimary,
                     textDecoration: goal.completed ? 'line-through' : 'none',
-                    opacity: goal.completed ? 0.85 : 1
+                    opacity: goal.completed ? 0.75 : 1
                   }}>
                     {goal.title}
                   </p>
-                  <span style={{ fontSize: '11px', color: goal.completed ? (isDarkMode ? '#4ADE80' : '#22C55E') : theme.textSecondary }}>
+                  <span style={{ fontSize: '11px', color: goal.completed ? (isDarkMode ? '#86EFAC' : '#166534') : theme.textSecondary }}>
                     {goal.category} • +50 XP
                   </span>
                 </div>
 
-                {/* Silmə düyməsi */}
                 <button
                   onClick={(e) => handleDeleteGoal(goal.id, e)}
                   style={{
@@ -432,7 +446,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
           </div>
         </div>
 
-        {/* Sağ: Qazanılan və kilidli nişanlar */}
+        {/* Sağ: Qazanılan və Kilidli Nişanlar */}
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '20px',
