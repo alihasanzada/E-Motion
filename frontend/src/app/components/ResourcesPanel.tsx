@@ -1,10 +1,14 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
-import { BookOpen, ExternalLink, Plus, Code, FileText, Video, Book, Heart, Bookmark, Trash2, Search, User, List } from 'lucide-react';
+import {
+  BookOpen, ExternalLink, Plus, Code, FileText, Video, Book, Heart, Bookmark,
+  Trash2, Search, User, List, ArrowUpDown
+} from 'lucide-react';
 
 interface Resource {
   id: number;
   title: string;
+  description?: string;
   link: string;
   type: string;
   author: string;
@@ -23,6 +27,7 @@ const DEFAULT_RESOURCES: Resource[] = [
   {
     id: 1,
     title: 'React Rəsmi Sənədləşməsi',
+    description: 'React 18+ hooks, komponentlər və state idarəetməsi haqqında rəsmi bələdçi.',
     link: 'https://react.dev',
     type: 'Dərslik',
     author: 'React Team',
@@ -35,6 +40,7 @@ const DEFAULT_RESOURCES: Resource[] = [
   {
     id: 2,
     title: 'Flask Python Web Framework',
+    description: 'Python ilə yüngül və sürətli veb tətbiqlər hazırlamaq üçün rəsmi sənədləşmə.',
     link: 'https://flask.palletsprojects.com',
     type: 'Dərslik',
     author: 'Pallets',
@@ -47,6 +53,7 @@ const DEFAULT_RESOURCES: Resource[] = [
   {
     id: 3,
     title: 'Kibertəhlükəsizlik üzrə Başlanğıc Bələdçisi',
+    description: 'Təhlükəsizlik əsasları, şəbəkə analizi və sızma testləri üçün praktiki laboratoriyalar.',
     link: 'https://tryhackme.com',
     type: 'Məqalə',
     author: 'TryHackMe',
@@ -82,11 +89,13 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
   };
 
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
   const [type, setType] = useState('Dərslik');
   const [detectedSource, setDetectedSource] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Hamısı');
+  const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
 
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'my'>('all');
 
@@ -141,6 +150,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
     const newResource: Resource = {
       id: Date.now(),
       title,
+      description: description.trim() || undefined,
       link: link.startsWith('http') ? link : `https://${link}`,
       type,
       author: detectedSource || 'Mənim Paylaşımım',
@@ -153,8 +163,10 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
 
     setResources([newResource, ...resources]);
     setTitle('');
+    setDescription('');
     setLink('');
     setDetectedSource('');
+    setActiveTab('my');
   };
 
   const toggleLike = (id: number) => {
@@ -193,8 +205,9 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
   };
 
   const filteredResources = useMemo(() => {
-    return resources.filter(res => {
+    const list = resources.filter(res => {
       const matchesSearch = res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (res.description && res.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
         res.author.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === 'Hamısı' || res.type === selectedCategory;
 
@@ -204,7 +217,14 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
 
       return matchesSearch && matchesCategory && matchesTab;
     });
-  }, [resources, searchQuery, selectedCategory, activeTab]);
+
+    return list.sort((a, b) => {
+      if (sortBy === 'popular') {
+        return b.likes - a.likes;
+      }
+      return b.id - a.id;
+    });
+  }, [resources, searchQuery, selectedCategory, activeTab, sortBy]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
@@ -221,7 +241,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
 
-        {/* Sol Sütun: Yeni Resurs Paylaş Formu */}
+        {/* Sol Sütun: Form */}
         <div style={{
           backgroundColor: theme.cardBg,
           padding: '24px',
@@ -241,7 +261,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
               <input
                 type="text"
                 required
-                placeholder="Məl. Next.js Official Docs"
+                placeholder="Məsələn: Next.js Official Docs"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={{
@@ -253,6 +273,30 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                   outline: 'none',
                   backgroundColor: theme.inputBg,
                   color: theme.textPrimary,
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '6px' }}>
+                Qısa Açıqlama <span style={{ opacity: 0.6 }}>(isteğe bağlı)</span>
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Mənbə haqqında 1-2 cümləlik qısa məlumat..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: `1px solid ${theme.inputBorder}`,
+                  fontSize: '13px',
+                  outline: 'none',
+                  backgroundColor: theme.inputBg,
+                  color: theme.textPrimary,
+                  resize: 'none',
                   boxSizing: 'border-box'
                 }}
               />
@@ -343,10 +387,10 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
           </form>
         </div>
 
-        {/* Sağ Sütun: Görünüş Tabları, Axtarış, Filtrlər və Siyahı */}
+        {/* Sağ Sütun */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* Əsas görünüş tabları */}
+          {/* Görünüş Tabları */}
           <div style={{
             display: 'flex',
             backgroundColor: theme.cardBg,
@@ -422,29 +466,54 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
             </button>
           </div>
 
-          {/* Axtarış Zolağı və Kateqoriya Düymələri */}
+          {/* Axtarış və Sıralama Zolağı */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-            {/* Canlı Axtarış Inputu */}
-            <div style={{ position: 'relative', width: '100%' }}>
-              <Search size={16} color={theme.textSecondary} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="text"
-                placeholder="Resurs adı və ya mənbə üzrə axtar..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px 10px 36px',
-                  borderRadius: '12px',
-                  border: `1px solid ${theme.inputBorder}`,
-                  fontSize: '13px',
-                  outline: 'none',
-                  backgroundColor: theme.inputBg,
-                  color: theme.textPrimary,
-                  boxSizing: 'border-box'
-                }}
-              />
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {/* Canlı Axtarış */}
+              <div style={{ position: 'relative', flex: 1 }}>
+                <Search size={16} color={theme.textSecondary} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
+                  placeholder="Resurs adı, açıqlama və ya mənbə üzrə axtar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px 10px 36px',
+                    borderRadius: '12px',
+                    border: `1px solid ${theme.inputBorder}`,
+                    fontSize: '13px',
+                    outline: 'none',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              {/* Çeşidləmə */}
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <ArrowUpDown size={14} color={theme.textSecondary} style={{ position: 'absolute', left: '10px', pointerEvents: 'none' }} />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'newest' | 'popular')}
+                  style={{
+                    padding: '10px 12px 10px 30px',
+                    borderRadius: '12px',
+                    border: `1px solid ${theme.inputBorder}`,
+                    fontSize: '12.5px',
+                    fontWeight: '600',
+                    outline: 'none',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="newest">Ən Yenilər</option>
+                  <option value="popular">Ən Çox Bəyənilənlər</option>
+                </select>
+              </div>
             </div>
 
             {/* Kateqoriyalar */}
@@ -476,7 +545,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
             </div>
           </div>
 
-          {/* Resurs Kartları Siyahısı */}
+          {/* Siyahı */}
           {filteredResources.length === 0 ? (
             <div style={{ backgroundColor: theme.cardBg, padding: '36px', borderRadius: '18px', border: `1px solid ${theme.borderColor}`, textAlign: 'center' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: theme.textSecondary }}>
@@ -506,7 +575,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                     transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', flex: 1 }}>
                     <div style={{
                       backgroundColor: theme.iconBoxBg,
                       border: `1px solid ${theme.iconBoxBorder}`,
@@ -516,13 +585,14 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      marginTop: '2px'
                     }}>
                       <IconComponent size={20} />
                     </div>
 
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         <span style={{ backgroundColor: theme.badgeCategoryBg, color: theme.textMuted, fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px' }}>
                           {res.type}
                         </span>
@@ -532,13 +602,19 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                         )}
                       </div>
 
-                      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>
                         {res.title}
                       </h4>
+
+                      {res.description && (
+                        <p style={{ margin: 0, fontSize: '12.5px', color: theme.textSecondary, lineHeight: '1.4' }}>
+                          {res.description}
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  {/* Sağ düymələr və sosial funksiyalar */}
+                  {/* Sağ Düymələr */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
 
                     {/* Bəyənmə */}
@@ -561,7 +637,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       <span>{res.likes}</span>
                     </button>
 
-                    {/* Yadda Saxla */}
+                    {/* Bookmark */}
                     <button
                       onClick={() => toggleSave(res.id)}
                       title={res.isSaved ? "Yaddaşdan çıxart" : "Yadda saxla"}
@@ -576,7 +652,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       <Bookmark size={16} fill={res.isSaved ? '#F59E0B' : 'none'} />
                     </button>
 
-                    {/* Silmə düyməsi */}
+                    {/* Silmə */}
                     {res.isMyPost && (
                       <button
                         onClick={() => handleDelete(res.id)}
@@ -595,7 +671,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       </button>
                     )}
 
-                    {/* Keçid Et Düyməsi */}
+                    {/* Keçid Et */}
                     <a
                       href={res.link}
                       target="_blank"
