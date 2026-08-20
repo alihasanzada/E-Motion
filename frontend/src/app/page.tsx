@@ -32,7 +32,7 @@ const searchIndex = [
   { keywords: ['tədbirlər', 'seminar', 'vebinar', 'kampus', 'görüş'], tabId: 'events', title: 'Tədbirlər' },
   { keywords: ['qidalanma', 'su', 'kalori', 'pəhriz', 'diet', 'yemək'], tabId: 'nutrition', title: 'Qidalanma' },
   { keywords: ['resurslar', 'kitabxana', 'məqalə', 'material'], tabId: 'resources', title: 'Resurslar' },
-  { keywords: ['irəliləyiş', 'uğurlar', 'nişanlar', 'vərdiş', 'günlər'], tabId: 'progress', title: 'Mənim irəliləyişim' },
+  { keywords: ['irəliləyiş', 'uğurlar', 'nişanlar', 'vərdiş', 'günlər'], tabId: 'progress', title: 'İrəliləyişim' },
   { keywords: ['statistika', 'analitika', 'qrafik', 'hesabat'], tabId: 'stats', title: 'Statistikam' }
 ];
 
@@ -363,7 +363,7 @@ export default function Dashboard() {
               { id: 'events', label: 'Tədbirlər', icon: <Calendar size={17} /> },
               { id: 'nutrition', label: 'Qidalanma', icon: <Apple size={17} /> },
               { id: 'resources', label: 'Resurslar', icon: <Folder size={17} /> },
-              { id: 'progress', label: 'Mənim irəliləyişim', icon: <TrendingUp size={17} /> },
+              { id: 'progress', label: 'İrəliləyişim', icon: <TrendingUp size={17} /> },
               { id: 'stats', label: 'Statistikam', icon: <BarChart3 size={17} /> }
             ].map((item) => {
               const isActive = activeTab === item.id;

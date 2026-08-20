@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useMemo } from 'react';
-import { BookOpen, ExternalLink, Plus, Code, FileText, Video, Book, Heart, Bookmark, Trash2, Search } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { BookOpen, ExternalLink, Plus, Code, FileText, Video, Book, Heart, Bookmark, Trash2, Search, User, List } from 'lucide-react';
 
 interface Resource {
   id: number;
@@ -12,11 +12,51 @@ interface Resource {
   likes: number;
   isLiked?: boolean;
   isSaved?: boolean;
+  isMyPost?: boolean;
 }
 
 interface ResourcesPanelProps {
   isDarkMode?: boolean;
 }
+
+const DEFAULT_RESOURCES: Resource[] = [
+  {
+    id: 1,
+    title: 'React Rəsmi Sənədləşməsi',
+    link: 'https://react.dev',
+    type: 'Dərslik',
+    author: 'React Team',
+    createdAt: '2 saat əvvəl',
+    likes: 12,
+    isLiked: false,
+    isSaved: true,
+    isMyPost: false
+  },
+  {
+    id: 2,
+    title: 'Flask Python Web Framework',
+    link: 'https://flask.palletsprojects.com',
+    type: 'Dərslik',
+    author: 'Pallets',
+    createdAt: '5 saat əvvəl',
+    likes: 8,
+    isLiked: false,
+    isSaved: false,
+    isMyPost: false
+  },
+  {
+    id: 3,
+    title: 'Kibertəhlükəsizlik üzrə Başlanğıc Bələdçisi',
+    link: 'https://tryhackme.com',
+    type: 'Məqalə',
+    author: 'TryHackMe',
+    createdAt: '1 gün əvvəl',
+    likes: 24,
+    isLiked: true,
+    isSaved: true,
+    isMyPost: false
+  }
+];
 
 export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelProps) {
   const theme = {
@@ -48,41 +88,23 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Hamısı');
 
-  const [resources, setResources] = useState<Resource[]>([
-    {
-      id: 1,
-      title: 'React Rəsmi Sənədləşməsi',
-      link: 'https://react.dev',
-      type: 'Dərslik',
-      author: 'React Team',
-      createdAt: '2 saat əvvəl',
-      likes: 12,
-      isLiked: false,
-      isSaved: true
-    },
-    {
-      id: 2,
-      title: 'Flask Python Web Framework',
-      link: 'https://flask.palletsprojects.com',
-      type: 'Dərslik',
-      author: 'Pallets',
-      createdAt: '5 saat əvvəl',
-      likes: 8,
-      isLiked: false,
-      isSaved: false
-    },
-    {
-      id: 3,
-      title: 'Kibertəhlükəsizlik üzrə Başlanğıc Bələdçisi',
-      link: 'https://tryhackme.com',
-      type: 'Məqalə',
-      author: 'TryHackMe',
-      createdAt: '1 gün əvvəl',
-      likes: 24,
-      isLiked: true,
-      isSaved: false
+  const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'my'>('all');
+
+  const [resources, setResources] = useState<Resource[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedData = localStorage.getItem('emotion_resources');
+      if (savedData) {
+        try { return JSON.parse(savedData); } catch { return DEFAULT_RESOURCES; }
+      }
     }
-  ]);
+    return DEFAULT_RESOURCES;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('emotion_resources', JSON.stringify(resources));
+    }
+  }, [resources]);
 
   const categories = ['Hamısı', 'Dərslik', 'Məqalə', 'Video', 'Kitab'];
 
@@ -121,11 +143,12 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
       title,
       link: link.startsWith('http') ? link : `https://${link}`,
       type,
-      author: detectedSource || 'Tələbə Paylaşımı',
+      author: detectedSource || 'Mənim Paylaşımım',
       createdAt: 'İndi',
       likes: 0,
       isLiked: false,
-      isSaved: false
+      isSaved: false,
+      isMyPost: true
     };
 
     setResources([newResource, ...resources]);
@@ -174,14 +197,19 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
       const matchesSearch = res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         res.author.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === 'Hamısı' || res.type === selectedCategory;
-      return matchesSearch && matchesCategory;
+
+      let matchesTab = true;
+      if (activeTab === 'saved') matchesTab = res.isSaved === true;
+      if (activeTab === 'my') matchesTab = res.isMyPost === true;
+
+      return matchesSearch && matchesCategory && matchesTab;
     });
-  }, [resources, searchQuery, selectedCategory]);
+  }, [resources, searchQuery, selectedCategory, activeTab]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
 
-      {/* 1. Başlıq */}
+      {/* Başlıq */}
       <div>
         <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
           Faydalı Təhsil Resursları
@@ -315,8 +343,84 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
           </form>
         </div>
 
-        {/* Sağ Sütun: Resurslar, Axtarış vər Filtrlər */}
+        {/* Sağ Sütun: Görünüş Tabları, Axtarış, Filtrlər və Siyahı */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Əsas görünüş tabları */}
+          <div style={{
+            display: 'flex',
+            backgroundColor: theme.cardBg,
+            padding: '4px',
+            borderRadius: '14px',
+            border: `1px solid ${theme.borderColor}`,
+            gap: '4px'
+          }}>
+            <button
+              onClick={() => setActiveTab('all')}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '10px',
+                border: 'none',
+                fontSize: '12.5px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                backgroundColor: activeTab === 'all' ? theme.activeCatBg : 'transparent',
+                color: activeTab === 'all' ? '#FFFFFF' : theme.textSecondary,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <List size={15} /> Hamısı ({resources.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('saved')}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '10px',
+                border: 'none',
+                fontSize: '12.5px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                backgroundColor: activeTab === 'saved' ? theme.activeCatBg : 'transparent',
+                color: activeTab === 'saved' ? '#FFFFFF' : theme.textSecondary,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Bookmark size={15} fill={activeTab === 'saved' ? '#F59E0B' : 'none'} color={activeTab === 'saved' ? '#F59E0B' : 'currentColor'} /> Yadda Saxlanılanlar ({resources.filter(r => r.isSaved).length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('my')}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '10px',
+                border: 'none',
+                fontSize: '12.5px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                backgroundColor: activeTab === 'my' ? theme.activeCatBg : 'transparent',
+                color: activeTab === 'my' ? '#FFFFFF' : theme.textSecondary,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <User size={15} /> Mənim Paylaşdıqlarım ({resources.filter(r => r.isMyPost).length})
+            </button>
+          </div>
 
           {/* Axtarış Zolağı və Kateqoriya Düymələri */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -374,8 +478,14 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
 
           {/* Resurs Kartları Siyahısı */}
           {filteredResources.length === 0 ? (
-            <div style={{ backgroundColor: theme.cardBg, padding: '32px', borderRadius: '18px', border: `1px solid ${theme.borderColor}`, textAlign: 'center' }}>
-              <p style={{ margin: 0, fontSize: '13.5px', color: theme.textSecondary }}>Axtarışa uyğun resurs tapılmadı.</p>
+            <div style={{ backgroundColor: theme.cardBg, padding: '36px', borderRadius: '18px', border: `1px solid ${theme.borderColor}`, textAlign: 'center' }}>
+              <p style={{ margin: 0, fontSize: '13.5px', color: theme.textSecondary }}>
+                {activeTab === 'saved'
+                  ? 'Hələ heç bir resursu yadda saxlamamısınız.'
+                  : activeTab === 'my'
+                    ? 'Hələ heç bir resurs paylaşmamısınız.'
+                    : 'Axtarışa uyğun resurs tapılmadı.'}
+              </p>
             </div>
           ) : (
             filteredResources.map((res) => {
@@ -434,6 +544,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                     {/* Bəyənmə */}
                     <button
                       onClick={() => toggleLike(res.id)}
+                      title="Bəyən"
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -450,9 +561,10 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       <span>{res.likes}</span>
                     </button>
 
-                    {/* Bookmark */}
+                    {/* Yadda Saxla */}
                     <button
                       onClick={() => toggleSave(res.id)}
+                      title={res.isSaved ? "Yaddaşdan çıxart" : "Yadda saxla"}
                       style={{
                         background: 'none',
                         border: 'none',
@@ -465,9 +577,10 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                     </button>
 
                     {/* Silmə düyməsi */}
-                    {res.createdAt === 'İndi' && (
+                    {res.isMyPost && (
                       <button
                         onClick={() => handleDelete(res.id)}
+                        title="Sil"
                         style={{
                           background: 'none',
                           border: 'none',
