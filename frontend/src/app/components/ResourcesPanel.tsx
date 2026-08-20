@@ -1,6 +1,18 @@
 "use client";
-import React, { useState } from 'react';
-import { BookOpen, ExternalLink, Plus, Code, FileText, Video } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { BookOpen, ExternalLink, Plus, Code, FileText, Video, Book, Heart, Bookmark, Trash2, Search } from 'lucide-react';
+
+interface Resource {
+  id: number;
+  title: string;
+  link: string;
+  type: string;
+  author: string;
+  createdAt: string;
+  likes: number;
+  isLiked?: boolean;
+  isSaved?: boolean;
+}
 
 interface ResourcesPanelProps {
   isDarkMode?: boolean;
@@ -32,17 +44,21 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
   const [type, setType] = useState('Dərslik');
-  const [searchQuery] = useState('');
+  const [detectedSource, setDetectedSource] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Hamısı');
 
-  const [resources, setResources] = useState([
+  const [resources, setResources] = useState<Resource[]>([
     {
       id: 1,
       title: 'React Rəsmi Sənədləşməsi',
       link: 'https://react.dev',
       type: 'Dərslik',
       author: 'React Team',
-      icon: Code
+      createdAt: '2 saat əvvəl',
+      likes: 12,
+      isLiked: false,
+      isSaved: true
     },
     {
       id: 2,
@@ -50,7 +66,10 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
       link: 'https://flask.palletsprojects.com',
       type: 'Dərslik',
       author: 'Pallets',
-      icon: Code
+      createdAt: '5 saat əvvəl',
+      likes: 8,
+      isLiked: false,
+      isSaved: false
     },
     {
       id: 3,
@@ -58,39 +77,110 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
       link: 'https://tryhackme.com',
       type: 'Məqalə',
       author: 'TryHackMe',
-      icon: FileText
+      createdAt: '1 gün əvvəl',
+      likes: 24,
+      isLiked: true,
+      isSaved: false
     }
   ]);
 
   const categories = ['Hamısı', 'Dərslik', 'Məqalə', 'Video', 'Kitab'];
 
+  const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setLink(val);
+
+    try {
+      if (val.startsWith('http://') || val.startsWith('https://')) {
+        const hostname = new URL(val).hostname.replace('www.', '');
+        const domain = hostname.split('.')[0];
+        const formattedDomain = domain.charAt(0).toUpperCase() + domain.slice(1);
+        setDetectedSource(formattedDomain);
+
+        if (val.includes('youtube.com') || val.includes('youtu.be')) {
+          setType('Video');
+        } else if (val.includes('github.com') || val.includes('docs.')) {
+          setType('Dərslik');
+        } else if (val.includes('medium.com') || val.includes('dev.to')) {
+          setType('Məqalə');
+        }
+      } else {
+        setDetectedSource('');
+      }
+    } catch {
+      setDetectedSource('');
+    }
+  };
+
   const handleAddResource = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !link.trim()) return;
 
-    const newResource = {
+    const newResource: Resource = {
       id: Date.now(),
       title,
       link: link.startsWith('http') ? link : `https://${link}`,
       type,
-      author: 'Tələbə Paylaşımı',
-      icon: type === 'Video' ? Video : type === 'Məqalə' ? FileText : Code
+      author: detectedSource || 'Tələbə Paylaşımı',
+      createdAt: 'İndi',
+      likes: 0,
+      isLiked: false,
+      isSaved: false
     };
 
     setResources([newResource, ...resources]);
     setTitle('');
     setLink('');
+    setDetectedSource('');
   };
 
-  const filteredResources = resources.filter(res => {
-    const matchesSearch = res.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Hamısı' || res.type === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const toggleLike = (id: number) => {
+    setResources(resources.map(res => {
+      if (res.id === id) {
+        return {
+          ...res,
+          likes: res.isLiked ? res.likes - 1 : res.likes + 1,
+          isLiked: !res.isLiked
+        };
+      }
+      return res;
+    }));
+  };
+
+  const toggleSave = (id: number) => {
+    setResources(resources.map(res => {
+      if (res.id === id) {
+        return { ...res, isSaved: !res.isSaved };
+      }
+      return res;
+    }));
+  };
+
+  const handleDelete = (id: number) => {
+    setResources(resources.filter(res => res.id !== id));
+  };
+
+  const getIcon = (resType: string) => {
+    switch (resType) {
+      case 'Video': return Video;
+      case 'Məqalə': return FileText;
+      case 'Kitab': return Book;
+      default: return Code;
+    }
+  };
+
+  const filteredResources = useMemo(() => {
+    return resources.filter(res => {
+      const matchesSearch = res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        res.author.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'Hamısı' || res.type === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [resources, searchQuery, selectedCategory]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
-      
+
       {/* 1. Başlıq */}
       <div>
         <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
@@ -102,7 +192,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
-        
+
         {/* Sol Sütun: Yeni Resurs Paylaş Formu */}
         <div style={{
           backgroundColor: theme.cardBg,
@@ -122,6 +212,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
               </label>
               <input
                 type="text"
+                required
                 placeholder="Məl. Next.js Official Docs"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -172,9 +263,10 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                 </label>
                 <input
                   type="text"
+                  required
                   placeholder="https://..."
                   value={link}
-                  onChange={(e) => setLink(e.target.value)}
+                  onChange={handleLinkChange}
                   style={{
                     width: '100%',
                     padding: '11px 14px',
@@ -189,6 +281,12 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                 />
               </div>
             </div>
+
+            {detectedSource && (
+              <div style={{ fontSize: '11.5px', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600' }}>
+                ✓ Mənbə avtomatik təyin olundu: <strong>{detectedSource}</strong>
+              </div>
+            )}
 
             <button
               type="submit"
@@ -217,45 +315,71 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
           </form>
         </div>
 
-        {/* Sağ Sütun: Resurslar və Axtarış */}
+        {/* Sağ Sütun: Resurslar, Axtarış vər Filtrlər */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
-          {/* Kateqoriya Düymələri */}
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-            {categories.map((cat) => {
-              const isActive = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  style={{
-                    backgroundColor: isActive ? theme.activeCatBg : theme.inactiveCatBg,
-                    color: isActive ? theme.activeCatText : theme.inactiveCatText,
-                    border: '1px solid',
-                    borderColor: isActive ? theme.activeCatBg : theme.inactiveCatBorder,
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  {cat}
-                </button>
-              );
-            })}
+
+          {/* Axtarış Zolağı və Kateqoriya Düymələri */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+            {/* Canlı Axtarış Inputu */}
+            <div style={{ position: 'relative', width: '100%' }}>
+              <Search size={16} color={theme.textSecondary} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                type="text"
+                placeholder="Resurs adı və ya mənbə üzrə axtar..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px 10px 36px',
+                  borderRadius: '12px',
+                  border: `1px solid ${theme.inputBorder}`,
+                  fontSize: '13px',
+                  outline: 'none',
+                  backgroundColor: theme.inputBg,
+                  color: theme.textPrimary,
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            {/* Kateqoriyalar */}
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+              {categories.map((cat) => {
+                const isActive = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    style={{
+                      backgroundColor: isActive ? theme.activeCatBg : theme.inactiveCatBg,
+                      color: isActive ? theme.activeCatText : theme.inactiveCatText,
+                      border: '1px solid',
+                      borderColor: isActive ? theme.activeCatBg : theme.inactiveCatBorder,
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Resurs Kartları Siyahısı */}
           {filteredResources.length === 0 ? (
             <div style={{ backgroundColor: theme.cardBg, padding: '32px', borderRadius: '18px', border: `1px solid ${theme.borderColor}`, textAlign: 'center' }}>
-              <p style={{ margin: 0, fontSize: '13.5px', color: theme.textSecondary }}>Resurs tapılmadı.</p>
+              <p style={{ margin: 0, fontSize: '13.5px', color: theme.textSecondary }}>Axtarışa uyğun resurs tapılmadı.</p>
             </div>
           ) : (
             filteredResources.map((res) => {
-              const IconComponent = res.icon || BookOpen;
+              const IconComponent = getIcon(res.type);
               return (
                 <div
                   key={res.id}
@@ -272,7 +396,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                     transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
                     <div style={{
                       backgroundColor: theme.iconBoxBg,
                       border: `1px solid ${theme.iconBoxBorder}`,
@@ -281,7 +405,8 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       color: theme.iconBoxColor,
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      flexShrink: 0
                     }}>
                       <IconComponent size={20} />
                     </div>
@@ -292,6 +417,9 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                           {res.type}
                         </span>
                         <span style={{ fontSize: '11.5px', color: theme.textSecondary }}>• {res.author}</span>
+                        {res.createdAt && (
+                          <span style={{ fontSize: '11px', color: theme.textSecondary }}>({res.createdAt})</span>
+                        )}
                       </div>
 
                       <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>
@@ -300,36 +428,92 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                     </div>
                   </div>
 
-                  <a
-                    href={res.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      backgroundColor: theme.linkBtnBg,
-                      color: theme.linkBtnText,
-                      border: `1px solid ${theme.linkBtnBorder}`,
-                      padding: '8px 14px',
-                      borderRadius: '10px',
-                      fontSize: '12.5px',
-                      fontWeight: '700',
-                      textDecoration: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#2E5B4E';
-                      e.currentTarget.style.color = '#FFFFFF';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = theme.linkBtnBg;
-                      e.currentTarget.style.color = theme.linkBtnText;
-                    }}
-                  >
-                    Keçid Et <ExternalLink size={14} />
-                  </a>
+                  {/* Sağ düymələr və sosial funksiyalar */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
+                    {/* Bəyənmə */}
+                    <button
+                      onClick={() => toggleLike(res.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'none',
+                        border: 'none',
+                        color: res.isLiked ? '#EF4444' : theme.textSecondary,
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      <Heart size={16} fill={res.isLiked ? '#EF4444' : 'none'} />
+                      <span>{res.likes}</span>
+                    </button>
+
+                    {/* Bookmark */}
+                    <button
+                      onClick={() => toggleSave(res.id)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: res.isSaved ? '#F59E0B' : theme.textSecondary,
+                        cursor: 'pointer',
+                        padding: '4px'
+                      }}
+                    >
+                      <Bookmark size={16} fill={res.isSaved ? '#F59E0B' : 'none'} />
+                    </button>
+
+                    {/* Silmə düyməsi */}
+                    {res.createdAt === 'İndi' && (
+                      <button
+                        onClick={() => handleDelete(res.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: theme.textSecondary,
+                          cursor: 'pointer',
+                          padding: '4px'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = theme.textSecondary}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+
+                    {/* Keçid Et Düyməsi */}
+                    <a
+                      href={res.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        backgroundColor: theme.linkBtnBg,
+                        color: theme.linkBtnText,
+                        border: `1px solid ${theme.linkBtnBorder}`,
+                        padding: '8px 14px',
+                        borderRadius: '10px',
+                        fontSize: '12.5px',
+                        fontWeight: '700',
+                        textDecoration: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#2E5B4E';
+                        e.currentTarget.style.color = '#FFFFFF';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = theme.linkBtnBg;
+                        e.currentTarget.style.color = theme.linkBtnText;
+                      }}
+                    >
+                      Keçid Et <ExternalLink size={14} />
+                    </a>
+                  </div>
                 </div>
               );
             })
