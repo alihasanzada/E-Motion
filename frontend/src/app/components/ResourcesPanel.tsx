@@ -1,8 +1,20 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  BookOpen, ExternalLink, Plus, Code, FileText, Video, Book, Heart, Bookmark,
-  Trash2, Search, User, List, ArrowUpDown
+  BookOpen,
+  ExternalLink,
+  Plus,
+  Code,
+  FileText,
+  Video,
+  Book,
+  Heart,
+  Bookmark,
+  Trash2,
+  Search,
+  User,
+  List,
+  ArrowUpDown
 } from 'lucide-react';
 
 interface Resource {
@@ -25,7 +37,7 @@ interface ResourcesPanelProps {
 
 const DEFAULT_RESOURCES: Resource[] = [
   {
-    id: 1,
+    id: 3,
     title: 'React Rəsmi Sənədləşməsi',
     description: 'React 18+ hooks, komponentlər və state idarəetməsi haqqında rəsmi bələdçi.',
     link: 'https://react.dev',
@@ -51,7 +63,7 @@ const DEFAULT_RESOURCES: Resource[] = [
     isMyPost: false
   },
   {
-    id: 3,
+    id: 1,
     title: 'Kibertəhlükəsizlik üzrə Başlanğıc Bələdçisi',
     description: 'Təhlükəsizlik əsasları, şəbəkə analizi və sızma testləri üçün praktiki laboratoriyalar.',
     link: 'https://tryhackme.com',
@@ -96,12 +108,11 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Hamısı');
   const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
-
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'my'>('all');
 
   const [resources, setResources] = useState<Resource[]>(() => {
     if (typeof window !== 'undefined') {
-      const savedData = localStorage.getItem('emotion_resources');
+      const savedData = localStorage.getItem('emotion_resources_v2');
       if (savedData) {
         try { return JSON.parse(savedData); } catch { return DEFAULT_RESOURCES; }
       }
@@ -111,7 +122,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('emotion_resources', JSON.stringify(resources));
+      localStorage.setItem('emotion_resources_v2', JSON.stringify(resources));
     }
   }, [resources]);
 
@@ -218,7 +229,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
       return matchesSearch && matchesCategory && matchesTab;
     });
 
-    return list.sort((a, b) => {
+    return [...list].sort((a, b) => {
       if (sortBy === 'popular') {
         return b.likes - a.likes;
       }
@@ -228,8 +239,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
-
-      {/* Başlıq */}
       <div>
         <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
           Faydalı Təhsil Resursları
@@ -261,7 +270,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
               <input
                 type="text"
                 required
-                placeholder="Məsələn: Next.js Official Docs"
+                placeholder="Məl. Next.js Official Docs"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={{
@@ -379,8 +388,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                 boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                 transition: 'all 0.2s ease'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#23473D'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#23473D' : '#2E5B4E'}
             >
               <Plus size={16} /> Resurs Əlavə Et
             </button>
@@ -390,7 +397,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
         {/* Sağ Sütun */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* Görünüş Tabları */}
           <div style={{
             display: 'flex',
             backgroundColor: theme.cardBg,
@@ -466,11 +472,8 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
             </button>
           </div>
 
-          {/* Axtarış və Sıralama Zolağı */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              {/* Canlı Axtarış */}
               <div style={{ position: 'relative', flex: 1 }}>
                 <Search size={16} color={theme.textSecondary} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
@@ -492,7 +495,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                 />
               </div>
 
-              {/* Çeşidləmə */}
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <ArrowUpDown size={14} color={theme.textSecondary} style={{ position: 'absolute', left: '10px', pointerEvents: 'none' }} />
                 <select
@@ -516,7 +518,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
               </div>
             </div>
 
-            {/* Kateqoriyalar */}
             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
               {categories.map((cat) => {
                 const isActive = selectedCategory === cat;
@@ -545,7 +546,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
             </div>
           </div>
 
-          {/* Siyahı */}
           {filteredResources.length === 0 ? (
             <div style={{ backgroundColor: theme.cardBg, padding: '36px', borderRadius: '18px', border: `1px solid ${theme.borderColor}`, textAlign: 'center' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: theme.textSecondary }}>
@@ -614,10 +614,7 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                     </div>
                   </div>
 
-                  {/* Sağ Düymələr */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-
-                    {/* Bəyənmə */}
                     <button
                       onClick={() => toggleLike(res.id)}
                       title="Bəyən"
@@ -637,7 +634,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       <span>{res.likes}</span>
                     </button>
 
-                    {/* Bookmark */}
                     <button
                       onClick={() => toggleSave(res.id)}
                       title={res.isSaved ? "Yaddaşdan çıxart" : "Yadda saxla"}
@@ -652,7 +648,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                       <Bookmark size={16} fill={res.isSaved ? '#F59E0B' : 'none'} />
                     </button>
 
-                    {/* Silmə */}
                     {res.isMyPost && (
                       <button
                         onClick={() => handleDelete(res.id)}
@@ -664,14 +659,11 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                           cursor: 'pointer',
                           padding: '4px'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = theme.textSecondary}
                       >
                         <Trash2 size={16} />
                       </button>
                     )}
 
-                    {/* Keçid Et */}
                     <a
                       href={res.link}
                       target="_blank"
@@ -690,14 +682,6 @@ export default function ResourcesPanel({ isDarkMode = false }: ResourcesPanelPro
                         gap: '6px',
                         whiteSpace: 'nowrap',
                         transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = isDarkMode ? '#2E5B4E' : '#2E5B4E';
-                        e.currentTarget.style.color = '#FFFFFF';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = theme.linkBtnBg;
-                        e.currentTarget.style.color = theme.linkBtnText;
                       }}
                     >
                       Keçid Et <ExternalLink size={14} />
