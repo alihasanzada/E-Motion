@@ -1046,7 +1046,7 @@ export default function Dashboard() {
                     style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '14px' }}>🎯</span>
+                      <span style={{ fontSize: '14px' }}></span>
                       <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Aktiv kampus çağırışı</h3>
                     </div>
                     <div style={{ overflow: 'hidden', borderRadius: '9px', border: `1px solid ${theme.border}`, position: 'relative', height: '100px', marginBottom: '10px', backgroundColor: theme.bgInner }}>
@@ -1066,7 +1066,7 @@ export default function Dashboard() {
                   <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '14px' }}>🧠</span>
+                        <span style={{ fontSize: '14px' }}></span>
                         <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Mental rifah</h3>
                       </div>
                       <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
@@ -1262,7 +1262,6 @@ export default function Dashboard() {
 
                 <div style={{ background: darkMode ? 'linear-gradient(135deg, #1E293B, #0F172A)' : 'linear-gradient(135deg, #334155, #1E293B)', color: '#FFFFFF', padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <Sparkles size={16} style={{ color: '#FBBF24' }} />
                     <h4 style={{ margin: 0, fontSize: '12.5px', fontWeight: '600' }}>Motivasiyaya ehtiyacın var?</h4>
                   </div>
                   <p style={{ margin: '0 0 12px 0', fontSize: '11px', opacity: 0.85, lineHeight: '1.4' }}>

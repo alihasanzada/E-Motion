@@ -1,13 +1,12 @@
 "use client";
 import React, { useState } from 'react';
-import { Brain, Heart, Sparkles, Send, Wind, BookOpen, Clock } from 'lucide-react';
+import { Heart, Send, Wind, BookOpen, Clock } from 'lucide-react';
 
 interface MentalPanelProps {
   isDarkMode?: boolean;
 }
 
 export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
-  // Dinamik rengler
   const theme = {
     cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
     textPrimary: isDarkMode ? '#FFFFFF' : '#111827',
@@ -47,8 +46,8 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
-      
-      {/* 1. Brend Yaşılına Uyğunlaşdırılmış Rahatladıcı Banner */}
+
+      {/* Brend Yaşılına Uyğunlaşdırılmış Rahatladıcı Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #1E3E35 0%, #2E5B4E 50%, #44766C 100%)',
         borderRadius: '20px',
@@ -62,7 +61,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
             <span style={{ backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Brain size={14} /> E-MOTION Mental Mərkəz
+              Mental Mərkəz
             </span>
           </div>
           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>
@@ -73,7 +72,6 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
           </p>
         </div>
         <div style={{ background: 'rgba(255,255,255,0.08)', padding: '16px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.15)', textAlign: 'center' }}>
-          <Sparkles size={22} style={{ marginBottom: '4px', color: '#A7F3D0' }} />
           <span style={{ fontSize: '11.5px', opacity: 0.8, display: 'block', fontWeight: '500' }}>Günün Sözü</span>
           <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', fontWeight: '700', fontStyle: 'italic', maxWidth: '180px', color: '#ECFDF5' }}>
             "Nəfəsinizə fokuslanın, anı yaşayın."
@@ -81,9 +79,9 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
         </div>
       </div>
 
-      {/* 2. Əsas Şəbəkə: Əhval Qeydiyyatı + Qeydlər */}
+      {/* Əsas Şəbəkə: Əhval Qeydiyyatı + Qeydlər */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
-        
+
         {/* Əhval-ruhiyyə Daxil Etmə Kartı */}
         <div style={{
           backgroundColor: theme.cardBg,
@@ -205,13 +203,13 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    color: moodObj.color,
-                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : moodObj.bg,
-                    padding: '2px 8px',
-                    borderRadius: '12px'
-                }}>
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      color: moodObj.color,
+                      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : moodObj.bg,
+                      padding: '2px 8px',
+                      borderRadius: '12px'
+                    }}>
                       {moodObj.emoji} {note.mood}
                     </span>
                     <span style={{ fontSize: '11px', color: theme.textSecondary }}>{note.date}</span>
@@ -227,7 +225,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
 
       </div>
 
-      {/* 3. Sürətli Mental Məşqlər */}
+      {/* Sürətli Mental Məşqlər */}
       <div style={{
         backgroundColor: theme.cardBg,
         padding: '24px',
@@ -240,7 +238,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
         </h3>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-          
+
           <div style={{ border: `1px solid ${theme.borderColor}`, padding: '16px', borderRadius: '14px', backgroundColor: theme.cardBg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: '700', fontSize: '14px', color: theme.textPrimary }}>Nəfəs Məşqi</span>

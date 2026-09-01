@@ -264,7 +264,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
               <Award size={28} />
             </div>
             <div>
-              <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>Kollektsiya</span>
+              <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>Kolleksiya</span>
               <h4 style={{ margin: '2px 0 0 0', fontSize: '22px', fontWeight: '800', color: theme.textPrimary }}>
                 {badges.filter(b => b.unlocked).length} / {badges.length} Nişan
               </h4>
