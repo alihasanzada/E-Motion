@@ -8,4 +8,6 @@ dist/
 .idea/
 
 .env
+.env*.local
+.env.local
 *.db

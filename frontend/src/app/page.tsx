@@ -1,22 +1,23 @@
 "use client";
+import {
+  Sprout, HeartPulse, UserCheck, PhoneCall, Zap, RefreshCw, CheckCircle2, LayoutDashboard, Activity, Heart, ShieldPlus,
+  Trophy, Calendar, Apple, Folder, TrendingUp,
+  BarChart3, Search, ChevronDown, Bell, MessageSquare,
+  Footprints, Clock, Flame, Droplet, Moon, Sun, Brain, Bot,
+  Flower2, Wind, BookOpen, Smile, Stethoscope, ClipboardList,
+  Phone, LogOut, ArrowRight, Dumbbell, Timer, Plus, FileText, X, Sparkles, Check
+} from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import ActivityPanel from './components/ActivityPanel';
 import NutritionPanel from './components/NutritionPanel';
 import MentalPanel from './components/MentalPanel';
 import ServicesPanel from './components/ServicesPanel';
-import {
-  Sprout, HeartPulse, UserCheck, PhoneCall, Zap, RefreshCw, CheckCircle2, LayoutDashboard, Activity, Heart, ShieldPlus,
-  Trophy, Calendar, Apple, Folder, TrendingUp,
-  BarChart3, Search, ChevronDown, Bell, MessageSquare,
-  Footprints, Clock, Flame, Droplet, Moon, Sun, Brain,
-  Flower2, Wind, BookOpen, Smile, Stethoscope, ClipboardList,
-  Phone, LogOut, ArrowRight, Dumbbell, Timer, Plus, FileText, X, Sparkles, Check
-} from 'lucide-react';
 import ChallengesPanel from './components/ChallengesPanel';
 import StatsPanel from './components/StatsPanel';
 import ResourcesPanel from './components/ResourcesPanel';
 import EventsPanel from './components/EventsPanel';
 import ProgressPanel from './components/ProgressPanel';
+import AIChatModal from './components/AIChatModal';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import EmptyState from "./components/EmptyState";
@@ -43,6 +44,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const [stepsCount, setStepsCount] = useState(0);
   const [sleepHours, setSleepHours] = useState(0);
@@ -1293,130 +1295,36 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* Quick Add Modal Button */}
-      {(activeTab === 'dashboard' || activeTab === 'idare-paneli' || activeTab === 'İdarə paneli') && (
-        <button
-          onClick={() => setIsQuickAddOpen(true)}
-          title="Sürətli məlumat əlavə et"
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            width: '50px',
-            height: '50px',
-            borderRadius: '50%',
-            backgroundColor: '#44766C',
-            color: '#FFFFFF',
-            border: 'none',
-            boxShadow: '0 8px 20px rgba(68, 118, 108, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 90,
-            transition: 'transform 0.2s ease'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <Plus size={24} />
-        </button>
-      )}
-
-      {/* Quick Add Modal */}
-      {isQuickAddOpen && (
-        <div style={{
+      {/* AI Asistent Floating Button */}
+      <button
+        onClick={() => setIsChatOpen(!isChatOpen)}
+        title="E-Motion AI Asistent"
+        style={{
           position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(3px)',
+          bottom: '24px',
+          right: '24px',
+          width: '50px',
+          height: '50px',
+          borderRadius: '50%',
+          backgroundColor: '#44766C',
+          color: '#FFFFFF',
+          border: 'none',
+          boxShadow: '0 8px 20px rgba(68, 118, 108, 0.4)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 200,
-          padding: '16px'
-        }}>
-          <div className="quick-add-modal" style={{
-            backgroundColor: theme.bgCard,
-            border: `1px solid ${theme.border}`,
-            borderRadius: '16px',
-            padding: '20px 24px',
-            width: '100%',
-            maxWidth: '360px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Sürətli məlumat əlavəsi</h3>
-              <X size={18} style={{ cursor: 'pointer', color: theme.textSecondary }} onClick={() => setIsQuickAddOpen(false)} />
-            </div>
+          cursor: 'pointer',
+          zIndex: 90,
+          transition: 'transform 0.2s ease'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        <Bot size={24} />
+      </button>
 
-            <form onSubmit={handleQuickAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>KATEQORİYA SEÇİN</label>
-                <select
-                  value={quickMetricType}
-                  onChange={(e) => setQuickMetricType(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${theme.border}`,
-                    backgroundColor: theme.bgInner,
-                    color: theme.textPrimary,
-                    fontSize: '13px',
-                    outline: 'none'
-                  }}
-                >
-                  <option value="water">Su qəbulu (Stəkan)</option>
-                  <option value="steps">Addım sayı</option>
-                  <option value="sleep">Yuxu (Saat)</option>
-                  <option value="calories">Qidalanma (Kkal)</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: theme.textSecondary, display: 'block', marginBottom: '6px' }}>MİQDAR</label>
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="Məsələn: 2 və ya 500"
-                  value={quickMetricValue}
-                  onChange={(e) => setQuickMetricValue(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${theme.border}`,
-                    backgroundColor: theme.bgInner,
-                    color: theme.textPrimary,
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                style={{
-                  marginTop: '6px',
-                  backgroundColor: '#44766C',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                Əlavə et
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* AI Chat Modal */}
+      <AIChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+    </div >
   );
 }
