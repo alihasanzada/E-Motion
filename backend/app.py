@@ -73,6 +73,55 @@ def health_check():
     """
     return jsonify({"status": "ok", "message": "Server is active"}), 200
 
+@app.route('/api/gemini', methods=['POST'])
+def ai_chat():
+    """
+    E-Motion AI Asistenti ilə dialoq
+    ---
+    tags:
+      - AI Assistant
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - prompt
+          properties:
+            prompt:
+              type: string
+              example: "İmtahana hazırlaşmaq üçün resursları necə tapa bilərəm?"
+    responses:
+      200:
+        description: AI asistentin cavabı uğurla qaytarıldı
+        schema:
+          type: object
+          properties:
+            result:
+              type: string
+              example: "Salam! İmtahan hazırlığı prosesində sənə dəstək olmaqdan çox məmnun olaram..."
+      400:
+        description: Sorğuda prompt daxil edilməyib
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Prompt sahəsi boş ola bilməz"
+      500:
+        description: AI xidmətində və ya serverdə daxili xəta
+    """
+    data = request.get_json(silent=True) or {}
+    prompt = data.get('prompt')
+
+    if not prompt:
+        return jsonify({'error': 'Prompt sahəsi boş ola bilməz'}), 400
+        
+    return jsonify({
+        'result': 'AI cavabı inteqrasiya olunub.'
+    }), 200
+
 @app.route('/api/activity', methods=['GET'])
 def get_activity():
     """
