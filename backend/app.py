@@ -117,7 +117,7 @@ def ai_chat():
 
     if not prompt:
         return jsonify({'error': 'Prompt sahəsi boş ola bilməz'}), 400
-        
+
     return jsonify({
         'result': 'AI cavabı inteqrasiya olunub.'
     }), 200
@@ -554,7 +554,7 @@ def get_water():
     finally:
         conn.close()
 
-@app.route('/api/water', methods=['POST', 'PUT', 'OPTIONS'])
+@app.route('/api/water', methods=['POST', 'OPTIONS'])
 def update_water():
     """
     Update water intake count
