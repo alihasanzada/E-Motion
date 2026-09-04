@@ -64,7 +64,7 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
       {/* Orijinal Başlıq */}
       <div>
         <h2 style={{ fontSize: '24px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', color: isDarkMode ? '#fff' : '#000', margin: '0 0 6px 0' }}>
-          <span>🧠</span> Mental Sağlamlıq və İntizam
+          <span></span> Mental Sağlamlıq və İntizam
         </h2>
         <p style={{ color: isDarkMode ? '#a1a1aa' : '#666', fontSize: '14px', margin: 0 }}>
           Günün gərginliyini azaltmaq və diqqətini toplamaq üçün interaktiv məşqləri sına.
@@ -150,7 +150,7 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
               gap: '8px'
             }}
           >
-            <span>🚀</span> Gündəliyə Əlavə Et
+            <span></span> Gündəliyə Əlavə Et
           </button>
         </div>
 
