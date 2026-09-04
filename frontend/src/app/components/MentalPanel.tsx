@@ -1,7 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-
-type ExerciseType = 'breathing' | 'meditation' | 'affirmation' | null;
+import { useState } from 'react';
+import ExerciseModal, { ExerciseType } from './ExerciseModal';
 
 interface MentalPanelProps {
   isDarkMode?: boolean;
@@ -23,19 +22,11 @@ const moodOptions = [
   { emoji: '💪', label: 'Həvəsli', val: 'motivated' },
 ];
 
-const affirmations = [
-  "Mən özümə və zəkama tamamilə inanıram.",
-  "Hər çətinlik məni daha da təcrübəli və güclü edir.",
-  "Bu gün diqqətimi sakitliyə və uğura kökləyirəm.",
-  "Zehnim aydın, bədənim tamamilə rahatdır.",
-  "Məqsədlərimə doğru addım-addım əminliklə irəliləyirəm.",
-  "Səhvlərim mənim öyrənmə prosesimin təbii hissəsidir.",
-  "Öz templə irəliləyirəm və nəticələrimlə fəxr edirəm."
-];
-
 export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
   const [selectedMood, setSelectedMood] = useState('great');
   const [journalNote, setJournalNote] = useState('');
+  const [activeExercise, setActiveExercise] = useState<ExerciseType>(null);
+
   const [entries, setEntries] = useState<JournalEntry[]>([
     {
       id: '1',
@@ -67,65 +58,23 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
     setJournalNote('');
   };
 
-  const [activeExercise, setActiveExercise] = useState<ExerciseType>(null);
-
-  const [breathPhase, setBreathPhase] = useState<'Inhale' | 'Hold' | 'Exhale'>('Inhale');
-  const [breathTimer, setBreathTimer] = useState(4);
-
-  const [meditationTime, setMeditationTime] = useState(300);
-  const [isMeditating, setIsMeditating] = useState(false);
-
-  const [affIndex, setAffIndex] = useState(0);
-
-  useEffect(() => {
-    if (activeExercise === 'breathing') {
-      setBreathPhase('Inhale');
-      setBreathTimer(4);
-    } else if (activeExercise === 'meditation') {
-      setMeditationTime(300);
-      setIsMeditating(false);
-    } else if (activeExercise === 'affirmation') {
-      setAffIndex(0);
-    }
-  }, [activeExercise]);
-
-  useEffect(() => {
-    if (activeExercise !== 'breathing') return;
-    const interval = setInterval(() => {
-      setBreathTimer((prev) => {
-        if (prev > 1) return prev - 1;
-        if (breathPhase === 'Inhale') { setBreathPhase('Hold'); return 7; }
-        else if (breathPhase === 'Hold') { setBreathPhase('Exhale'); return 8; }
-        else { setBreathPhase('Inhale'); return 4; }
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activeExercise, breathPhase]);
-
-  useEffect(() => {
-    if (activeExercise !== 'meditation' || !isMeditating) return;
-    const interval = setInterval(() => {
-      setMeditationTime((prev) => {
-        if (prev <= 1) { setIsMeditating(false); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activeExercise, isMeditating]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
 
-      {/* Emosiya Qeydi və Gündəlik Tarixçəsi */}
+      {/* Orijinal Başlıq */}
+      <div>
+        <h2 style={{ fontSize: '24px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', color: isDarkMode ? '#fff' : '#000', margin: '0 0 6px 0' }}>
+          <span>🧠</span> Mental Sağlamlıq və İntizam
+        </h2>
+        <p style={{ color: isDarkMode ? '#a1a1aa' : '#666', fontSize: '14px', margin: 0 }}>
+          Günün gərginliyini azaltmaq və diqqətini toplamaq üçün interaktiv məşqləri sına.
+        </p>
+      </div>
+
+      {/* Əsas Panel Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
 
-        {/* Emosiya Seçimi və Yazı */}
+        {/* Sol Tərəf: Emosiya və Gündəlik Qeydi */}
         <div style={{
           backgroundColor: isDarkMode ? '#18181b' : '#fff',
           border: `1px solid ${isDarkMode ? '#27272a' : '#e4e4e7'}`,
@@ -135,7 +84,6 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
           flexDirection: 'column',
           gap: '16px'
         }}>
-          {/* Emosiya düymələri */}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between' }}>
             {moodOptions.map((m) => {
               const isSelected = selectedMood === m.val;
@@ -166,7 +114,6 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
             })}
           </div>
 
-          {/* Textarea */}
           <textarea
             value={journalNote}
             onChange={(e) => setJournalNote(e.target.value)}
@@ -185,7 +132,6 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
             }}
           />
 
-          {/* Gündəliyə əlavə et düyməsi */}
           <button
             onClick={handleAddEntry}
             style={{
@@ -208,7 +154,7 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
           </button>
         </div>
 
-        {/* Tarixçə Kartları */}
+        {/* Sağ Tərəf: Gündəlik Tarixçəsi */}
         <div style={{
           backgroundColor: isDarkMode ? '#18181b' : '#fff',
           border: `1px solid ${isDarkMode ? '#27272a' : '#e4e4e7'}`,
@@ -247,7 +193,7 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
 
       </div>
 
-      {/* Sürətli Rahatlama Məşqləri */}
+      {/* Aşağı Hissə: Sürətli Rahatlama Məşqləri (Orijinal Kart Dizaynı) */}
       <div style={{
         backgroundColor: isDarkMode ? '#18181b' : '#fff',
         border: `1px solid ${isDarkMode ? '#27272a' : '#e4e4e7'}`,
@@ -260,7 +206,7 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
 
-          {/* Nəfəs Məşqi Kartı */}
+          {/* Nəfəs Məşqi */}
           <div style={{
             backgroundColor: isDarkMode ? '#09090b' : '#f4f4f5',
             border: `1px solid ${isDarkMode ? '#27272a' : '#e4e4e7'}`,
@@ -296,7 +242,7 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
             </button>
           </div>
 
-          {/* Fokus Meditasiyası Kartı */}
+          {/* Fokus Meditasiyası */}
           <div style={{
             backgroundColor: isDarkMode ? '#09090b' : '#f4f4f5',
             border: `1px solid ${isDarkMode ? '#27272a' : '#e4e4e7'}`,
@@ -332,7 +278,7 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
             </button>
           </div>
 
-          {/* Pozitiv Affirmasiya Kartı */}
+          {/* Pozitiv Affirmasiya */}
           <div style={{
             backgroundColor: isDarkMode ? '#09090b' : '#f4f4f5',
             border: `1px solid ${isDarkMode ? '#27272a' : '#e4e4e7'}`,
@@ -371,199 +317,12 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
         </div>
       </div>
 
-      {/* İşlək Modal Pəncərə */}
-      {activeExercise && (
-        <div
-          onClick={(e) => e.target === e.currentTarget && setActiveExercise(null)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            backdropFilter: 'blur(4px)'
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: isDarkMode ? '#1c1c1e' : '#fff',
-              padding: '32px 28px',
-              borderRadius: '20px',
-              maxWidth: '460px',
-              width: '90%',
-              color: isDarkMode ? '#fff' : '#000',
-              textAlign: 'center',
-              position: 'relative',
-              border: '1px solid #333',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
-            }}
-          >
-            <button
-              onClick={() => setActiveExercise(null)}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                background: 'none',
-                border: 'none',
-                color: isDarkMode ? '#aaa' : '#555',
-                fontSize: '22px',
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
-
-            {activeExercise === 'breathing' && (
-              <div>
-                <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>🫁 4-7-8 Nəfəs Məşqi</h3>
-                <p style={{ fontSize: '14px', color: isDarkMode ? '#aaa' : '#555', marginBottom: '24px' }}>
-                  Sinir sistemini sakitləşdirmək üçün ekrandakı ritmə uyğun nəfəs al və ver.
-                </p>
-                <div
-                  style={{
-                    width: '160px',
-                    height: '160px',
-                    borderRadius: '50%',
-                    backgroundColor:
-                      breathPhase === 'Inhale'
-                        ? '#10b981'
-                        : breathPhase === 'Hold'
-                          ? '#f59e0b'
-                          : '#3b82f6',
-                    margin: '0 auto 24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.8s ease-in-out',
-                    transform:
-                      breathPhase === 'Inhale'
-                        ? 'scale(1.18)'
-                        : breathPhase === 'Hold'
-                          ? 'scale(1.10)'
-                          : 'scale(0.90)'
-                  }}
-                >
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                    {breathPhase === 'Inhale' ? 'Nəfəs Al' : breathPhase === 'Hold' ? 'Saxla' : 'Nəfəs Ver'}
-                  </span>
-                  <span style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '4px' }}>
-                    {breathTimer}s
-                  </span>
-                </div>
-                <button
-                  onClick={() => setActiveExercise(null)}
-                  style={{
-                    padding: '10px 24px',
-                    backgroundColor: '#2a2a2d',
-                    border: '1px solid #444',
-                    borderRadius: '10px',
-                    color: '#fff',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Məşqi Bitir
-                </button>
-              </div>
-            )}
-
-            {activeExercise === 'meditation' && (
-              <div>
-                <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>🧘 Fokus Meditasiyası</h3>
-                <p style={{ fontSize: '14px', color: isDarkMode ? '#aaa' : '#555', margin: '12px 0 20px' }}>
-                  Gözlərini yum, çiyinlərini sərbəst burax və diqqətini yalnız nəfəsində saxla.
-                </p>
-                <div style={{ padding: '24px', background: isDarkMode ? '#2a2a2d' : '#f0f0f0', borderRadius: '14px', margin: '0 0 24px' }}>
-                  <div style={{ fontSize: '42px', fontWeight: 'bold', fontFamily: 'monospace', color: '#10b981', marginBottom: '8px' }}>
-                    {formatTime(meditationTime)}
-                  </div>
-                  <p style={{ color: isDarkMode ? '#ccc' : '#777', fontSize: '14px', fontStyle: 'italic', margin: 0 }}>
-                    {isMeditating ? 'Sakitləş və yalnız anı hiss et...' : 'Başlamaq üçün düyməyə sıx'}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => setIsMeditating(!isMeditating)}
-                    style={{
-                      padding: '12px 24px',
-                      backgroundColor: isMeditating ? '#ef4444' : '#10b981',
-                      border: 'none',
-                      borderRadius: '10px',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {isMeditating ? 'Pauza Et' : 'Başla (5 dəq)'}
-                  </button>
-                  <button
-                    onClick={() => setActiveExercise(null)}
-                    style={{
-                      padding: '12px 20px',
-                      backgroundColor: '#2a2a2d',
-                      border: '1px solid #444',
-                      borderRadius: '10px',
-                      color: '#fff',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Tamamla
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeExercise === 'affirmation' && (
-              <div>
-                <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>✨ Pozitiv Affirmasiya</h3>
-                <p style={{ fontSize: '14px', color: isDarkMode ? '#aaa' : '#555', marginBottom: '20px' }}>
-                  Daxili inamını bərpa etmək üçün bu cümləni daxilən 3 dəfə təkrarla.
-                </p>
-                <div style={{ minHeight: '120px', padding: '24px', background: isDarkMode ? '#2a2a2d' : '#f0f0f0', borderRadius: '14px', margin: '0 0 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: '4px solid #8b5cf6' }}>
-                  <p style={{ fontSize: '18px', fontStyle: 'italic', color: isDarkMode ? '#f1f5f9' : '#333', margin: 0, lineHeight: 1.5 }}>
-                    "{affirmations[affIndex]}"
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => setAffIndex((prev) => (prev + 1) % affirmations.length)}
-                    style={{
-                      padding: '12px 22px',
-                      backgroundColor: '#8b5cf6',
-                      border: 'none',
-                      borderRadius: '10px',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Növbəti Cümlə ➔
-                  </button>
-                  <button
-                    onClick={() => setActiveExercise(null)}
-                    style={{
-                      padding: '12px 18px',
-                      backgroundColor: '#2a2a2d',
-                      border: '1px solid #444',
-                      borderRadius: '10px',
-                      color: '#fff',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Bağla
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Ayrı Modul Component çağırışı */}
+      <ExerciseModal
+        type={activeExercise}
+        onClose={() => setActiveExercise(null)}
+        isDarkMode={isDarkMode}
+      />
 
     </div>
   );

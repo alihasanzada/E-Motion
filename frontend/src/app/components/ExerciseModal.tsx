@@ -95,7 +95,7 @@ export default function ExerciseModal({ type, onClose, isDarkMode }: ExerciseMod
                     style={{
                         position: 'absolute', top: '16px', right: '16px',
                         background: 'none', border: 'none',
-                        color: isDarkMode ? '#aaa' : '#555', fontSize: '22px', cursor: 'pointer'
+                        color: isDarkMode ? '#aaa' : '#555', fontSize: '22px', cursor: 'pointer', lineHeight: 1
                     }}
                 >
                     ✕
@@ -113,7 +113,8 @@ export default function ExerciseModal({ type, onClose, isDarkMode }: ExerciseMod
                                 backgroundColor: breathPhase === 'Inhale' ? '#10b981' : breathPhase === 'Hold' ? '#f59e0b' : '#3b82f6',
                                 margin: '0 auto 24px', display: 'flex', flexDirection: 'column',
                                 alignItems: 'center', justifyContent: 'center', transition: 'all 0.8s ease-in-out',
-                                transform: breathPhase === 'Inhale' ? 'scale(1.18)' : breathPhase === 'Hold' ? 'scale(1.10)' : 'scale(0.90)'
+                                transform: breathPhase === 'Inhale' ? 'scale(1.18)' : breathPhase === 'Hold' ? 'scale(1.10)' : 'scale(0.90)',
+                                boxShadow: breathPhase === 'Inhale' ? '0 0 25px rgba(16, 185, 129, 0.4)' : breathPhase === 'Hold' ? '0 0 25px rgba(245, 158, 11, 0.4)' : '0 0 25px rgba(59, 130, 246, 0.4)'
                             }}
                         >
                             <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
@@ -121,7 +122,7 @@ export default function ExerciseModal({ type, onClose, isDarkMode }: ExerciseMod
                             </span>
                             <span style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '4px' }}>{breathTimer}s</span>
                         </div>
-                        <button onClick={onClose} style={{ padding: '10px 24px', backgroundColor: '#2a2a2d', border: '1px solid #444', borderRadius: '10px', color: '#fff', cursor: 'pointer' }}>
+                        <button onClick={onClose} style={{ padding: '10px 24px', backgroundColor: '#2a2a2d', border: '1px solid #444', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>
                             Məşqi Bitir
                         </button>
                     </div>
@@ -142,10 +143,10 @@ export default function ExerciseModal({ type, onClose, isDarkMode }: ExerciseMod
                             </p>
                         </div>
                         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                            <button onClick={() => setIsMeditating(!isMeditating)} style={{ padding: '12px 24px', backgroundColor: isMeditating ? '#ef4444' : '#10b981', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>
+                            <button onClick={() => setIsMeditating(!isMeditating)} style={{ padding: '12px 24px', backgroundColor: isMeditating ? '#ef4444' : '#10b981', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>
                                 {isMeditating ? 'Pauza Et' : 'Başla (5 dəq)'}
                             </button>
-                            <button onClick={onClose} style={{ padding: '12px 20px', backgroundColor: '#2a2a2d', border: '1px solid #444', borderRadius: '10px', color: '#fff', cursor: 'pointer' }}>
+                            <button onClick={onClose} style={{ padding: '12px 20px', backgroundColor: '#2a2a2d', border: '1px solid #444', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>
                                 Tamamla
                             </button>
                         </div>
@@ -164,10 +165,10 @@ export default function ExerciseModal({ type, onClose, isDarkMode }: ExerciseMod
                             </p>
                         </div>
                         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                            <button onClick={() => setAffIndex((prev) => (prev + 1) % affirmations.length)} style={{ padding: '12px 22px', backgroundColor: '#8b5cf6', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>
+                            <button onClick={() => setAffIndex((prev) => (prev + 1) % affirmations.length)} style={{ padding: '12px 22px', backgroundColor: '#8b5cf6', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>
                                 Növbəti Cümlə ➔
                             </button>
-                            <button onClick={onClose} style={{ padding: '12px 18px', backgroundColor: '#2a2a2d', border: '1px solid #444', borderRadius: '10px', color: '#fff', cursor: 'pointer' }}>
+                            <button onClick={onClose} style={{ padding: '12px 18px', backgroundColor: '#2a2a2d', border: '1px solid #444', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>
                                 Bağla
                             </button>
                         </div>
