@@ -7,7 +7,24 @@ interface Message {
     text: string;
 }
 
-export default function AIChatModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+interface UserStats {
+    addimlar: number;
+    aktivlikDeq: number;
+    kalori: number;
+    suQebulu: number;
+    yuxu: number;
+    seriya: number;
+}
+
+export default function AIChatModal({
+    isOpen,
+    onClose,
+    userStats,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    userStats?: UserStats;
+}) {
     const [messages, setMessages] = useState<Message[]>([
         { sender: 'ai', text: 'Salam! Mən E-Motion AI asistentiyəm. Bu gün özünü necə hiss edirsən?' },
     ]);
@@ -21,6 +38,12 @@ export default function AIChatModal({ isOpen, onClose }: { isOpen: boolean; onCl
 
         const userMsg = input.trim();
         setInput('');
+
+        const history = messages.map((m) => ({
+            role: m.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: m.text }],
+        }));
+
         setMessages((prev) => [...prev, { sender: 'user', text: userMsg }]);
         setLoading(true);
 
@@ -28,7 +51,7 @@ export default function AIChatModal({ isOpen, onClose }: { isOpen: boolean; onCl
             const res = await fetch('/api/gemini', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: userMsg }),
+                body: JSON.stringify({ prompt: userMsg, history, userStats }),
             });
             const data = await res.json();
             setMessages((prev) => [...prev, { sender: 'ai', text: data.result || 'Cavab alınmadı.' }]);
@@ -45,7 +68,6 @@ export default function AIChatModal({ isOpen, onClose }: { isOpen: boolean; onCl
             backgroundColor: '#18181b', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)',
             display: 'flex', flexDirection: 'column', zIndex: 1000, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)'
         }}>
-            {/* Header */}
             <div style={{ padding: '14px 16px', backgroundColor: '#059669', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
                     <Bot size={20} />
@@ -56,7 +78,6 @@ export default function AIChatModal({ isOpen, onClose }: { isOpen: boolean; onCl
                 </button>
             </div>
 
-            {/* Messages */}
             <div style={{ flex: 1, padding: '14px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {messages.map((m, i) => (
                     <div key={i} style={{
@@ -75,7 +96,6 @@ export default function AIChatModal({ isOpen, onClose }: { isOpen: boolean; onCl
                 )}
             </div>
 
-            {/* Input */}
             <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px' }}>
                 <input
                     type="text"

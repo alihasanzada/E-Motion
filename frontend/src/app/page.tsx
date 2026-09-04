@@ -55,13 +55,10 @@ export default function Dashboard() {
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
-  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
 
-  const [quickMetricType, setQuickMetricType] = useState('water');
-  const [quickMetricValue, setQuickMetricValue] = useState('');
 
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Su hədəfi', desc: 'Gündəlik su qəbulunun 50%-nə çatdınız!', time: '10 dəq əvvəl', read: false },
@@ -243,25 +240,6 @@ export default function Dashboard() {
       });
     }
   }, []);
-
-  const handleQuickAddSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const val = parseFloat(quickMetricValue);
-    if (isNaN(val) || val <= 0) return;
-
-    if (quickMetricType === 'water') {
-      setWaterCount(prev => Math.min(8, prev + val));
-    } else if (quickMetricType === 'steps') {
-      setStepsCount(prev => prev + val);
-    } else if (quickMetricType === 'sleep') {
-      setSleepHours(prev => parseFloat((prev + val).toFixed(1)));
-    } else if (quickMetricType === 'calories') {
-      setCaloriesCount(prev => prev + val);
-    }
-
-    setQuickMetricValue('');
-    setIsQuickAddOpen(false);
-  };
 
   const theme = darkMode ? {
     bgApp: '#121212',
@@ -1324,7 +1302,18 @@ export default function Dashboard() {
       </button>
 
       {/* AI Chat Modal */}
-      <AIChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <AIChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        userStats={{
+          addimlar: stepsCount,
+          aktivlikDeq: activityMinutes,
+          kalori: caloriesCount,
+          suQebulu: waterCount,
+          yuxu: sleepHours,
+          seriya: streakDays,
+        }}
+      />
     </div >
   );
 }

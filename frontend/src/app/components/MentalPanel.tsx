@@ -1,286 +1,314 @@
-"use client";
-import React, { useState } from 'react';
-import { Heart, Send, Wind, BookOpen, Clock } from 'lucide-react';
+'use client';
+import { useState, useEffect } from 'react';
+
+type ExerciseType = 'breathing' | 'meditation' | 'affirmation' | null;
 
 interface MentalPanelProps {
   isDarkMode?: boolean;
 }
 
-export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
-  const theme = {
-    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-    textPrimary: isDarkMode ? '#FFFFFF' : '#111827',
-    textSecondary: isDarkMode ? '#9CA3AF' : '#4B5563',
-    inputBg: isDarkMode ? '#2A2A2A' : '#F9FAFB',
-    borderColor: isDarkMode ? '#374151' : '#E5E7EB',
-  };
-  const [selectedMood, setSelectedMood] = useState<'Əla' | 'Normal' | 'Yorğun' | 'Stressli' | 'Həvəsli'>('Əla');
-  const [noteText, setNoteText] = useState('');
-  const [notes, setNotes] = useState([
-    { id: 1, mood: 'Əla', text: 'Özünü çox gümrah hiss edirəm. İmtahan hazırlıqları yaxşı gedir!', date: '2026-08-03' },
-    { id: 2, mood: 'Normal', text: 'Dərslər bir az sıx idi, amma axşam gəzintisi yaxşı gəldi.', date: '2026-08-02' }
-  ]);
+const affirmations = [
+  "Mən özümə və zəkama tamamilə inanıram.",
+  "Hər çətinlik məni daha da təcrübəli və güclü edir.",
+  "Bu gün diqqətimi sakitliyə və uğura kökləyirəm.",
+  "Zehnim aydın, bədənim tamamilə rahatdır.",
+  "Məqsədlərimə doğru addım-addım əminliklə irəliləyirəm.",
+  "Səhvlərim mənim öyrənmə prosesimin təbii hissəsidir.",
+  "Öz templə irəliləyirəm və nəticələrimlə fəxr edirəm."
+];
 
-  const moods = [
-    { label: 'Əla', emoji: '😊', color: '#10B981', bg: '#ECFDF5' },
-    { label: 'Normal', emoji: '😐', color: '#6366F1', bg: '#EEF2FF' },
-    { label: 'Yorğun', emoji: '😴', color: '#F59E0B', bg: '#FFFBEB' },
-    { label: 'Stressli', emoji: '🤯', color: '#EF4444', bg: '#FEF2F2' },
-    { label: 'Həvəsli', emoji: '💪', color: '#8B5CF6', bg: '#F5F3FF' },
-  ];
+export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
+  const [type, setType] = useState<ExerciseType>(null);
+  const onClose = () => setType(null);
 
-  const handleAddNote = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!noteText.trim()) return;
+  const [breathPhase, setBreathPhase] = useState<'Inhale' | 'Hold' | 'Exhale'>('Inhale');
+  const [breathTimer, setBreathTimer] = useState(4);
 
-    const newNote = {
-      id: Date.now(),
-      mood: selectedMood,
-      text: noteText,
-      date: new Date().toISOString().split('T')[0]
-    };
+  const [meditationTime, setMeditationTime] = useState(300);
+  const [isMeditating, setIsMeditating] = useState(false);
 
-    setNotes([newNote, ...notes]);
-    setNoteText('');
+  const [affIndex, setAffIndex] = useState(0);
+
+  useEffect(() => {
+    if (type === 'breathing') {
+      setBreathPhase('Inhale');
+      setBreathTimer(4);
+    } else if (type === 'meditation') {
+      setMeditationTime(300);
+      setIsMeditating(false);
+    } else if (type === 'affirmation') {
+      setAffIndex(0);
+    }
+  }, [type]);
+
+  useEffect(() => {
+    if (type !== 'breathing') return;
+
+    const interval = setInterval(() => {
+      setBreathTimer((prev) => {
+        if (prev > 1) return prev - 1;
+
+        if (breathPhase === 'Inhale') {
+          setBreathPhase('Hold');
+          return 7;
+        } else if (breathPhase === 'Hold') {
+          setBreathPhase('Exhale');
+          return 8;
+        } else {
+          setBreathPhase('Inhale');
+          return 4;
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [type, breathPhase]);
+
+  useEffect(() => {
+    if (type !== 'meditation' || !isMeditating) return;
+
+    const interval = setInterval(() => {
+      setMeditationTime((prev) => {
+        if (prev <= 1) {
+          setIsMeditating(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [type, isMeditating]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
-
-      {/* Brend Yaşılına Uyğunlaşdırılmış Rahatladıcı Banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1E3E35 0%, #2E5B4E 50%, #44766C 100%)',
-        borderRadius: '20px',
-        padding: '28px 32px',
-        color: '#FFFFFF',
+    <div
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.8)',
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: '0 10px 25px -5px rgba(46, 91, 78, 0.25)'
-      }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span style={{ backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              Mental Mərkəz
-            </span>
-          </div>
-          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>
-            Zehninizi dinləyin, hisslərinizi kəşf edin!
-          </h2>
-          <p style={{ margin: '6px 0 0 0', fontSize: '13.5px', opacity: 0.9, maxWidth: '520px', lineHeight: '1.5' }}>
-            Hər emosiya təbiidir. Gündəlik əhval-ruhiyyənizi qeyd edin və zehni balansı qorumaq üçün tövsiyələrdən yararlanın.
-          </p>
-        </div>
-        <div style={{ background: 'rgba(255,255,255,0.08)', padding: '16px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.15)', textAlign: 'center' }}>
-          <span style={{ fontSize: '11.5px', opacity: 0.8, display: 'block', fontWeight: '500' }}>Günün Sözü</span>
-          <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', fontWeight: '700', fontStyle: 'italic', maxWidth: '180px', color: '#ECFDF5' }}>
-            "Nəfəsinizə fokuslanın, anı yaşayın."
-          </p>
-        </div>
-      </div>
-
-      {/* Əsas Şəbəkə: Əhval Qeydiyyatı + Qeydlər */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
-
-        {/* Əhval-ruhiyyə Daxil Etmə Kartı */}
-        <div style={{
-          backgroundColor: theme.cardBg,
-          padding: '24px',
+        justifyContent: 'center',
+        zIndex: 1000,
+        backdropFilter: 'blur(4px)'
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: isDarkMode ? '#1c1c1e' : '#fff',
+          padding: '32px 28px',
           borderRadius: '20px',
-          border: `1px solid ${theme.borderColor}`,
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
-        }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Heart size={18} color="#EF4444" /> Özünüzü necə hiss edirsiniz?
-          </h3>
+          maxWidth: '460px',
+          width: '90%',
+          color: isDarkMode ? '#fff' : '#000',
+          textAlign: 'center',
+          position: 'relative',
+          border: '1px solid #333',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
+        }}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'none',
+            border: 'none',
+            color: isDarkMode ? '#aaa' : '#555',
+            fontSize: '22px',
+            cursor: 'pointer',
+            lineHeight: 1
+          }}
+        >
+          ✕
+        </button>
 
-          {/* Emoji Düymələri */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '20px' }}>
-            {moods.map((m) => {
-              const isSelected = selectedMood === m.label;
-              return (
-                <button
-                  key={m.label}
-                  type="button"
-                  onClick={() => setSelectedMood(m.label as any)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '12px 6px',
-                    borderRadius: '12px',
-                    border: isSelected ? `2px solid ${m.color}` : `1px solid ${theme.borderColor}`,
-                    backgroundColor: theme.cardBg,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    transform: isSelected ? 'scale(1.03)' : 'scale(1)'
-                  }}
-                >
-                  <span style={{ fontSize: '22px' }}>{m.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: isSelected ? m.color : theme.textSecondary }}>{m.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Mətn Formu */}
-          <form onSubmit={handleAddNote} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <textarea
-              rows={4}
-              placeholder="Ağlınızdan nələr keçir? Qısaca qeyd edin..."
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
+        {type === 'breathing' && (
+          <div>
+            <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>🫁 4-7-8 Nəfəs Məşqi</h3>
+            <p style={{ fontSize: '14px', color: isDarkMode ? '#aaa' : '#555', marginBottom: '24px' }}>
+              Sinir sistemini sakitləşdirmək üçün ekrandakı ritmə uyğun nəfəs al və ver.
+            </p>
+            <div
               style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '12px',
-                border: `1px solid ${theme.borderColor}`,
-                fontSize: '13.5px',
-                outline: 'none',
-                resize: 'none',
-                boxSizing: 'border-box',
-                backgroundColor: theme.cardBg,
-                fontFamily: 'inherit'
+                width: '160px',
+                height: '160px',
+                borderRadius: '50%',
+                backgroundColor:
+                  breathPhase === 'Inhale'
+                    ? '#10b981'
+                    : breathPhase === 'Hold'
+                      ? '#f59e0b'
+                      : '#3b82f6',
+                margin: '0 auto 24px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.8s ease-in-out',
+                transform:
+                  breathPhase === 'Inhale'
+                    ? 'scale(1.18)'
+                    : breathPhase === 'Hold'
+                      ? 'scale(1.10)'
+                      : 'scale(0.90)',
+                boxShadow:
+                  breathPhase === 'Inhale'
+                    ? '0 0 25px rgba(16, 185, 129, 0.4)'
+                    : breathPhase === 'Hold'
+                      ? '0 0 25px rgba(245, 158, 11, 0.4)'
+                      : '0 0 25px rgba(59, 130, 246, 0.4)'
               }}
-            />
+            >
+              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                {breathPhase === 'Inhale' ? 'Nəfəs Al' : breathPhase === 'Hold' ? 'Saxla' : 'Nəfəs Ver'}
+              </span>
+              <span style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '4px' }}>
+                {breathTimer}s
+              </span>
+            </div>
             <button
-              type="submit"
+              onClick={onClose}
               style={{
-                backgroundColor: '#2E5B4E',
-                color: '#FFFFFF',
-                border: 'none',
-                padding: '12px',
-                borderRadius: '12px',
-                fontSize: '13.5px',
-                fontWeight: '600',
+                padding: '10px 24px',
+                backgroundColor: '#2a2a2d',
+                border: '1px solid #444',
+                borderRadius: '10px',
+                color: '#fff',
                 cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Məşqi Bitir
+            </button>
+          </div>
+        )}
+
+        {type === 'meditation' && (
+          <div>
+            <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>🧘 Fokus Meditasiyası</h3>
+            <p style={{ fontSize: '14px', color: isDarkMode ? '#aaa' : '#555', margin: '12px 0 20px' }}>
+              Gözlərini yum, çiyinlərini sərbəst burax və diqqətini yalnız nəfəsində saxla.
+            </p>
+
+            <div
+              style={{
+                padding: '24px',
+                background: isDarkMode ? '#2a2a2d' : '#f0f0f0',
+                borderRadius: '14px',
+                margin: '0 0 24px'
+              }}
+            >
+              <div style={{ fontSize: '42px', fontWeight: 'bold', fontFamily: 'monospace', color: '#10b981', marginBottom: '8px' }}>
+                {formatTime(meditationTime)}
+              </div>
+              <p style={{ color: isDarkMode ? '#ccc' : '#777', fontSize: '14px', fontStyle: 'italic', margin: 0 }}>
+                {isMeditating ? 'Sakitləş və yalnız anı hiss et...' : 'Başlamaq üçün düyməyə sıx'}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={() => setIsMeditating(!isMeditating)}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: isMeditating ? '#ef4444' : '#10b981',
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                {isMeditating ? 'Pauza Et' : 'Başla (5 dəq)'}
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '12px 20px',
+                  backgroundColor: '#2a2a2d',
+                  border: '1px solid #444',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Tamamla
+              </button>
+            </div>
+          </div>
+        )}
+
+        {type === 'affirmation' && (
+          <div>
+            <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>✨ Pozitiv Affirmasiya</h3>
+            <p style={{ fontSize: '14px', color: isDarkMode ? '#aaa' : '#555', marginBottom: '20px' }}>
+              Daxili inamını bərpa etmək üçün bu cümləni daxilən 3 dəfə təkrarla.
+            </p>
+            <div
+              style={{
+                minHeight: '120px',
+                padding: '24px',
+                background: isDarkMode ? '#2a2a2d' : '#f0f0f0',
+                borderRadius: '14px',
+                margin: '0 0 24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 12px rgba(46, 91, 78, 0.2)',
-                transition: 'all 0.2s ease'
+                borderLeft: '4px solid #8b5cf6'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23473D'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E5B4E'}
             >
-              <Send size={16} />
-              Gündəliyə Əlavə Et
-            </button>
-          </form>
-        </div>
-
-        {/* Son Qeydlər Kartı */}
-        <div style={{
-          backgroundColor: theme.cardBg,
-          padding: '24px',
-          borderRadius: '20px',
-          border: `1px solid ${theme.borderColor}`,
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BookOpen size={18} color={theme.textPrimary} /> Son Qeydləriniz
-          </h3>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', maxHeight: '300px', paddingRight: '4px' }}>
-            {notes.map((note) => {
-              const moodObj = moods.find(m => m.label === note.mood) || moods[0];
-              return (
-                <div
-                  key={note.id}
-                  style={{
-                    padding: '14px',
-                    borderRadius: '12px',
-                    backgroundColor: theme.cardBg,
-                    borderLeft: `4px solid ${moodObj.color}`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      color: moodObj.color,
-                      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : moodObj.bg,
-                      padding: '2px 8px',
-                      borderRadius: '12px'
-                    }}>
-                      {moodObj.emoji} {note.mood}
-                    </span>
-                    <span style={{ fontSize: '11px', color: theme.textSecondary }}>{note.date}</span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: theme.textPrimary, lineHeight: '1.4' }}>
-                    {note.text}
-                  </p>
-                </div>
-              );
-            })}
+              <p style={{ fontSize: '18px', fontStyle: 'italic', color: isDarkMode ? '#f1f5f9' : '#333', margin: 0, lineHeight: 1.5 }}>
+                "{affirmations[affIndex]}"
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={() => setAffIndex((prev) => (prev + 1) % affirmations.length)}
+                style={{
+                  padding: '12px 22px',
+                  backgroundColor: '#8b5cf6',
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                Növbəti Cümlə ➔
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '12px 18px',
+                  backgroundColor: '#2a2a2d',
+                  border: '1px solid #444',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Bağla
+              </button>
+            </div>
           </div>
-        </div>
-
+        )}
       </div>
-
-      {/* Sürətli Mental Məşqlər */}
-      <div style={{
-        backgroundColor: theme.cardBg,
-        padding: '24px',
-        borderRadius: '20px',
-        border: `1px solid ${theme.borderColor}`,
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.03)'
-      }}>
-        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Wind size={18} color="#10B981" /> Sürətli Rahatlama Məşqləri
-        </h3>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-
-          <div style={{ border: `1px solid ${theme.borderColor}`, padding: '16px', borderRadius: '14px', backgroundColor: theme.cardBg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '700', fontSize: '14px', color: theme.textPrimary }}>Nəfəs Məşqi</span>
-              <Clock size={14} color={theme.textPrimary} />
-            </div>
-            <p style={{ margin: 0, fontSize: '12px', color: theme.textSecondary, lineHeight: '1.3' }}>
-              4-7-8 texnikası ilə həyəcanı və stressi azaldın.
-            </p>
-            <button style={{ marginTop: '8px', background: '#10B981', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-              Başla (3 dəq)
-            </button>
-          </div>
-
-          <div style={{ border: `1px solid ${theme.borderColor}`, padding: '16px', borderRadius: '14px', backgroundColor: theme.cardBg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '700', fontSize: '14px', color: theme.textPrimary }}>Fokus Meditasiyası</span>
-              <Clock size={14} color={theme.textPrimary} />
-            </div>
-            <p style={{ margin: 0, fontSize: '12px', color: theme.textSecondary, lineHeight: '1.3' }}>
-              Dərs öncəsi diqqəti toplamaq üçün mini seans.
-            </p>
-            <button style={{ marginTop: '8px', background: '#2E5B4E', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-              Dinlə (5 dəq)
-            </button>
-          </div>
-
-          <div style={{ border: `1px solid ${theme.borderColor}`, padding: '16px', borderRadius: '14px', backgroundColor: theme.cardBg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '700', fontSize: '14px', color: theme.textPrimary }}>Pozitiv Affirmasiya</span>
-              <Clock size={14} color={theme.textPrimary} />
-            </div>
-            <p style={{ margin: 0, fontSize: '12px', color: theme.textSecondary, lineHeight: '1.3' }}>
-              Özünə inamı bərpa etmək üçün gündəlik cümlələr.
-            </p>
-            <button style={{ marginTop: '8px', background: '#8B5CF6', color: '#FFF', border: 'none', padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-              Oxu (2 dəq)
-            </button>
-          </div>
-
-        </div>
-      </div>
-
     </div>
   );
 }
