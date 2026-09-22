@@ -942,7 +942,7 @@ export default function Dashboard() {
 
               <div className="left-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-                <DailyScoreWidget isDarkMode={darkMode} />
+                <DailyScoreWidget isDarkMode={true} />
 
                 {/* Banner */}
                 <div
