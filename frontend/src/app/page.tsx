@@ -16,6 +16,7 @@ import ChallengesPanel from './components/ChallengesPanel';
 import StatsPanel from './components/StatsPanel';
 import EventsPanel from './components/EventsPanel';
 import ProgressPanel from './components/ProgressPanel';
+import DailyScoreWidget from "./components/DailyScoreWidget";
 import AIChatModal from './components/AIChatModal';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
@@ -940,6 +941,8 @@ export default function Dashboard() {
             <div className="dashboard-layout">
 
               <div className="left-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+                <DailyScoreWidget isDarkMode={darkMode} />
 
                 {/* Banner */}
                 <div
