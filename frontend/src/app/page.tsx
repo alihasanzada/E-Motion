@@ -14,7 +14,6 @@ import MentalPanel from './components/MentalPanel';
 import ServicesPanel from './components/ServicesPanel';
 import ChallengesPanel from './components/ChallengesPanel';
 import StatsPanel from './components/StatsPanel';
-import ResourcesPanel from './components/ResourcesPanel';
 import EventsPanel from './components/EventsPanel';
 import ProgressPanel from './components/ProgressPanel';
 import AIChatModal from './components/AIChatModal';
@@ -32,7 +31,6 @@ const searchIndex = [
   { keywords: ['çağırışlar', 'su balansı', 'kampus çağırışı', 'hədəf', 'yarış'], tabId: 'challenges', title: 'Çağırışlar' },
   { keywords: ['tədbirlər', 'seminar', 'vebinar', 'kampus', 'görüş'], tabId: 'events', title: 'Tədbirlər' },
   { keywords: ['qidalanma', 'su', 'kalori', 'pəhriz', 'diet', 'yemək'], tabId: 'nutrition', title: 'Qidalanma' },
-  { keywords: ['resurslar', 'kitabxana', 'məqalə', 'material'], tabId: 'resources', title: 'Resurslar' },
   { keywords: ['irəliləyiş', 'uğurlar', 'nişanlar', 'vərdiş', 'günlər'], tabId: 'progress', title: 'İrəliləyişim' },
   { keywords: ['statistika', 'analitika', 'qrafik', 'hesabat'], tabId: 'stats', title: 'Statistikam' }
 ];
@@ -342,7 +340,6 @@ export default function Dashboard() {
               { id: 'challenges', label: 'Çağırışlar', icon: <Trophy size={17} /> },
               { id: 'events', label: 'Tədbirlər', icon: <Calendar size={17} /> },
               { id: 'nutrition', label: 'Qidalanma', icon: <Apple size={17} /> },
-              { id: 'resources', label: 'Resurslar', icon: <Folder size={17} /> },
               { id: 'progress', label: 'İrəliləyişim', icon: <TrendingUp size={17} /> },
               { id: 'stats', label: 'Statistikam', icon: <BarChart3 size={17} /> }
             ].map((item) => {
@@ -1247,12 +1244,6 @@ export default function Dashboard() {
                   <p style={{ margin: '0 0 12px 0', fontSize: '11px', opacity: 0.85, lineHeight: '1.4' }}>
                     Bədəninə qulluq et, çünki orada yaşamaq məcburiyyətindəsən.
                   </p>
-                  <button
-                    onClick={() => setActiveTab('resources')}
-                    style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', color: '#FFFFFF', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', width: '100%', textAlign: 'center' }}
-                  >
-                    İlham verən fikirlər →
-                  </button>
                 </div>
 
               </div>
@@ -1266,7 +1257,6 @@ export default function Dashboard() {
           {activeTab === 'challenges' && <ChallengesPanel isDarkMode={darkMode} />}
           {activeTab === 'events' && <EventsPanel isDarkMode={darkMode} />}
           {activeTab === 'nutrition' && <NutritionPanel isDarkMode={darkMode} />}
-          {activeTab === 'resources' && <ResourcesPanel isDarkMode={darkMode} />}
           {activeTab === 'progress' && <ProgressPanel isDarkMode={darkMode} />}
           {activeTab === 'stats' && <StatsPanel isDarkMode={darkMode} />}
 
