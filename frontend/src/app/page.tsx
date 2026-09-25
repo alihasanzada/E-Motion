@@ -635,7 +635,7 @@ export default function Dashboard() {
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
-              {/* BİLDİRİŞ KONTEYNERİ */}
+              {/* Bildirişlər */}
               <div ref={notificationRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                 <button
                   onClick={() => {
@@ -834,7 +834,7 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* MESAJ KONTEYNERİ */}
+              {/* Mesajlar */}
               <div ref={messageRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                 <button
                   onClick={toggleMessagesModal}
@@ -941,8 +941,6 @@ export default function Dashboard() {
             <div className="dashboard-layout">
 
               <div className="left-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-                <DailyScoreWidget isDarkMode={true} />
 
                 {/* Banner */}
                 <div
