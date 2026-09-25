@@ -1114,7 +1114,7 @@ export default function Dashboard() {
 
               {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
+                <DailyScoreWidget isDarkMode={darkMode} />
                 <div
                   onClick={() => setActiveTab('progress')}
                   className="card"
