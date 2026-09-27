@@ -221,8 +221,6 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
 
-      <FoodScanner />
-
       {/* Başlıq */}
       <div>
         <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
@@ -553,7 +551,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         </div>
 
       </div>
-
+      <FoodScanner isDarkMode={isDarkMode} />
     </div>
   );
 }
