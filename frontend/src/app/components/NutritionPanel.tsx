@@ -476,82 +476,84 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
           </div>
         </div>
 
-        {/* Bugünkü Qeydlər Siyahısı */}
-        <div style={{
-          backgroundColor: theme.cardBg,
-          padding: '24px',
-          borderRadius: '20px',
-          border: `1px solid ${theme.borderColor}`,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px'
-        }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Bugünkü Qeydlər</span>
-            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '500' }}>{meals.length} yemək</span>
-          </h3>
+        {/* AI Skaner */}
+        <FoodScanner isDarkMode={isDarkMode} />
+      </div>
 
-          {meals.length === 0 ? (
-            <p style={{ margin: 0, fontSize: '13px', color: theme.textSecondary, textAlign: 'center', padding: '30px 0' }}>
-              Hələ ki, heç bir yemək qeyd edilməyib.
-            </p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '420px', overflowY: 'auto' }}>
-              {meals.map((item) => (
-                <div
-                  key={item.id}
-                  style={{
+      {/* Bugünkü Qeydlər Siyahısı */}
+      <div style={{
+        marginTop: '20px',
+        backgroundColor: theme.cardBg,
+        padding: '24px',
+        borderRadius: '20px',
+        border: `1px solid ${theme.borderColor}`,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Bugünkü Qeydlər</span>
+          <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '500' }}>{meals.length} yemək</span>
+        </h3>
+
+        {meals.length === 0 ? (
+          <p style={{ margin: 0, fontSize: '13px', color: theme.textSecondary, textAlign: 'center', padding: '30px 0' }}>
+            Hələ ki, heç bir yemək qeyd edilməyib.
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '420px', overflowY: 'auto' }}>
+            {meals.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  backgroundColor: theme.itemBg,
+                  border: `1px solid ${theme.itemBorder}`
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    backgroundColor: theme.cardBg,
+                    padding: '8px',
+                    borderRadius: '10px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    backgroundColor: theme.itemBg,
-                    border: `1px solid ${theme.itemBorder}`
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                      backgroundColor: theme.cardBg,
-                      padding: '8px',
-                      borderRadius: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: `1px solid ${theme.borderColor}`
-                    }}>
-                      {getFoodIcon(item.name)}
-                    </div>
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>{item.name}</h4>
-                      <span style={{ fontSize: '11.5px', color: theme.textSecondary }}>
-                        {item.type} • {item.time} | <span style={{ color: '#3B82F6' }}>P:{item.protein}g</span> <span style={{ color: '#F59E0B' }}>C:{item.carbs}g</span> <span style={{ color: '#EC4899' }}>F:{item.fat}g</span>
-                      </span>
-                    </div>
+                    justifyContent: 'center',
+                    border: `1px solid ${theme.borderColor}`
+                  }}>
+                    {getFoodIcon(item.name)}
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '13.5px', fontWeight: '800', color: isDarkMode ? '#4ADE80' : '#2E5B4E' }}>
-                      {item.calories} kcal
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>{item.name}</h4>
+                    <span style={{ fontSize: '11.5px', color: theme.textSecondary }}>
+                      {item.type} • {item.time} | <span style={{ color: '#3B82F6' }}>P:{item.protein}g</span> <span style={{ color: '#F59E0B' }}>C:{item.carbs}g</span> <span style={{ color: '#EC4899' }}>F:{item.fat}g</span>
                     </span>
-                    <button
-                      onClick={() => setMeals(meals.filter(m => m.id !== item.id))}
-                      style={{ background: 'none', border: 'none', color: theme.textSecondary, cursor: 'pointer', padding: '4px' }}
-                      onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = theme.textSecondary}
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
 
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '13.5px', fontWeight: '800', color: isDarkMode ? '#4ADE80' : '#2E5B4E' }}>
+                    {item.calories} kcal
+                  </span>
+                  <button
+                    onClick={() => setMeals(meals.filter(m => m.id !== item.id))}
+                    style={{ background: 'none', border: 'none', color: theme.textSecondary, cursor: 'pointer', padding: '4px' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = theme.textSecondary}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-      <FoodScanner isDarkMode={isDarkMode} />
     </div>
   );
 }
