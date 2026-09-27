@@ -25,6 +25,8 @@ QƏTİ QAYDALAR:
 6. Cavabının sonunda söhbəti davam etdirən səmimi bir sual ver.
 `;
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function POST(req: Request) {
     try {
         const { prompt, history, userStats } = await req.json();
@@ -33,28 +35,35 @@ export async function POST(req: Request) {
             ? `İstifadəçinin bugünkü göstəriciləri: ${JSON.stringify(userStats)}\n\nSual: ${prompt}`
             : prompt;
 
-        const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+        const maxRetries = 3;
         let lastError = null;
 
-        for (const modelName of candidateModels) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const chat = ai.chats.create({
-                    model: modelName,
+                    model: 'gemini-3.8-flash',
                     config: { systemInstruction },
                     history: history || [],
                 });
 
                 const response = await chat.sendMessage({ message: enrichedPrompt });
                 return NextResponse.json({ result: response.text });
-            } catch (err) {
-                console.warn(`${modelName} modelində xəta oldu, növbəti model yoxlanılır...`, err);
+            } catch (err: any) {
+                console.warn(`Cəhd ${attempt} uğursuz oldu:`, err?.message || err);
                 lastError = err;
+
+                if (attempt < maxRetries) {
+                    await sleep(1500);
+                }
             }
         }
 
         throw lastError;
     } catch (error) {
-        console.error('Gemini API Error:', error);
-        return NextResponse.json({ error: 'API xətası baş verdi. Zəhmət olmasa bir az sonra yenidən cəhd edin.' }, { status: 500 });
+        console.error('Gemini API Final Error:', error);
+        return NextResponse.json(
+            { error: 'Serverdə anlıq intensivlik var. Zəhmət olmasa bir neçə saniyə sonra yenidən cəhd edin.' },
+            { status: 503 }
+        );
     }
 }
