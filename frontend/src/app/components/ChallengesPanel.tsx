@@ -172,10 +172,10 @@ export default function ChallengesPanel({ isDarkMode = true }: ChallengesPanelPr
   ];
 
   const badges = [
-    { id: 1, title: 'Su Çempionu', desc: '5 gün üst-üstə günlük su hədəfini tamamla', icon: '💧', unlocked: true, status: 'Qazanıldı' },
+    { id: 1, title: 'Su Çempionu', desc: '5 gün ard-arda günlük su hədəfini tamamla', icon: '💧', unlocked: true, status: 'Qazanıldı' },
     { id: 2, title: 'Kampus Lideri', desc: 'Fakültənə ümumilikdə 300+ XP qazandır', icon: '🏆', unlocked: true, status: 'Qazanıldı' },
     { id: 3, title: 'Yorulmaz Addımlayan', desc: 'Bir gündə 10,000 addım məsafə qət et', icon: '👟', unlocked: false, status: '7,000 / 10,000' },
-    { id: 4, title: 'Erkən Yatan', desc: '7 gün dalbadal saat 23:00-dan əvvəl yat', icon: '🌙', unlocked: false, status: '2 / 7 Gün' },
+    { id: 4, title: 'Erkən Yatan', desc: '7 gün ard-arda saat 23:00-dan əvvəl yat', icon: '🌙', unlocked: false, status: '2 / 7 Gün' },
     { id: 5, title: 'Masaüstü Atlet', desc: '5 dəfə canlı masaüstü stretching məşqini bitir', icon: '🧘', unlocked: false, status: '0 / 5 Məşq' },
     { id: 6, title: 'Liderlər Sırası', desc: 'Fərdi tələbə sıralamasında İlk 3-lüyə daxil ol', icon: '🥇', unlocked: false, status: 'Sıralamada yüksəl' }
   ];
@@ -267,7 +267,7 @@ export default function ChallengesPanel({ isDarkMode = true }: ChallengesPanelPr
             <Flame size={18} />
             <div>
               <span style={{ display: 'block', fontSize: '10px', fontWeight: '600' }}>Aktivlik Seriyası</span>
-              <strong style={{ fontSize: '13px', fontWeight: '800' }}>{streakDays} Gün Dalbadal</strong>
+              <strong style={{ fontSize: '13px', fontWeight: '800' }}>{streakDays} Gün </strong>
             </div>
           </div>
 
