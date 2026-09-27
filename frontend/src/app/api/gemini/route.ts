@@ -33,17 +33,28 @@ export async function POST(req: Request) {
             ? `İstifadəçinin bugünkü göstəriciləri: ${JSON.stringify(userStats)}\n\nSual: ${prompt}`
             : prompt;
 
-        const chat = ai.chats.create({
-            model: 'gemini-3.8-flash',
-            config: { systemInstruction },
-            history: history || [],
-        });
+        const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+        let lastError = null;
 
-        const response = await chat.sendMessage({ message: enrichedPrompt });
+        for (const modelName of candidateModels) {
+            try {
+                const chat = ai.chats.create({
+                    model: modelName,
+                    config: { systemInstruction },
+                    history: history || [],
+                });
 
-        return NextResponse.json({ result: response.text });
+                const response = await chat.sendMessage({ message: enrichedPrompt });
+                return NextResponse.json({ result: response.text });
+            } catch (err) {
+                console.warn(`${modelName} modelində xəta oldu, növbəti model yoxlanılır...`, err);
+                lastError = err;
+            }
+        }
+
+        throw lastError;
     } catch (error) {
         console.error('Gemini API Error:', error);
-        return NextResponse.json({ error: 'API xətası baş verdi' }, { status: 500 });
+        return NextResponse.json({ error: 'API xətası baş verdi. Zəhmət olmasa bir az sonra yenidən cəhd edin.' }, { status: 500 });
     }
 }
