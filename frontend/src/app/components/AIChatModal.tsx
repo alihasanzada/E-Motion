@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Loader2 } from 'lucide-react';
+import { Bot, X, Send, Loader2, RotateCcw } from 'lucide-react';
 
 interface Message {
     sender: 'user' | 'ai';
@@ -16,6 +16,10 @@ interface UserStats {
     seriya: number;
 }
 
+const INITIAL_MESSAGES: Message[] = [
+    { sender: 'ai', text: 'Salam! Mən E-Motion AI asistentiyəm. Bu gün özünü necə hiss edirsən?' },
+];
+
 export default function AIChatModal({
     isOpen,
     onClose,
@@ -25,13 +29,31 @@ export default function AIChatModal({
     onClose: () => void;
     userStats?: UserStats;
 }) {
-    const [messages, setMessages] = useState<Message[]>([
-        { sender: 'ai', text: 'Salam! Mən E-Motion AI asistentiyəm. Bu gün özünü necə hiss edirsən?' },
-    ]);
+    const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const savedMessages = localStorage.getItem('emotion_chat_history');
+        if (savedMessages) {
+            try {
+                const parsed = JSON.parse(savedMessages);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setMessages(parsed);
+                }
+            } catch (error) {
+                console.error('Çat tarixçəsi oxunarkən xəta baş verdi:', error);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (messages.length > 0) {
+            localStorage.setItem('emotion_chat_history', JSON.stringify(messages));
+        }
+    }, [messages]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -72,6 +94,11 @@ export default function AIChatModal({
         }
     };
 
+    const handleClearChat = () => {
+        setMessages(INITIAL_MESSAGES);
+        localStorage.removeItem('emotion_chat_history');
+    };
+
     return (
         <div style={{
             position: 'fixed', bottom: '85px', right: '24px', width: '350px', height: '460px',
@@ -84,9 +111,18 @@ export default function AIChatModal({
                     <Bot size={20} />
                     <span style={{ fontWeight: '600', fontSize: '14px' }}>E-Motion AI Asistent</span>
                 </div>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
-                    <X size={18} />
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                        onClick={handleClearChat}
+                        title="Söhbəti təmizlə"
+                        style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.8, display: 'flex', alignItems: 'center' }}
+                    >
+                        <RotateCcw size={16} />
+                    </button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                        <X size={18} />
+                    </button>
+                </div>
             </div>
 
             {/* Mesajlar Sahəsi */}
