@@ -146,35 +146,6 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                     </div>
                     <input type="range" min="0" max="15000" step="500" value={steps} onChange={(e) => setSteps(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#10B981", cursor: "pointer" }} />
                 </div>
-
-                {/* Əhval-ruhiyyə */}
-                <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "6px" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: theme.textSecondary }}>
-                            <Smile size={14} color="#F59E0B" /> Əhval
-                        </span>
-                        <span style={{ fontWeight: "600" }}>{moodScore}/5</span>
-                    </div>
-                    <div style={{ display: "flex", gap: "4px" }}>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                            <button
-                                key={num}
-                                onClick={() => setMoodScore(num)}
-                                style={{
-                                    flex: 1,
-                                    padding: "4px 0",
-                                    borderRadius: "8px",
-                                    border: `1px solid ${moodScore === num ? "#F59E0B" : theme.cardBorder}`,
-                                    backgroundColor: moodScore === num ? "rgba(245, 158, 11, 0.2)" : theme.inputBg,
-                                    cursor: "pointer",
-                                    fontSize: "12px",
-                                }}
-                            >
-                                {num === 1 ? "😞" : num === 2 ? "😐" : num === 3 ? "🙂" : num === 4 ? "😊" : "🔥"}
-                            </button>
-                        ))}
-                    </div>
-                </div>
             </div>
         </div>
     );
