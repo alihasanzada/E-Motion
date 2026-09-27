@@ -1,4 +1,5 @@
 "use client";
+import FoodScanner from './FoodScanner';
 import React, { useState, useEffect } from 'react';
 import { Utensils, Plus, Flame, Trash2, Zap, Apple, Egg, UtensilsCrossed, Coffee, Sparkles } from 'lucide-react';
 
@@ -18,10 +19,10 @@ interface NutritionPanelProps {
 }
 
 interface FoodItem {
-  cal: number; // 100g və ya 1 ədəd üçün kalori
-  p: number;   // zülal
-  c: number;   // karbohidrat
-  f: number;   // yağ
+  cal: number;
+  p: number;
+  c: number;
+  f: number;
   isPiece?: boolean;
   aliases: string[];
 }
@@ -219,6 +220,8 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+
+      <FoodScanner />
 
       {/* Başlıq */}
       <div>
