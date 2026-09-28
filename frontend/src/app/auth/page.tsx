@@ -18,13 +18,25 @@ export default function AuthPage() {
   const handleGoogleLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`;
-    const scope = 'openid profile email';
 
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline`;
+    const scopes = [
+      "openid",
+      "profile",
+      "email",
+      "https://www.googleapis.com/auth/fitness.activity.read"
+    ].join(" ");
 
-    window.location.href = googleAuthUrl;
+    const options = {
+      client_id: clientId!,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: scopes,
+      access_type: "offline",
+      prompt: "consent"
+    };
+
+    const qs = new URLSearchParams(options);
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${qs.toString()}`;
   };
 
   const handleRegister = async (e: React.FormEvent) => {
