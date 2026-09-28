@@ -13,6 +13,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const [water, setWater] = useState(0);
   const [inputSteps, setInputSteps] = useState('');
   const [inputWater, setInputWater] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const stepGoal = 10000;
   const waterGoal = 2000;
@@ -67,6 +68,39 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     }
   };
 
+  const syncGoogleFitSteps = async () => {
+    setIsSyncing(true);
+    try {
+      const accessToken = localStorage.getItem('google_access_token');
+
+      if (!accessToken) {
+        alert("Google hesabınızla aktiv giriş tapılmadı. Lütfən Google ilə təkrar giriş edin.");
+        setIsSyncing(false);
+        return;
+      }
+
+      const res = await fetch('/api/google-fit/steps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      });
+
+      const data = await res.json();
+
+      if (data.success && typeof data.steps === 'number') {
+        await updateActivity(data.steps, water);
+        alert(`Google Fit-dən ${data.steps.toLocaleString()} addım uğurla sinxronlaşdırıldı!`);
+      } else {
+        alert('Google Fit-dən addım məlumatı alınamadı: ' + (data.error || 'Bilinməyən xəta'));
+      }
+    } catch (err) {
+      console.error('Sinxronlaşdırma xətası:', err);
+      alert('Sinxronlaşdırma zamanı xəta baş verdi.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     const addedSteps = inputSteps ? Number(inputSteps) : 0;
@@ -118,7 +152,6 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     btnSecondaryText: isDarkMode ? '#E2E8F0' : '#334155',
     progressBg: isDarkMode ? '#2D3748' : '#F1F5F9',
     iconBgStep: isDarkMode ? '#1A365D' : '#F0FDF4',
-    iconBgWater: isDarkMode ? '#1A365D' : '#E0F2FE',
   };
 
   return (
@@ -179,9 +212,29 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
                 <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hədəf: {stepGoal.toLocaleString()}</span>
               </div>
             </div>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.15)', padding: '5px 12px', borderRadius: '16px' }}>
-              {stepPercentage}%
-            </span>
+
+            {/* Google Fit Sinxronlaşdır Düyməsi */}
+            <button
+              onClick={syncGoogleFitSteps}
+              disabled={isSyncing}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                backgroundColor: isSyncing ? '#9CA3AF' : '#44766C',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: '12px',
+                fontSize: '11.5px',
+                fontWeight: '600',
+                cursor: isSyncing ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <RefreshCw size={14} />
+              {isSyncing ? 'Yüklənir...' : 'Google Fit Sinx'}
+            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '12px 0' }}>
