@@ -36,6 +36,12 @@ export async function GET(request: Request) {
         });
 
         const userData = await userResponse.json();
+        const userEmail = userData.email || '';
+
+        if (!userEmail.toLowerCase().endsWith('@qu.edu.az')) {
+            console.warn(`Giriş bloklandı: ${userEmail} Qarabağ Universiteti e-poçtu deyil.`);
+            return NextResponse.redirect(`${appUrl}/auth?error=not_qu_student`);
+        }
 
         const redirectUrl = `${appUrl}/auth?access_token=${tokenData.access_token}&userToken=google_logged_in`;
 

@@ -18,6 +18,14 @@ export default function AuthPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
+      const errorParam = urlParams.get('error');
+
+      if (errorParam === 'not_qu_student') {
+        alert("Giriş qadağandır!\n\nBu platformadan yalnız Qarabağ Universiteti tələbələri (@qu.edu.az e-poçtu ilə) daxil ola bilər.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+
       const googleToken = urlParams.get('access_token') || urlParams.get('google_access_token');
       const userToken = urlParams.get('token') || urlParams.get('userToken');
 
@@ -69,6 +77,12 @@ export default function AuthPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email.toLowerCase().endsWith('@qu.edu.az')) {
+      alert("Xəta: Qeydiyyat üçün yalnız @qu.edu.az domeninə malik tələbə e-poçtundan istifadə edə bilərsiniz.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -165,7 +179,7 @@ export default function AuthPage() {
               />
               <input
                 type="email"
-                placeholder="E-poçt ünvanınız"
+                placeholder="Tələbə e-poçtunuz (@qu.edu.az)"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -226,7 +240,7 @@ export default function AuthPage() {
             <form onSubmit={handleLogin}>
               <input
                 type="email"
-                placeholder="E-poçt ünvanınız"
+                placeholder="Tələbə e-poçtunuz (@qu.edu.az)"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
