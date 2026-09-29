@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
         const tokenData = await tokenResponse.json();
 
-        if (!tokenResponse.ok) {
+        if (!tokenResponse.ok || !tokenData.access_token) {
             console.error('Google Token Exchange Error:', tokenData);
             return NextResponse.redirect(`${appUrl}/auth?error=token_failed`);
         }
@@ -37,7 +37,9 @@ export async function GET(request: Request) {
 
         const userData = await userResponse.json();
 
-        const response = NextResponse.redirect(`${appUrl}/`);
+        const redirectUrl = `${appUrl}/auth?access_token=${tokenData.access_token}&userToken=google_logged_in`;
+
+        const response = NextResponse.redirect(redirectUrl);
 
         response.cookies.set('user_email', userData.email || '', { path: '/', httpOnly: false });
         response.cookies.set('user_name', userData.name || '', { path: '/', httpOnly: false });
