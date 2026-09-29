@@ -24,7 +24,6 @@ export async function POST(req: Request) {
                     aggregateBy: [
                         {
                             dataTypeName: 'com.google.step_count.delta',
-                            dataSourceId: 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
                         },
                     ],
                     bucketByTime: { durationMillis: 86400000 },
@@ -37,8 +36,9 @@ export async function POST(req: Request) {
         if (!googleFitRes.ok) {
             const errData = await googleFitRes.json();
             console.error('Google Fit API Error:', errData);
+            const detailMsg = errData.error?.message || 'Google Fit-dən məlumat alınarkən xəta baş verdi';
             return NextResponse.json(
-                { error: 'Google Fit-dən məlumat alınarkən xəta baş verdi' },
+                { error: detailMsg },
                 { status: googleFitRes.status }
             );
         }
