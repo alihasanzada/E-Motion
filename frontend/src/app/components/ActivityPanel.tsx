@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Footprints, Droplet, Plus, RefreshCw, Sparkles } from 'lucide-react';
+import { Footprints, Droplet, Plus, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface ActivityPanelProps {
   isDarkMode?: boolean;
@@ -14,9 +14,59 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const [inputSteps, setInputSteps] = useState('');
   const [inputWater, setInputWater] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
 
   const stepGoal = 10000;
   const waterGoal = 2000;
+
+  const syncGoogleFitSteps = async (showSuccessAlert = false) => {
+    const accessToken = localStorage.getItem('google_access_token');
+
+    if (!accessToken) {
+      setIsGoogleConnected(false);
+      if (showSuccessAlert) {
+        alert("Google hesabınızla aktiv giriş tapılmadı. Lütfən Google ilə təkrar giriş edin.");
+      }
+      return;
+    }
+
+    setIsGoogleConnected(true);
+    setIsSyncing(true);
+
+    try {
+      const res = await fetch('/api/google-fit/steps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      });
+
+      const data = await res.json();
+
+      if (data.success && typeof data.steps === 'number') {
+        setSteps(data.steps);
+        localStorage.setItem('user_steps', data.steps.toString());
+
+        fetch(`${API_BASE_URL}/api/activity`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ steps: data.steps, water_ml: water }),
+        }).catch(() => { });
+
+        if (showSuccessAlert) {
+          alert(`Google Fit-dən ${data.steps.toLocaleString()} addım uğurla yeniləndi!`);
+        }
+      } else if (showSuccessAlert) {
+        alert('Google Fit-dən addım məlumatı alınamadı: ' + (data.error || 'Bilinməyən xəta'));
+      }
+    } catch (err) {
+      console.error('Sinxronlaşdırma xətası:', err);
+      if (showSuccessAlert) {
+        alert('Sinxronlaşdırma zamanı xəta baş verdi.');
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const savedSteps = localStorage.getItem('user_steps');
@@ -25,26 +75,31 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     if (savedSteps !== null) setSteps(Number(savedSteps));
     if (savedWater !== null) setWater(Number(savedWater));
 
-    const fetchActivity = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/activity`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.steps !== undefined && data.steps !== null) {
-            setSteps(data.steps);
-            localStorage.setItem('user_steps', data.steps.toString());
+    const token = localStorage.getItem('google_access_token');
+    if (token) {
+      setIsGoogleConnected(true);
+      syncGoogleFitSteps(false);
+    } else {
+      const fetchActivity = async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/activity`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.steps !== undefined && data.steps !== null) {
+              setSteps(data.steps);
+              localStorage.setItem('user_steps', data.steps.toString());
+            }
+            if (data.water !== undefined && data.water !== null) {
+              setWater(data.water);
+              localStorage.setItem('user_water', data.water.toString());
+            }
           }
-          if (data.water !== undefined && data.water !== null) {
-            setWater(data.water);
-            localStorage.setItem('user_water', data.water.toString());
-          }
+        } catch (error) {
+          console.error("Aktivlik məlumatı çəkilə bilmədi:", error);
         }
-      } catch (error) {
-        console.error("Aktivlik məlumatı çəkilə bilmədi:", error);
-      }
-    };
-
-    fetchActivity();
+      };
+      fetchActivity();
+    }
   }, []);
 
   const updateActivity = async (newSteps: number, newWaterMl: number) => {
@@ -65,39 +120,6 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       });
     } catch (error) {
       console.error("Aktivlik yenilənə bilmədi:", error);
-    }
-  };
-
-  const syncGoogleFitSteps = async () => {
-    setIsSyncing(true);
-    try {
-      const accessToken = localStorage.getItem('google_access_token');
-
-      if (!accessToken) {
-        alert("Google hesabınızla aktiv giriş tapılmadı. Lütfən Google ilə təkrar giriş edin.");
-        setIsSyncing(false);
-        return;
-      }
-
-      const res = await fetch('/api/google-fit/steps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken }),
-      });
-
-      const data = await res.json();
-
-      if (data.success && typeof data.steps === 'number') {
-        await updateActivity(data.steps, water);
-        alert(`Google Fit-dən ${data.steps.toLocaleString()} addım uğurla sinxronlaşdırıldı!`);
-      } else {
-        alert('Google Fit-dən addım məlumatı alınamadı: ' + (data.error || 'Bilinməyən xəta'));
-      }
-    } catch (err) {
-      console.error('Sinxronlaşdırma xətası:', err);
-      alert('Sinxronlaşdırma zamanı xəta baş verdi.');
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -213,28 +235,57 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               </div>
             </div>
 
-            {/* Google Fit Sinxronlaşdır Düyməsi */}
-            <button
-              onClick={syncGoogleFitSteps}
-              disabled={isSyncing}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                backgroundColor: isSyncing ? '#9CA3AF' : '#44766C',
-                color: '#FFFFFF',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '12px',
-                fontSize: '11.5px',
-                fontWeight: '600',
-                cursor: isSyncing ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <RefreshCw size={14} />
-              {isSyncing ? 'Yüklənir...' : 'Google Fit Sinx'}
-            </button>
+            {/* Dynamic Google Fit Button */}
+            {isGoogleConnected ? (
+              <button
+                onClick={() => syncGoogleFitSteps(true)}
+                disabled={isSyncing}
+                title="Google Fit aktivdir. Anında yeniləmək üçün klikləyin."
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'rgba(52, 211, 153, 0.15)',
+                  color: '#059669',
+                  border: '1px solid rgba(52, 211, 153, 0.3)',
+                  padding: '6px 12px',
+                  borderRadius: '12px',
+                  fontSize: '11.5px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {isSyncing ? (
+                  <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                ) : (
+                  <CheckCircle2 size={14} />
+                )}
+                {isSyncing ? 'Yenilənir...' : 'Sinxronlaşdırıldı'}
+              </button>
+            ) : (
+              <button
+                onClick={() => syncGoogleFitSteps(true)}
+                disabled={isSyncing}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: isSyncing ? '#9CA3AF' : '#44766C',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '12px',
+                  fontSize: '11.5px',
+                  fontWeight: '600',
+                  cursor: isSyncing ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <RefreshCw size={14} />
+                {isSyncing ? 'Yüklənir...' : 'Google Fit Sinx'}
+              </button>
+            )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '12px 0' }}>
