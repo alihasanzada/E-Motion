@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
@@ -14,6 +14,34 @@ export default function AuthPage() {
   const [password, setPassword] = useState<string>('');
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const googleToken = urlParams.get('access_token') || urlParams.get('google_access_token');
+      const userToken = urlParams.get('token') || urlParams.get('userToken');
+
+      if (googleToken) {
+        localStorage.setItem('google_access_token', googleToken);
+      }
+
+      if (userToken || googleToken) {
+        localStorage.setItem('userToken', userToken || googleToken || 'google_logged_in');
+
+        if (!localStorage.getItem('user')) {
+          const userData = {
+            fullname: "Əli Həsənov",
+            major: "Kompüter Mühəndisliyi",
+            course: 1,
+            username: "Əli Həsənov"
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+
+        router.push('/');
+      }
+    }
+  }, [router]);
 
   const handleGoogleLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
