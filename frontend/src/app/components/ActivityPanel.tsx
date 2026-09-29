@@ -19,14 +19,34 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const stepGoal = 10000;
   const waterGoal = 2000;
 
+  const connectGoogleFit = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const redirectUri = `${appUrl}/api/auth/callback/google`;
+
+    const scopes = [
+      "https://www.googleapis.com/auth/fitness.activity.read"
+    ].join(" ");
+
+    const options = {
+      client_id: clientId!,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: scopes,
+      access_type: "offline",
+      prompt: "consent"
+    };
+
+    const qs = new URLSearchParams(options);
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${qs.toString()}`;
+  };
+
   const syncGoogleFitSteps = async (showSuccessAlert = false) => {
     const accessToken = localStorage.getItem('google_access_token');
 
     if (!accessToken) {
       setIsGoogleConnected(false);
-      if (showSuccessAlert) {
-        alert("Google hesabınızla aktiv giriş tapılmadı. Lütfən Google ilə təkrar giriş edin.");
-      }
+      connectGoogleFit();
       return;
     }
 
@@ -69,6 +89,16 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fitToken = urlParams.get('google_fit_token');
+
+      if (fitToken) {
+        localStorage.setItem('google_access_token', fitToken);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
     const savedSteps = localStorage.getItem('user_steps');
     const savedWater = localStorage.getItem('user_water');
 
@@ -235,7 +265,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               </div>
             </div>
 
-            {/* Dynamic Google Fit Button */}
+            {/* Google Fit Sync / Connect Button */}
             {isGoogleConnected ? (
               <button
                 onClick={() => syncGoogleFitSteps(true)}
@@ -265,25 +295,24 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               </button>
             ) : (
               <button
-                onClick={() => syncGoogleFitSteps(true)}
-                disabled={isSyncing}
+                onClick={connectGoogleFit}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  backgroundColor: isSyncing ? '#9CA3AF' : '#44766C',
+                  backgroundColor: '#44766C',
                   color: '#FFFFFF',
                   border: 'none',
                   padding: '6px 12px',
                   borderRadius: '12px',
                   fontSize: '11.5px',
                   fontWeight: '600',
-                  cursor: isSyncing ? 'not-allowed' : 'pointer',
+                  cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
               >
                 <RefreshCw size={14} />
-                {isSyncing ? 'Yüklənir...' : 'Google Fit Sinx'}
+                Google Fit-i Qoş
               </button>
             )}
           </div>
