@@ -18,6 +18,7 @@ import EventsPanel from './components/EventsPanel';
 import ProgressPanel from './components/ProgressPanel';
 import DailyScoreWidget from "./components/DailyScoreWidget";
 import AIChatModal from './components/AIChatModal';
+import EditProfileModal, { UserProfileData } from './components/EditProfileModal';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import EmptyState from "./components/EmptyState";
@@ -54,9 +55,12 @@ export default function Dashboard() {
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
 
   const [notifications, setNotifications] = useState([
@@ -142,6 +146,9 @@ export default function Dashboard() {
       if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
         setIsMessagesOpen(false);
       }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -170,11 +177,7 @@ export default function Dashboard() {
   };
   const router = useRouter();
 
-  const [user, setUser] = useState<{
-    fullname: string;
-    major: string;
-    course: number;
-  } | null>(null);
+  const [user, setUser] = useState<UserProfileData | null>(null);
 
 
   useEffect(() => {
@@ -223,21 +226,45 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("İstifadəçi məlumatları oxunarkən xəta baş verdi:", e);
-        toast.error("Məlumatları yükləyərkən xəta baş verdi.");
+    const loadUserData = async () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error("İstifadəçi məlumatları oxunarkən xəta baş verdi:", e);
+        }
+      } else {
+        setUser({
+          fullname: "Əli Həsənov",
+          major: "Kompüter Mühəndisliyi",
+          course: 1,
+          student_id: "QU-2024-101",
+          email: "st123456@qu.edu.az",
+          phone: "+994 50 123 45 67",
+          blood_group: "A (II) Rh+",
+          emergency_contact: "+994 50 765 43 21",
+          daily_step_goal: 10000,
+          daily_water_goal: 2000
+        });
       }
-    } else {
-      setUser({
-        fullname: "Əli Həsənov",
-        major: "Kompüter mühəndisliyi",
-        course: 1
-      });
-    }
+
+      // Backend API-dən ən son profil məlumatlarını sinxronlaşdırmaq
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/user/profile`);
+        if (res.ok) {
+          const profileData = await res.json();
+          if (profileData && profileData.fullname) {
+            setUser(profileData);
+            localStorage.setItem('user', JSON.stringify(profileData));
+          }
+        }
+      } catch (err) {
+        console.warn('Backend profil məlumatı alına bilmədi (offline/lokal rejim aktivdir):', err);
+      }
+    };
+
+    loadUserData();
   }, []);
 
   const theme = darkMode ? {
@@ -917,19 +944,144 @@ export default function Dashboard() {
 
             </div>
 
-            <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '11px', cursor: 'pointer' }}>
-              <div className="profile-img" style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#44766C', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', fontSize: '13.5px' }}>
-                {user && user.fullname ? user.fullname.charAt(0).toUpperCase() : 'Ə'}
+            <div ref={profileDropdownRef} style={{ position: 'relative' }}>
+              <div
+                className="profile-card"
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '11px',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '10px',
+                  transition: 'background-color 0.15s ease',
+                  backgroundColor: isProfileDropdownOpen ? theme.bgInner : 'transparent'
+                }}
+              >
+                <div
+                  className="profile-img"
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    backgroundColor: '#44766C',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: '600',
+                    fontSize: '13.5px',
+                    boxShadow: '0 2px 6px rgba(68, 118, 108, 0.25)'
+                  }}
+                >
+                  {user && user.fullname ? user.fullname.charAt(0).toUpperCase() : 'Ə'}
+                </div>
+                <div className="profile-info" style={{ textAlign: 'left' }}>
+                  <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: theme.textPrimary }}>
+                    {user ? user.fullname : 'Əli Həsənov'}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '10.5px', color: theme.textSecondary }}>
+                    {user ? `${user.major}, ${user.course}-ci kurs` : 'Yüklənir...'}
+                  </p>
+                </div>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    color: theme.textSecondary,
+                    transform: isProfileDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease'
+                  }}
+                />
               </div>
-              <div className="profile-info" style={{ textAlign: 'left' }}>
-                <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: theme.textPrimary }}>
-                  {user ? user.fullname : 'Əli Həsənov'}
-                </h4>
-                <p style={{ margin: 0, fontSize: '10.5px', color: theme.textSecondary }}>
-                  {user ? `${user.major}, ${user.course}-ci kurs` : 'Yüklənir...'}
-                </p>
-              </div>
-              <ChevronDown size={14} style={{ color: theme.textSecondary }} />
+
+              {/* Profil Dropdown Menyusu */}
+              {isProfileDropdownOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: '240px',
+                    backgroundColor: theme.bgCard,
+                    border: `1px solid ${theme.border}`,
+                    borderRadius: '14px',
+                    boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
+                    zIndex: 99,
+                    padding: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}
+                >
+                  <div style={{ padding: '8px 10px', borderBottom: `1px solid ${theme.border}`, marginBottom: '4px' }}>
+                    <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: theme.textPrimary }}>
+                      {user?.fullname || 'Əli Həsənov'}
+                    </p>
+                    <p style={{ margin: '2px 0 0', fontSize: '10.5px', color: theme.textSecondary }}>
+                      {user?.email || 'st123456@qu.edu.az'}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileDropdownOpen(false);
+                      setIsProfileModalOpen(true);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: theme.textPrimary,
+                      fontSize: '12.5px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background-color 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = theme.bgInner)}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    <UserCheck size={16} color="#44766C" />
+                    <span>Profili Redaktə Et</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileDropdownOpen(false);
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      router.push('/auth');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: '#EF4444',
+                      fontSize: '12.5px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background-color 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = darkMode ? '#451A1A' : '#FEE2E2')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    <LogOut size={16} />
+                    <span>Hesabdan Çıxış</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -1304,6 +1456,20 @@ export default function Dashboard() {
           yuxu: sleepHours,
           seriya: streakDays,
         }}
+      />
+
+      {/* İstifadəçi Profilini Redaktə Etmək üçün Modal */}
+      <EditProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        currentUser={user}
+        onUpdate={(updatedData) => {
+          setUser(updatedData);
+          if (updatedData.daily_step_goal || updatedData.dailyStepGoal) {
+            localStorage.setItem('user_step_goal', (updatedData.daily_step_goal || updatedData.dailyStepGoal)!.toString());
+          }
+        }}
+        isDarkMode={darkMode}
       />
     </div >
   );

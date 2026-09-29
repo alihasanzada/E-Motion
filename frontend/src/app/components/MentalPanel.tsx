@@ -1,6 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ExerciseModal, { ExerciseType } from './ExerciseModal';
+import { toast } from 'sonner';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
 
 interface MentalPanelProps {
   isDarkMode?: boolean;
@@ -44,7 +47,45 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
     },
   ]);
 
-  const handleAddEntry = () => {
+  useEffect(() => {
+    const saved = localStorage.getItem('mental_journal_entries');
+    if (saved) {
+      try {
+        setEntries(JSON.parse(saved));
+      } catch (e) {
+        console.error('Mental qeydlər oxunarkən xəta:', e);
+      }
+    }
+
+    const fetchBackendMoods = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/moods`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped: JournalEntry[] = data.map((item: any) => {
+              const matchedMood = moodOptions.find(m => m.label.toLowerCase() === (item.mood || '').toLowerCase()) || moodOptions[0];
+              return {
+                id: item.id?.toString() || Date.now().toString(),
+                mood: matchedMood.emoji,
+                moodLabel: item.mood || matchedMood.label,
+                note: item.note || '',
+                date: item.date || new Date().toISOString().split('T')[0]
+              };
+            });
+            setEntries(mapped);
+            localStorage.setItem('mental_journal_entries', JSON.stringify(mapped));
+          }
+        }
+      } catch (err) {
+        console.warn('Backend moods çəkilə bilmədi:', err);
+      }
+    };
+
+    fetchBackendMoods();
+  }, []);
+
+  const handleAddEntry = async () => {
     if (!journalNote.trim()) return;
     const moodObj = moodOptions.find((m) => m.val === selectedMood);
     const newEntry: JournalEntry = {
@@ -54,8 +95,25 @@ export default function MentalPanel({ isDarkMode }: MentalPanelProps) {
       note: journalNote,
       date: new Date().toISOString().split('T')[0],
     };
-    setEntries([newEntry, ...entries]);
+
+    const updated = [newEntry, ...entries];
+    setEntries(updated);
+    localStorage.setItem('mental_journal_entries', JSON.stringify(updated));
     setJournalNote('');
+    toast.success('Əhval qeydiniz uğurla əlavə edildi!');
+
+    try {
+      await fetch(`${API_BASE_URL}/api/moods`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mood: moodObj?.label || 'Əla',
+          note: journalNote
+        })
+      });
+    } catch (err) {
+      console.warn('Backend mood göndərilmədi:', err);
+    }
   };
 
   return (

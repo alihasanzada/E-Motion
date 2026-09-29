@@ -2,6 +2,7 @@
 import FoodScanner from './FoodScanner';
 import React, { useState, useEffect } from 'react';
 import { Utensils, Plus, Flame, Trash2, Zap, Apple, Egg, UtensilsCrossed, Coffee, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Meal {
   id: number;
@@ -87,10 +88,28 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   const [fatInput, setFatInput] = useState('');
   const [autoDetected, setAutoDetected] = useState(false);
 
-  const [meals, setMeals] = useState<Meal[]>([
-    { id: 1, name: 'Toyuq və Düyü (150g + 150g)', calories: 430, type: 'Günorta Yeməyi', time: '13:30', protein: 40, carbs: 45, fat: 4 },
-    { id: 2, name: 'Yulaf və Giləmeyvə', calories: 280, type: 'Səhər Yeməyi', time: '08:45', protein: 10, carbs: 45, fat: 5 }
-  ]);
+  const [meals, setMeals] = useState<Meal[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('user_meals');
+    if (saved) {
+      try {
+        setMeals(JSON.parse(saved));
+      } catch (e) {
+        console.error('Qidalar oxunarkən xəta:', e);
+      }
+    } else {
+      setMeals([
+        { id: 1, name: 'Toyuq və Düyü (150g + 150g)', calories: 430, type: 'Günorta Yeməyi', time: '13:30', protein: 40, carbs: 45, fat: 4 },
+        { id: 2, name: 'Yulaf və Giləmeyvə', calories: 280, type: 'Səhər Yeməyi', time: '08:45', protein: 10, carbs: 45, fat: 5 }
+      ]);
+    }
+  }, []);
+
+  const saveMeals = (newMeals: Meal[]) => {
+    setMeals(newMeals);
+    localStorage.setItem('user_meals', JSON.stringify(newMeals));
+  };
 
   useEffect(() => {
     if (!mealName.trim()) {
@@ -203,19 +222,22 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       fat: fVal
     };
 
-    setMeals([newMeal, ...meals]);
+    saveMeals([newMeal, ...meals]);
     setMealName('');
     setCalories('');
     setProteinInput('');
     setCarbsInput('');
     setFatInput('');
     setAutoDetected(false);
+    toast.success(`${newMeal.name} qida rasionunuza əlavə edildi!`);
   };
 
   const handleAddPreset = (name: string, cal: number, p: number, c: number, f: number, type: string) => {
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    setMeals([{ id: Date.now(), name, calories: cal, type, time: timeStr, protein: p, carbs: c, fat: f }, ...meals]);
+    const newMeal = { id: Date.now(), name, calories: cal, type, time: timeStr, protein: p, carbs: c, fat: f };
+    saveMeals([newMeal, ...meals]);
+    toast.success(`${name} əlavə edildi!`);
   };
 
   return (
@@ -541,7 +563,10 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
                     {item.calories} kcal
                   </span>
                   <button
-                    onClick={() => setMeals(meals.filter(m => m.id !== item.id))}
+                    onClick={() => {
+                      saveMeals(meals.filter(m => m.id !== item.id));
+                      toast.info(`${item.name} rasiondan silindi.`);
+                    }}
                     style={{ background: 'none', border: 'none', color: theme.textSecondary, cursor: 'pointer', padding: '4px' }}
                     onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
                     onMouseLeave={(e) => e.currentTarget.style.color = theme.textSecondary}

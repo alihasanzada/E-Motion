@@ -15,19 +15,52 @@ interface DailyScoreWidgetProps {
 }
 
 export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidgetProps) {
-    const [waterLitres, setWaterLitres] = useState<number>(1.6);
+    const [waterLitres, setWaterLitres] = useState<number>(1.5);
     const [sleepHours, setSleepHours] = useState<number>(7);
     const [steps, setSteps] = useState<number>(6500);
     const [moodScore, setMoodScore] = useState<number>(4);
-
-    const targetWater = 2.5;
+    const [targetWater, setTargetWater] = useState<number>(2.5);
+    const [targetSteps, setTargetSteps] = useState<number>(10000);
     const targetSleep = 8;
-    const targetSteps = 8000;
+
+    React.useEffect(() => {
+        // Addım
+        const savedSteps = localStorage.getItem('user_steps');
+        if (savedSteps) setSteps(Number(savedSteps));
+
+        // Su (ml-dən litrə)
+        const savedWaterMl = localStorage.getItem('user_water_ml');
+        if (savedWaterMl) {
+            setWaterLitres(Number(savedWaterMl) / 1000);
+        } else {
+            const savedGlasses = localStorage.getItem('user_water_glasses');
+            if (savedGlasses) setWaterLitres((Number(savedGlasses) * 250) / 1000);
+        }
+
+        // Hədəflər
+        const savedGoal = localStorage.getItem('user_step_goal');
+        if (savedGoal) setTargetSteps(Number(savedGoal));
+
+        const savedWaterGoal = localStorage.getItem('daily_water_goal');
+        if (savedWaterGoal) setTargetWater(Number(savedWaterGoal) / 1000);
+
+        // Profil məlumatından yoxlama
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                const u = JSON.parse(storedUser);
+                if (u.daily_step_goal || u.dailyStepGoal) setTargetSteps(Number(u.daily_step_goal || u.dailyStepGoal));
+                if (u.daily_water_goal || u.dailyWaterGoal) setTargetWater(Number(u.daily_water_goal || u.dailyWaterGoal) / 1000);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }, []);
 
     const healthMetrics = useMemo(() => {
-        const waterPerc = Math.min((waterLitres / targetWater) * 100, 100);
+        const waterPerc = Math.min((waterLitres / (targetWater || 2.5)) * 100, 100);
         const sleepPerc = Math.min((sleepHours / targetSleep) * 100, 100);
-        const stepsPerc = Math.min((steps / targetSteps) * 100, 100);
+        const stepsPerc = Math.min((steps / (targetSteps || 10000)) * 100, 100);
         const moodPerc = (moodScore / 5) * 100;
 
         const score = Math.round(
@@ -46,7 +79,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
         }
 
         return { score, status, statusColor };
-    }, [waterLitres, sleepHours, steps, moodScore]);
+    }, [waterLitres, sleepHours, steps, moodScore, targetWater, targetSteps]);
 
     const radius = 50;
     const circumference = 2 * Math.PI * radius;

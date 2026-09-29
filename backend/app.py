@@ -41,7 +41,8 @@ template = {
 
 swagger = Swagger(app, config=swagger_config, template=template)
 
-DB_NAME = 'kuds_database.db'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_NAME = os.path.join(BASE_DIR, 'kuds_database.db')
 
 @app.route('/', methods=['GET'])
 def root():
@@ -593,25 +594,111 @@ def update_water():
         
     return jsonify({"error": "Səhv məlumat formatı"}), 400
 
-@app.route('/api/user/profile', methods=['GET'])
-def get_user_profile():
+@app.route('/api/user/profile', methods=['GET', 'POST', 'PUT', 'OPTIONS'])
+def user_profile_endpoint():
     """
-    Get active user profile details
+    Get or update active user profile details
     ---
     tags:
       - User
+    parameters:
+      - name: body
+        in: body
+        required: false
+        schema:
+          type: object
+          properties:
+            fullname:
+              type: string
+              example: "Əli Həsənov"
+            major:
+              type: string
+              example: "Kompüter Mühəndisliyi"
+            course:
+              type: integer
+              example: 1
+            student_id:
+              type: string
+              example: "QU-2024-101"
+            email:
+              type: string
+              example: "st123456@qu.edu.az"
+            phone:
+              type: string
+              example: "+994 50 123 45 67"
+            blood_group:
+              type: string
+              example: "A+"
+            emergency_contact:
+              type: string
+              example: "+994 50 765 43 21"
+            bio:
+              type: string
+              example: "Qarabağ Universiteti tələbəsi."
+            daily_step_goal:
+              type: integer
+              example: 10000
+            daily_water_goal:
+              type: integer
+              example: 2000
     responses:
       200:
-        description: User profile information
-      404:
-        description: User not found
+        description: User profile retrieved or updated successfully
     """
+    if request.method == 'OPTIONS':
+        return '', 200
+
     conn = get_db_connection()
     try:
-        user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
-        if user:
+        if request.method == 'GET':
+            user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
+            if user:
+                return jsonify(dict(user)), 200
+            
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO user_profile 
+                (id, fullname, major, course, student_id, email, phone, blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal)
+                VALUES (1, 'Əli Həsənov', 'Kompüter Mühəndisliyi', 1, 'QU-2024-101', 'st123456@qu.edu.az', '+994 50 123 45 67', 'A+', '+994 50 765 43 21', 'Qarabağ Universiteti tələbəsi.', 10000, 2000)
+            """)
+            conn.commit()
+            user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
             return jsonify(dict(user)), 200
-        return jsonify({"error": "İstifadəçi tapılmadı"}), 404
+
+        data = request.get_json(silent=True) or {}
+        current = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
+        current_dict = dict(current) if current else {}
+
+        fullname = data.get('fullname') or data.get('name') or current_dict.get('fullname', 'Əli Həsənov')
+        major = data.get('major') or current_dict.get('major', 'Kompüter Mühəndisliyi')
+        course = data.get('course') if data.get('course') is not None else current_dict.get('course', 1)
+        student_id = data.get('student_id') or data.get('studentId') or current_dict.get('student_id', 'QU-2024-101')
+        email = data.get('email') or current_dict.get('email', 'st123456@qu.edu.az')
+        phone = data.get('phone') or current_dict.get('phone', '+994 50 123 45 67')
+        blood_group = data.get('blood_group') or data.get('bloodGroup') or current_dict.get('blood_group', 'A+')
+        emergency_contact = data.get('emergency_contact') or data.get('emergencyContact') or current_dict.get('emergency_contact', '+994 50 765 43 21')
+        bio = data.get('bio') if data.get('bio') is not None else current_dict.get('bio', '')
+        daily_step_goal = data.get('daily_step_goal') or data.get('dailyStepGoal') or current_dict.get('daily_step_goal', 10000)
+        daily_water_goal = data.get('daily_water_goal') or data.get('dailyWaterGoal') or current_dict.get('daily_water_goal', 2000)
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT OR REPLACE INTO user_profile 
+            (id, fullname, major, course, student_id, email, phone, blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal)
+            VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            fullname, major, int(course), student_id, email, phone, blood_group, emergency_contact, bio, int(daily_step_goal), int(daily_water_goal)
+        ))
+        conn.commit()
+
+        updated_user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
+        return jsonify({
+            "message": "Profil məlumatları uğurla yeniləndi!",
+            "user": dict(updated_user)
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Profile error: {e}")
+        return jsonify({"error": f"Profil yenilənərkən xəta baş verdi: {str(e)}"}), 500
     finally:
         conn.close()
 
@@ -750,11 +837,47 @@ def init_db():
             id INTEGER PRIMARY KEY CHECK (id = 1),
             fullname TEXT NOT NULL,
             major TEXT NOT NULL,
-            course INTEGER NOT NULL
+            course INTEGER NOT NULL,
+            student_id TEXT DEFAULT 'QU-2024-101',
+            email TEXT DEFAULT 'st123456@qu.edu.az',
+            phone TEXT DEFAULT '+994 50 123 45 67',
+            blood_group TEXT DEFAULT 'A+',
+            emergency_contact TEXT DEFAULT '+994 50 765 43 21',
+            bio TEXT DEFAULT 'Qarabağ Universiteti tələbəsi. Sağlam həyat tərzi və idman həvəskarı.',
+            daily_step_goal INTEGER DEFAULT 10000,
+            daily_water_goal INTEGER DEFAULT 2000
         )
     ''')
 
+    # Mövcud bazaya sütun miqrasiyası (əgər köhnə cədvəl yaradılıbsa)
+    existing_cols = [row[1] for row in cursor.execute('PRAGMA table_info(user_profile)').fetchall()]
+    profile_columns = [
+        ('student_id', "TEXT DEFAULT 'QU-2024-101'"),
+        ('email', "TEXT DEFAULT 'st123456@qu.edu.az'"),
+        ('phone', "TEXT DEFAULT '+994 50 123 45 67'"),
+        ('blood_group', "TEXT DEFAULT 'A+'"),
+        ('emergency_contact', "TEXT DEFAULT '+994 50 765 43 21'"),
+        ('bio', "TEXT DEFAULT 'Qarabağ Universiteti tələbəsi.'"),
+        ('daily_step_goal', "INTEGER DEFAULT 10000"),
+        ('daily_water_goal', "INTEGER DEFAULT 2000")
+    ]
+    for col, col_def in profile_columns:
+        if col not in existing_cols:
+            try:
+                cursor.execute(f"ALTER TABLE user_profile ADD COLUMN {col} {col_def}")
+            except Exception as e:
+                app.logger.warning(f"Column {col} migration skipped: {e}")
+
     conn.commit()
+
+    # Seed user_profile if empty
+    cursor.execute('SELECT COUNT(*) FROM user_profile')
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("""
+            INSERT INTO user_profile (id, fullname, major, course, student_id, email, phone, blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal)
+            VALUES (1, 'Əli Həsənov', 'Kompüter Mühəndisliyi', 1, 'QU-2024-101', 'st123456@qu.edu.az', '+994 50 123 45 67', 'A+', '+994 50 765 43 21', 'Qarabağ Universiteti tələbəsi. Sağlam həyat tərzi və idman həvəskarı.', 10000, 2000)
+        """)
+        conn.commit()
 
     # Seed initial test data
     cursor.execute('SELECT COUNT(*) FROM students')
@@ -774,7 +897,6 @@ def init_db():
         cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Dr. Əliyev (Tibb məntəqəsi)', 'Qan analizi nəticələriniz hazırdır.', '12:30')")
         cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Psixoloq Leyla M.', 'Növbəti seans üçün vaxtı təsdiqləyin.', 'Dünən')")
         cursor.execute("INSERT INTO water (id, count) VALUES (1, 4)")
-        cursor.execute("INSERT INTO user_profile (id, fullname, major, course) VALUES (1, 'Əli Həsənov', 'Kompüter Mühəndisliyi', 1)")
         conn.commit()
 
     conn.close()

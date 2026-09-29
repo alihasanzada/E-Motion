@@ -22,26 +22,39 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
   const [requestType, setRequestType] = useState('Həkim Qəbulu');
   const [description, setDescription] = useState('');
 
-  const [requests, setRequests] = useState([
-    {
-      id: 1,
-      title: 'Kardiologiya Müayinəsi üçün Arayış',
-      sub: 'Kampus Klinikası • İdman zalına buraxılış üçün',
-      status: 'Təsdiqləndi',
-      statusColor: '#10B981',
-      bgColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
-      date: '02 Avqust 2026'
-    },
-    {
-      id: 2,
-      title: 'Göz Müayinəsi Növbəsi',
-      sub: 'Dr. Aytən Əliyeva • Kampus Tibb Məntəqəsi',
-      status: 'Gözləmədə',
-      statusColor: '#F59E0B',
-      bgColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FFFBEB',
-      date: '06 Avqust, 14:00'
+  const [requests, setRequests] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem('user_health_requests');
+    if (saved) {
+      try {
+        setRequests(JSON.parse(saved));
+      } catch (e) {
+        console.error('Müraciətlər oxunarkən xəta:', e);
+      }
+    } else {
+      setRequests([
+        {
+          id: 1,
+          title: 'Kardiologiya Müayinəsi üçün Arayış',
+          sub: 'Kampus Klinikası • İdman zalına buraxılış üçün',
+          status: 'Təsdiqləndi',
+          statusColor: '#10B981',
+          bgColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
+          date: '02 Avqust 2026'
+        },
+        {
+          id: 2,
+          title: 'Göz Müayinəsi Növbəsi',
+          sub: 'Dr. Aytən Əliyeva • Kampus Tibb Məntəqəsi',
+          status: 'Gözləmədə',
+          statusColor: '#F59E0B',
+          bgColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FFFBEB',
+          date: '06 Avqust, 14:00'
+        }
+      ]);
     }
-  ]);
+  }, [isDarkMode]);
 
   const handleCreateRequest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +70,9 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
       date: 'İndi əlavə edildi'
     };
 
-    setRequests([newReq, ...requests]);
+    const updated = [newReq, ...requests];
+    setRequests(updated);
+    localStorage.setItem('user_health_requests', JSON.stringify(updated));
     setDescription('');
     setIsModalOpen(false);
   };
