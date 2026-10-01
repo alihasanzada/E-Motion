@@ -249,7 +249,6 @@ export default function Dashboard() {
         });
       }
 
-      // Backend API-dən ən son profil məlumatlarını sinxronlaşdırmaq
       try {
         const res = await fetch(`${API_BASE_URL}/api/user/profile`);
         if (res.ok) {

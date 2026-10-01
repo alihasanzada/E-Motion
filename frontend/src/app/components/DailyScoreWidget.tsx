@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     Activity,
     Droplets,
@@ -15,6 +15,7 @@ interface DailyScoreWidgetProps {
 }
 
 export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidgetProps) {
+    const [mounted, setMounted] = useState(false);
     const [waterLitres, setWaterLitres] = useState<number>(1.5);
     const [sleepHours, setSleepHours] = useState<number>(7);
     const [steps, setSteps] = useState<number>(6500);
@@ -23,12 +24,19 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
     const [targetSteps, setTargetSteps] = useState<number>(10000);
     const targetSleep = 8;
 
-    React.useEffect(() => {
-        // Addım
+    // Yaddaşdan məlumatların oxunması
+    useEffect(() => {
+        setMounted(true);
+
         const savedSteps = localStorage.getItem('user_steps');
         if (savedSteps) setSteps(Number(savedSteps));
 
-        // Su (ml-dən litrə)
+        const savedSleep = localStorage.getItem('user_sleep');
+        if (savedSleep) setSleepHours(Number(savedSleep));
+
+        const savedMood = localStorage.getItem('user_mood');
+        if (savedMood) setMoodScore(Number(savedMood));
+
         const savedWaterMl = localStorage.getItem('user_water_ml');
         if (savedWaterMl) {
             setWaterLitres(Number(savedWaterMl) / 1000);
@@ -37,14 +45,12 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
             if (savedGlasses) setWaterLitres((Number(savedGlasses) * 250) / 1000);
         }
 
-        // Hədəflər
         const savedGoal = localStorage.getItem('user_step_goal');
         if (savedGoal) setTargetSteps(Number(savedGoal));
 
         const savedWaterGoal = localStorage.getItem('daily_water_goal');
         if (savedWaterGoal) setTargetWater(Number(savedWaterGoal) / 1000);
 
-        // Profil məlumatından yoxlama
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             try {
@@ -56,6 +62,27 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
             }
         }
     }, []);
+
+    // Dəyişikliklərin localStorage-a yazılması
+    const handleWaterChange = (val: number) => {
+        setWaterLitres(val);
+        localStorage.setItem('user_water_ml', (val * 1000).toString());
+    };
+
+    const handleSleepChange = (val: number) => {
+        setSleepHours(val);
+        localStorage.setItem('user_sleep', val.toString());
+    };
+
+    const handleStepsChange = (val: number) => {
+        setSteps(val);
+        localStorage.setItem('user_steps', val.toString());
+    };
+
+    const handleMoodChange = (val: number) => {
+        setMoodScore(val);
+        localStorage.setItem('user_mood', val.toString());
+    };
 
     const healthMetrics = useMemo(() => {
         const waterPerc = Math.min((waterLitres / (targetWater || 2.5)) * 100, 100);
@@ -90,8 +117,9 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
         cardBorder: isDarkMode ? "#27272A" : "#E2E8F0",
         textPrimary: isDarkMode ? "#FFFFFF" : "#0F172A",
         textSecondary: isDarkMode ? "#A1A1AA" : "#64748B",
-        inputBg: isDarkMode ? "#27272A" : "#F1F5F9",
     };
+
+    if (!mounted) return null;
 
     return (
         <div
@@ -155,7 +183,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                         </span>
                         <span style={{ fontWeight: "600" }}>{waterLitres} L</span>
                     </div>
-                    <input type="range" min="0" max="4" step="0.1" value={waterLitres} onChange={(e) => setWaterLitres(parseFloat(e.target.value))} style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer" }} />
+                    <input type="range" min="0" max="4" step="0.1" value={waterLitres} onChange={(e) => handleWaterChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer" }} />
                 </div>
 
                 {/* Yuxu */}
@@ -166,7 +194,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                         </span>
                         <span style={{ fontWeight: "600" }}>{sleepHours} saat</span>
                     </div>
-                    <input type="range" min="0" max="12" step="0.5" value={sleepHours} onChange={(e) => setSleepHours(parseFloat(e.target.value))} style={{ width: "100%", accentColor: "#8B5CF6", cursor: "pointer" }} />
+                    <input type="range" min="0" max="12" step="0.5" value={sleepHours} onChange={(e) => handleSleepChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: "#8B5CF6", cursor: "pointer" }} />
                 </div>
 
                 {/* Addım */}
@@ -177,7 +205,18 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                         </span>
                         <span style={{ fontWeight: "600" }}>{steps.toLocaleString()}</span>
                     </div>
-                    <input type="range" min="0" max="15000" step="500" value={steps} onChange={(e) => setSteps(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#10B981", cursor: "pointer" }} />
+                    <input type="range" min="0" max="15000" step="500" value={steps} onChange={(e) => handleStepsChange(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#10B981", cursor: "pointer" }} />
+                </div>
+
+                {/* Əhval-ruhiyyə */}
+                <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: theme.textSecondary }}>
+                            <Smile size={14} color="#EC4899" /> Əhval (1-5)
+                        </span>
+                        <span style={{ fontWeight: "600" }}>{moodScore} / 5</span>
+                    </div>
+                    <input type="range" min="1" max="5" step="1" value={moodScore} onChange={(e) => handleMoodChange(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#EC4899", cursor: "pointer" }} />
                 </div>
             </div>
         </div>

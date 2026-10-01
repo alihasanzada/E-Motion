@@ -41,7 +41,6 @@ export default function AuthPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(`Uğurlu: ${data.message || 'Qeydiyyat tamamlandı.'}\nİndi daxil ola bilərsiniz.`);
         setPassword('');
         setView('login');
       } else {
@@ -72,7 +71,7 @@ export default function AuthPage() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('userToken', data.token);
 
-          const fullNameFromBackend = data.user?.name || data.name || "Əli Həsənov";
+          const fullNameFromBackend = data.user?.name || data.name || username || "Tələbə";
 
           const userData = {
             fullname: fullNameFromBackend,
@@ -81,8 +80,12 @@ export default function AuthPage() {
             username: fullNameFromBackend,
             email: email
           };
-
           localStorage.setItem('user', JSON.stringify(userData));
+
+          // Yeni istifadəçi üçün ilkin göstəriciləri 0 olaraq sıfırlayırıq
+          if (!localStorage.getItem('user_steps')) localStorage.setItem('user_steps', '0');
+          if (!localStorage.getItem('user_water_ml')) localStorage.setItem('user_water_ml', '0');
+          if (!localStorage.getItem('user_water_glasses')) localStorage.setItem('user_water_glasses', '0');
         }
 
         router.push('/');
@@ -101,7 +104,7 @@ export default function AuthPage() {
     <main style={styles.body}>
       <div style={styles.authContainer}>
 
-        {/* Qeydiyyat Formu (Signup) */}
+        {/* Qeydiyyat Formu */}
         {view === 'signup' && (
           <div style={styles.formBox}>
             <h2 style={styles.heading}>Hesab Yarat</h2>
@@ -144,7 +147,7 @@ export default function AuthPage() {
           </div>
         )}
 
-        {/* Giriş Formu (Login) */}
+        {/* Giriş Formu */}
         {view === 'login' && (
           <div style={styles.formBox}>
             <h2 style={styles.heading}>Daxil Ol</h2>
