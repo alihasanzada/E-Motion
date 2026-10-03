@@ -39,6 +39,31 @@ body {
     height: 100vh;
     overflow: hidden;
     line-height: 150%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Mobil brauzerlərdə ünvan çubuğu səbəbilə 100vh səhv ölçülür */
+@supports (height: 100dvh) {
+
+    html,
+    body {
+        height: 100dvh;
+    }
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+    max-width: 100%;
 }
 
 .sidebar,
@@ -54,7 +79,24 @@ aside {
     overflow: hidden;
     flex-shrink: 0;
     z-index: 50;
-    transition: left 0.3s ease;
+    transition: transform 0.3s ease;
+}
+
+@supports (height: 100dvh) {
+
+    .sidebar,
+    aside {
+        height: 100dvh;
+    }
+}
+
+/* Aşağı hündürlüklü masaüstü ekranlarda yan panel sürüşə bilsin */
+@media (max-height: 640px) and (min-width: 1025px) {
+
+    .sidebar,
+    aside {
+        overflow-y: auto;
+    }
 }
 
 .logo-area {
@@ -144,14 +186,28 @@ aside {
     color: #2d6a4f;
 }
 
+/* Əsas sahə: header + sürüşən məzmun (header-in real hündürlüyünə görə) */
 .wrapper {
-    flex-grow: 1;
+    flex: 1 1 0%;
     display: flex;
     flex-direction: column;
     height: 100vh;
     width: 100%;
+    min-width: 0;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
+}
+
+@supports (height: 100dvh) {
+
+    .wrapper {
+        height: 100dvh;
+    }
+}
+
+.header,
+.app-header {
+    flex-shrink: 0;
 }
 
 .header {
@@ -194,6 +250,7 @@ aside {
     display: flex;
     align-items: center;
     gap: 16px;
+    flex-shrink: 0;
 }
 
 .profile-card {
@@ -232,10 +289,12 @@ aside {
     padding: 24px;
     width: 100%;
     max-width: 100%;
-    height: calc(100vh - 50px);
+    min-width: 0;
+    min-height: 0;
+    height: auto;
     overflow-y: auto;
     overflow-x: hidden;
-    flex: 1;
+    flex: 1 1 0%;
     background-color: transparent;
     scrollbar-width: none;
 }
@@ -246,10 +305,11 @@ aside {
 
 .dashboard-layout {
     display: grid;
-    grid-template-columns: 1fr 360px;
+    grid-template-columns: minmax(0, 1fr) 300px;
     gap: 16px;
     width: 100%;
     max-width: 100%;
+    min-width: 0;
 }
 
 .left-content {
@@ -268,6 +328,12 @@ aside {
     min-width: 0;
 }
 
+.right-sidebar>* {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .welcome-banner {
     background: linear-gradient(to right, rgba(45, 106, 79, 0.95), rgba(20, 50, 40, 0.7)),
         url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800') no-repeat center center;
@@ -279,10 +345,17 @@ aside {
     min-width: 0;
 }
 
+.welcome-banner-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
 .banner-content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
+    gap: 20px;
     min-width: 0;
 }
 
@@ -292,13 +365,15 @@ aside {
 }
 
 .banner-quote {
-    max-width: 220px;
+    width: min(260px, 100%);
+    max-width: 260px;
+    flex: 0 1 260px;
 }
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 11px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
     width: 100%;
     min-width: 0;
 }
@@ -315,9 +390,13 @@ aside {
     min-width: 0;
 }
 
+.summary-card h3 {
+    overflow-wrap: anywhere;
+}
+
 .challenge-mental-row {
     display: grid;
-    grid-template-columns: 1fr 2.4fr;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     gap: 16px;
     width: 100%;
     min-width: 0;
@@ -325,18 +404,36 @@ aside {
 
 .mental-mini-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
     flex: 1;
+    width: 100%;
     min-width: 0;
+}
+
+.mental-mini-grid h5,
+.mental-mini-grid p {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .events-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 11px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
     width: 100%;
     min-width: 0;
+}
+
+.dashboard-layout>*,
+.left-content>*,
+.summary-grid>*,
+.challenge-mental-row>*,
+.mental-mini-grid>*,
+.events-grid>* {
+    min-width: 0;
+    max-width: 100%;
 }
 
 .card {
@@ -387,19 +484,91 @@ svg circle {
     display: none;
 }
 
+.mobile-overlay {
+    display: none;
+}
+
 
 /* =========================================
-   TABLET / MOBILE
+   GENİŞ EKRANLAR → KİÇİK LAPTOPLAR
+   ========================================= */
+
+@media (min-width: 1700px) {
+    .mental-mini-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1499px) {
+    .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1280px) {
+    .dashboard-layout {
+        grid-template-columns: minmax(0, 1fr) 270px;
+    }
+
+    .challenge-mental-row {
+        grid-template-columns: 1fr;
+    }
+
+    .mental-mini-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .events-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Sağ panel məzmunun altına keçir */
+@media (max-width: 1100px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .events-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .right-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+}
+
+
+/* =========================================
+   PLANŞET / LANDSCAPE TELEFON (yan panel çəkmə menyu olur)
    ========================================= */
 
 @media (max-width: 1024px) {
 
+    /*
+     * overflow-x: hidden həm html, həm body-də olanda sticky header pozulur.
+     * clip bu problemi yaratmır (köhnə brauzerlər üçün hidden ehtiyat variantdır).
+     */
     html,
     body {
         height: auto;
         min-height: 100%;
+        overflow: visible;
         overflow-x: hidden;
-        overflow-y: auto;
+    }
+
+    @supports (overflow: clip) {
+
+        html,
+        body {
+            overflow-x: clip;
+        }
     }
 
     body {
@@ -408,86 +577,132 @@ svg circle {
 
     .wrapper {
         width: 100%;
+        min-width: 0;
+        margin-left: 0;
         min-height: 100vh;
         height: auto;
         overflow: visible;
+    }
+
+    @supports (height: 100dvh) {
+
+        .wrapper {
+            min-height: 100dvh;
+            height: auto;
+        }
     }
 
     .sidebar,
     aside {
         position: fixed;
         top: 0;
-        left: -100%;
-        width: 270px;
+        left: 0;
+        bottom: 0;
+        width: min(82vw, 300px);
         height: 100vh;
+        max-height: 100vh;
         background-color: var(--surface);
-        z-index: 99999;
-        transition: left 0.3s ease-in-out;
-        box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        transform: translate3d(-105%, 0, 0);
+        transition: transform 0.22s ease-in-out;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        gap: 16px;
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.18);
+    }
+
+    @supports (height: 100dvh) {
+
+        .sidebar,
+        aside {
+            height: 100dvh;
+            max-height: 100dvh;
+        }
     }
 
     .sidebar.mobile-open,
     aside.mobile-open {
-        left: 0;
+        transform: translate3d(0, 0, 0);
+    }
+
+    .mobile-overlay {
+        display: block;
     }
 
     .mobile-menu-btn {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        touch-action: manipulation;
+    }
+
+    .header {
+        padding: 0 10px;
+        gap: 8px;
+    }
+
+    .app-header {
+        min-height: 62px;
+        gap: 8px;
+    }
+
+    .app-header>div:first-child {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .search-wrapper {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .search-container {
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+    }
+
+    .search-container input {
+        min-width: 0;
+        width: 100%;
+        text-overflow: ellipsis;
+    }
+
+    .header-right {
+        flex: 0 0 auto;
+        min-width: 0;
+        gap: 8px;
+    }
+
+    .profile-info {
+        display: none;
+    }
+
+    .profile-card {
+        padding: 4px;
+        gap: 8px;
     }
 
     .main-content {
         width: 100%;
         height: auto;
-        min-height: calc(100vh - 50px);
+        min-height: 0;
+        flex: 1 0 auto;
         padding: 16px;
         overflow: visible;
-    }
-
-    .dashboard-layout {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        width: 100%;
     }
 
     .left-content,
     .right-sidebar {
         width: 100%;
         min-width: 0;
-    }
-
-    .banner-content {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .banner-text,
-    .banner-quote {
-        max-width: 100%;
-        width: 100%;
-    }
-
-    .summary-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-    }
-
-    .challenge-mental-row {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .mental-mini-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-    }
-
-    .events-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
     }
 
     .card,
@@ -501,51 +716,16 @@ svg circle {
 
 
 /* =========================================
-   MOBILE
+   TELEFONLAR
    ========================================= */
 
 @media (max-width: 768px) {
 
-    .header {
-        width: 100%;
-        height: 46px;
-        min-height: 46px;
-        padding: 0 10px;
-        gap: 8px;
-    }
-
-    .header-right {
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .search-container {
-        flex: 1;
-        max-width: 220px;
-    }
-
-    .profile-card {
-        gap: 8px;
-    }
-
-    .profile-info {
-        display: none;
-    }
-
-    .profile-img {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-    }
-
     .main-content {
         padding: 10px;
-        min-height: calc(100vh - 46px);
     }
 
-    .dashboard-layout,
-    .left-content,
-    .right-sidebar {
+    .dashboard-layout {
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -553,14 +733,21 @@ svg circle {
         min-width: 0;
     }
 
+    .left-content,
+    .right-sidebar {
+        gap: 10px;
+    }
+
+    .challenge-mental-row {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
     .card,
     .welcome-banner {
-        width: 100%;
-        max-width: 100%;
-        padding: 12px;
-        border-radius: 12px;
         min-height: 0;
-        height: auto;
+        border-radius: 12px;
     }
 
     .card h3 {
@@ -573,8 +760,31 @@ svg circle {
         padding: 14px;
     }
 
+    .welcome-banner-card {
+        padding: 22px 18px !important;
+    }
+
+    .welcome-banner-card h1 {
+        max-width: 100%;
+        font-size: 21px !important;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .welcome-banner-card p {
+        max-width: 100%;
+        font-size: 12px !important;
+        overflow-wrap: anywhere;
+    }
+
+    .welcome-banner-card button {
+        min-height: 40px;
+    }
+
     .banner-content {
-        gap: 6px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
     }
 
     .banner-text {
@@ -582,84 +792,29 @@ svg circle {
         max-width: 100%;
     }
 
-    .banner-text h1,
-    .banner-text h2 {
-        font-size: 15px;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-    .banner-text p {
-        font-size: 11px;
-        margin-top: 3px;
-        line-height: 1.3;
-    }
-
-    .banner-quote,
-    .welcome-banner button {
+    .banner-quote {
         display: none;
     }
 
-    /*
-     * Summary cards artıq horizontal scroll etmir.
-     * Ekranın eninə uyğun 2 sütun təşkil edir.
-     */
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-        width: 100%;
-        overflow: visible;
-        padding-bottom: 0;
-    }
-
     .summary-card {
-        width: 100%;
         min-width: 0;
         padding: 10px;
         border-radius: 10px;
     }
 
-    .summary-card h4,
     .summary-card p {
-        font-size: 10px;
-        white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .summary-card span,
-    .summary-card div[class*="value"] {
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .mental-mini-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px;
-        width: 100%;
-    }
-
-    .mental-mini-grid > div {
+    .mental-mini-grid>div {
         min-width: 0;
-        padding: 8px;
-        border-radius: 8px;
-        font-size: 10px;
+        min-height: 100px;
     }
 
-    .events-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 6px;
-        width: 100%;
-    }
-
-    .events-grid > div {
+    .events-grid>div {
         width: 100%;
         min-width: 0;
-        padding: 8px;
-        font-size: 10px;
     }
 
     .water-grid {
@@ -672,44 +827,186 @@ svg circle {
         height: 28px;
         min-width: 0;
     }
+
+    /* Bildiriş və mesaj pəncərələri ekrana görə sabitlənir — heç vaxt ekrandan çıxmır */
+    .notif-dropdown,
+    .msg-dropdown {
+        position: fixed !important;
+        top: 64px !important;
+        right: 10px !important;
+        left: auto !important;
+        width: min(380px, calc(100vw - 20px)) !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+
+    .dropdown-scroll {
+        max-height: min(300px, calc(100vh - 170px)) !important;
+        max-height: min(300px, calc(100dvh - 170px)) !important;
+    }
+
+    .profile-dropdown {
+        width: min(240px, calc(100vw - 20px)) !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+
+    .search-wrapper>div[style*="position: absolute"] {
+        max-width: calc(100vw - 28px) !important;
+    }
+
+    .ai-chat-modal,
+    [role="dialog"] {
+        max-width: calc(100vw - 20px) !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+}
+
+@media (max-width: 640px) {
+    .right-sidebar {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mental-mini-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .events-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
 }
 
 
 /* =========================================
-   SMALL PHONES
+   KİÇİK TELEFONLAR
    ========================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+
+    .app-header {
+        padding: 8px 10px !important;
+    }
+
+    .app-header>div:first-child {
+        gap: 6px !important;
+    }
 
     .search-container {
+        padding: 7px 10px !important;
+        border-radius: 9px;
+    }
+
+    .search-container input {
+        font-size: 12px !important;
+    }
+
+    .header-icons {
+        gap: 10px !important;
+    }
+
+    .header-right button>svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    .profile-img {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .profile-card>svg {
         display: none;
     }
+
+    .summary-card {
+        padding: 12px !important;
+        border-radius: 11px !important;
+    }
+
+    .summary-card h3 {
+        font-size: 15px !important;
+    }
+
+    .summary-card span {
+        font-size: 11px !important;
+    }
+
+    .right-sidebar {
+        gap: 10px;
+    }
+
+    .search-wrapper [style*="top: 44px"] {
+        width: 100% !important;
+        left: 0 !important;
+        right: auto !important;
+    }
+}
+
+@media (max-width: 560px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
 
     .header {
         padding: 0 8px;
     }
 
     .main-content {
-        padding: 8px;
+        padding: 8px !important;
     }
 
-    .summary-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px;
+    .mobile-menu-btn {
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .header-right {
+        gap: 5px !important;
+    }
+
+    .header-icons {
+        gap: 8px !important;
+    }
+
+    .search-container {
+        padding: 6px 9px !important;
+    }
+
+    .search-container svg {
+        width: 15px;
+        height: 15px;
+        margin-right: 5px !important;
+    }
+
+    .search-container input {
+        font-size: 11.5px !important;
+    }
+
+    .profile-img {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
     }
 
     .summary-card {
-        padding: 8px;
+        padding: 11px !important;
     }
 
-    .summary-card h4,
-    .summary-card p {
-        font-size: 9px;
-    }
-
-    .summary-card span,
-    .summary-card div[class*="value"] {
-        font-size: 13px;
+    .summary-card h3 {
+        font-size: 14.5px !important;
     }
 
     .card {
@@ -720,18 +1017,34 @@ svg circle {
         font-size: 12px;
     }
 
+    .welcome-banner-card {
+        padding: 18px 15px !important;
+        border-radius: 13px !important;
+    }
+
+    .welcome-banner-card h1 {
+        font-size: 19px !important;
+    }
+
+    .welcome-banner-card button {
+        width: 100%;
+        justify-content: center;
+    }
+
     .mental-mini-grid {
-        gap: 5px;
+        gap: 6px;
     }
 
-    .mental-mini-grid > div {
-        padding: 7px;
-        font-size: 9px;
+    .mental-mini-grid>div {
+        min-height: 105px;
     }
 
-    .events-grid > div {
-        padding: 7px;
-        font-size: 9px;
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .events-grid>div {
+        padding: 10px !important;
     }
 
     .water-grid {
@@ -742,9 +1055,50 @@ svg circle {
         height: 24px;
     }
 
+    .ai-fab {
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 16px !important;
+    }
+
     .quick-add-modal {
         width: calc(100vw - 24px);
         max-width: 340px;
+        max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px);
+        overflow-y: auto;
         padding: 16px;
+    }
+}
+
+@media (max-width: 360px) {
+
+    .search-container input {
+        font-size: 11px !important;
+    }
+
+    .main-content {
+        padding: 8px !important;
+    }
+
+    .summary-grid {
+        gap: 6px;
+    }
+
+    .summary-card h3 {
+        font-size: 13.5px !important;
+    }
+}
+
+@media (max-width: 330px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .sidebar,
+    aside {
+        transition: none !important;
     }
 }
