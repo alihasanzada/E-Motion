@@ -139,7 +139,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setIsNotificationsOpen(false);
       }
@@ -152,8 +152,10 @@ export default function Dashboard() {
     }
 
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, []);
 
@@ -314,6 +316,7 @@ export default function Dashboard() {
 
   return (
     <div
+      className="app-root"
       style={{
         display: 'flex',
         minHeight: '100vh',
@@ -469,13 +472,14 @@ export default function Dashboard() {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
+          className="mobile-overlay"
           onClick={() => setIsMobileMenuOpen(false)}
           style={{
             position: 'fixed',
             top: 0,
             left: 0,
-            width: '100vw',
-            height: '100vh',
+            right: 0,
+            bottom: 0,
             backgroundColor: 'rgba(0, 0, 0, 0.4)',
             zIndex: 9998
           }}
@@ -488,14 +492,14 @@ export default function Dashboard() {
         style={{
           backgroundColor: theme.bgApp,
           minHeight: '100vh',
-          overflowY: 'auto',
+          overflow: 'visible',
           padding: '0',
           width: '100%'
         }}
       >
 
         {/* Header */}
-        <header style={{
+        <header className="app-header" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -570,7 +574,7 @@ export default function Dashboard() {
                       setSearchQuery('');
                       setIsSearchOpen(false);
                     }}
-                    style={{ color: theme.textSecondary, cursor: 'pointer', marginLeft: '6px' }}
+                    style={{ color: theme.textSecondary, cursor: 'pointer', marginLeft: '6px', flexShrink: 0 }}
                   />
                 )}
               </div>
@@ -640,8 +644,9 @@ export default function Dashboard() {
           </div>
 
           <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
+            <div className="header-icons" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
               <button
+                className="theme-toggle-btn"
                 onClick={toggleDarkMode}
                 title={darkMode ? "Açıq rejimə keç" : "Qaranlıq rejimə keç"}
                 style={{
@@ -708,11 +713,11 @@ export default function Dashboard() {
                 </button>
 
                 {isNotificationsOpen && (
-                  <div style={{
+                  <div className="notif-dropdown" style={{
                     position: 'absolute',
                     top: '42px',
                     right: '0px',
-                    width: '320px',
+                    width: 'min(320px, calc(100vw - 20px))',
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
                     borderRadius: '16px',
@@ -766,7 +771,7 @@ export default function Dashboard() {
                       )}
                     </div>
 
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    <div className="dropdown-scroll" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                       {notifications && notifications.filter(n => !n.read).length > 0 ? (
                         notifications.filter(n => !n.read).map((n) => (
                           <div
@@ -904,11 +909,11 @@ export default function Dashboard() {
                 </button>
 
                 {isMessagesOpen && (
-                  <div style={{
+                  <div className="msg-dropdown" style={{
                     position: 'absolute',
                     top: '38px',
                     right: '0px',
-                    width: '290px',
+                    width: 'min(290px, calc(100vw - 20px))',
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
                     borderRadius: '12px',
@@ -919,7 +924,7 @@ export default function Dashboard() {
                     <div style={{ padding: '12px 14px', borderBottom: `1px solid ${theme.border}` }}>
                       <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: theme.textPrimary }}>Mesajlar</h4>
                     </div>
-                    <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                    <div className="dropdown-scroll" style={{ maxHeight: '240px', overflowY: 'auto' }}>
                       {messages && messages.length > 0 ? (
                         messages.map((m) => (
                           <div key={m.id} style={{ padding: '10px 14px', borderBottom: `1px solid ${theme.border}`, cursor: 'pointer' }}>
@@ -971,7 +976,8 @@ export default function Dashboard() {
                     justifyContent: 'center',
                     fontWeight: '600',
                     fontSize: '13.5px',
-                    boxShadow: '0 2px 6px rgba(68, 118, 108, 0.25)'
+                    boxShadow: '0 2px 6px rgba(68, 118, 108, 0.25)',
+                    flexShrink: 0
                   }}
                 >
                   {user && user.fullname ? user.fullname.charAt(0).toUpperCase() : 'Ə'}
@@ -997,11 +1003,12 @@ export default function Dashboard() {
               {/* Profil Dropdown Menyusu */}
               {isProfileDropdownOpen && (
                 <div
+                  className="profile-dropdown"
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     right: 0,
-                    width: '240px',
+                    width: 'min(240px, calc(100vw - 20px))',
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
                     borderRadius: '14px',
@@ -1014,10 +1021,10 @@ export default function Dashboard() {
                   }}
                 >
                   <div style={{ padding: '8px 10px', borderBottom: `1px solid ${theme.border}`, marginBottom: '4px' }}>
-                    <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: theme.textPrimary }}>
+                    <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: theme.textPrimary, overflowWrap: 'anywhere' }}>
                       {user?.fullname || 'Əli Həsənov'}
                     </p>
-                    <p style={{ margin: '2px 0 0', fontSize: '10.5px', color: theme.textSecondary }}>
+                    <p style={{ margin: '2px 0 0', fontSize: '10.5px', color: theme.textSecondary, overflowWrap: 'anywhere' }}>
                       {user?.email || 'st123456@qu.edu.az'}
                     </p>
                   </div>
@@ -1245,11 +1252,11 @@ export default function Dashboard() {
                         onClick={() => setActiveTab('events')}
                         style={{ backgroundColor: theme.bgInner, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}
                       >
-                        <div style={{ background: '#44766C', color: '#FFFFFF', padding: '6px 8px', borderRadius: '7px', textAlign: 'center', minWidth: '42px' }}>
+                        <div style={{ background: '#44766C', color: '#FFFFFF', padding: '6px 8px', borderRadius: '7px', textAlign: 'center', minWidth: '42px', flexShrink: 0 }}>
                           <span style={{ fontSize: '12px', fontWeight: '700', display: 'block', lineHeight: '1' }}>{event.date.split(' ')[0]}</span>
                           <span style={{ fontSize: '8.5px', opacity: 0.9 }}>{event.date.split(' ')[1]}</span>
                         </div>
-                        <div style={{ overflow: 'hidden' }}>
+                        <div style={{ overflow: 'hidden', minWidth: 0 }}>
                           <h4 style={{ margin: 0, fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{event.title}</h4>
                           <p style={{ margin: '2px 0 0 0', fontSize: '9.5px', color: theme.textSecondary }}>{event.time}</p>
                           <span style={{ fontSize: '9px', color: '#44766C', fontWeight: '500' }}>{event.location}</span>
@@ -1415,13 +1422,677 @@ export default function Dashboard() {
         </main>
       </div>
 
+
+      {/* Responsive layout — bütün cihazlar üçün (desktop, planşet, telefon, landscape) */}
+      <style jsx global>{`
+        /* ---------- Əsas qaydalar ---------- */
+        *,
+        *::before,
+        *::after {
+          box-sizing: border-box;
+        }
+
+        html,
+        body {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        /* overflow-x: clip — sticky header-i pozmadan üfüqi sürüşməni əngəlləyir */
+        @supports (overflow: clip) {
+          html,
+          body {
+            overflow-x: clip;
+          }
+        }
+
+        @supports not (overflow: clip) {
+          html,
+          body {
+            overflow-x: hidden;
+          }
+        }
+
+        body {
+          -webkit-text-size-adjust: 100%;
+          text-size-adjust: 100%;
+        }
+
+        img,
+        svg,
+        video,
+        canvas {
+          max-width: 100%;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+          max-width: 100%;
+        }
+
+        /* Mobil brauzerlərdə ünvan çubuğu səbəbilə 100vh səhv ölçülür — 100dvh istifadə olunur */
+        @supports (height: 100dvh) {
+          .app-root,
+          .wrapper {
+            min-height: 100dvh !important;
+          }
+        }
+
+        .wrapper,
+        .main-content,
+        .dashboard-layout,
+        .left-content,
+        .right-sidebar,
+        .summary-grid,
+        .challenge-mental-row,
+        .mental-mini-grid,
+        .events-grid {
+          min-width: 0;
+        }
+
+        .wrapper {
+          flex: 1 1 0%;
+        }
+
+        .dashboard-layout,
+        .left-content,
+        .right-sidebar,
+        .summary-grid,
+        .challenge-mental-row,
+        .mental-mini-grid,
+        .events-grid,
+        .welcome-banner-card {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+
+        .dashboard-layout > *,
+        .left-content > *,
+        .right-sidebar > *,
+        .summary-grid > *,
+        .challenge-mental-row > *,
+        .mental-mini-grid > *,
+        .events-grid > * {
+          min-width: 0;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+
+        .right-sidebar > * {
+          width: 100%;
+        }
+
+        .summary-card h3 {
+          overflow-wrap: anywhere;
+        }
+
+        .mental-mini-grid h5,
+        .mental-mini-grid p {
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .left-content img,
+        .right-sidebar img {
+          max-width: 100%;
+          height: auto;
+        }
+
+        .left-content input,
+        .left-content select,
+        .left-content textarea,
+        .right-sidebar input,
+        .right-sidebar select,
+        .right-sidebar textarea {
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+
+        /* ---------- Desktop düzülüşü (≥1281px) ---------- */
+        .dashboard-layout {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 300px;
+          gap: 16px;
+        }
+
+        .summary-grid {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        .challenge-mental-row {
+          display: grid;
+          grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+          gap: 16px;
+        }
+
+        .mental-mini-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 9px;
+        }
+
+        .events-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 9px;
+        }
+
+        .banner-content {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 20px;
+        }
+
+        .banner-text {
+          min-width: 0;
+        }
+
+        .banner-quote {
+          width: min(260px, 100%);
+          max-width: 260px;
+          flex: 0 1 260px;
+        }
+
+        .mobile-menu-btn {
+          display: none;
+        }
+
+        .mobile-overlay {
+          display: none;
+        }
+
+        .header-right {
+          flex-shrink: 0;
+        }
+
+        /* Çox geniş ekranlar */
+        @media (min-width: 1700px) {
+          .mental-mini-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 1499px) {
+          .summary-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        /* Kiçik laptoplar və böyük planşetlər */
+        @media (max-width: 1280px) {
+          .dashboard-layout {
+            grid-template-columns: minmax(0, 1fr) 270px;
+          }
+
+          .challenge-mental-row {
+            grid-template-columns: 1fr;
+          }
+
+          .mental-mini-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+
+          .events-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        /* Sağ panel məzmunun altına keçir */
+        @media (max-width: 1100px) {
+          .dashboard-layout {
+            grid-template-columns: 1fr;
+          }
+
+          .summary-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+          }
+
+          .events-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          .right-sidebar {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+          }
+        }
+
+        /* ---------- Planşet və landscape telefonlar (≤1024px): yan panel çəkmə menyuya çevrilir ---------- */
+        @media (max-width: 1024px) {
+          .mobile-menu-btn {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 40px;
+            width: 40px;
+            height: 40px;
+            margin: 0;
+            padding: 0 !important;
+            border: 0 !important;
+            border-radius: 10px !important;
+            background: transparent !important;
+            cursor: pointer;
+            touch-action: manipulation;
+          }
+
+          .mobile-overlay {
+            display: block;
+          }
+
+          .sidebar {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 9999 !important;
+            width: min(82vw, 300px) !important;
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            transform: translate3d(-105%, 0, 0);
+            transition: transform 220ms ease;
+            padding: 18px 14px !important;
+            box-shadow: 8px 0 30px rgba(0, 0, 0, 0.12);
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+          }
+
+          .sidebar.mobile-open {
+            transform: translate3d(0, 0, 0);
+          }
+
+          .wrapper {
+            width: 100% !important;
+            min-width: 0 !important;
+            margin-left: 0 !important;
+          }
+
+          .app-header {
+            min-height: 62px;
+            padding: 10px 14px !important;
+            gap: 8px;
+          }
+
+          .app-header > div:first-child {
+            flex: 1 1 auto !important;
+            min-width: 0;
+            max-width: none !important;
+          }
+
+          .search-wrapper {
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: none !important;
+          }
+
+          .search-container {
+            width: 100%;
+            min-width: 0;
+            min-height: 40px;
+          }
+
+          .search-container input {
+            min-width: 0;
+            width: 100%;
+            text-overflow: ellipsis;
+          }
+
+          .header-right {
+            flex: 0 0 auto;
+            min-width: 0;
+            gap: 8px !important;
+          }
+
+          .profile-info {
+            display: none !important;
+          }
+
+          .profile-card {
+            padding: 4px !important;
+          }
+        }
+
+        /* ---------- Telefonlar (≤768px) ---------- */
+        @media (max-width: 768px) {
+          .main-content {
+            width: 100%;
+            min-width: 0;
+            padding: 14px !important;
+          }
+
+          .dashboard-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+          }
+
+          .left-content,
+          .right-sidebar {
+            width: 100%;
+            min-width: 0;
+          }
+
+          .right-sidebar {
+            gap: 14px !important;
+          }
+
+          .summary-card,
+          .card {
+            min-width: 0;
+            max-width: 100%;
+          }
+
+          .challenge-mental-row {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+          }
+
+          .mental-mini-grid > div {
+            min-width: 0;
+            min-height: 100px;
+          }
+
+          .banner-content {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 14px;
+          }
+
+          .banner-text,
+          .banner-quote {
+            width: 100%;
+            max-width: none;
+          }
+
+          .banner-quote {
+            flex: none;
+            text-align: left !important;
+          }
+
+          .welcome-banner-card {
+            padding: 22px 18px !important;
+          }
+
+          .welcome-banner-card h1 {
+            max-width: 100%;
+            font-size: 21px !important;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+          }
+
+          .welcome-banner-card p {
+            max-width: 100%;
+            font-size: 12px !important;
+            overflow-wrap: anywhere;
+          }
+
+          .welcome-banner-card button {
+            min-height: 40px;
+          }
+
+          /* Bildiriş və mesaj pəncərələri ekrana görə sabitlənir — heç vaxt ekrandan çıxmır */
+          .notif-dropdown,
+          .msg-dropdown {
+            position: fixed !important;
+            top: 64px !important;
+            right: 10px !important;
+            left: auto !important;
+            width: min(380px, calc(100vw - 20px)) !important;
+            max-width: calc(100vw - 20px) !important;
+          }
+
+          .dropdown-scroll {
+            max-height: min(300px, calc(100vh - 170px)) !important;
+            max-height: min(300px, calc(100dvh - 170px)) !important;
+          }
+
+          .profile-dropdown {
+            width: min(240px, calc(100vw - 20px)) !important;
+            max-width: calc(100vw - 20px) !important;
+          }
+
+          .search-wrapper > div[style*="position: absolute"] {
+            max-width: calc(100vw - 28px) !important;
+          }
+
+          .ai-chat-modal,
+          [role="dialog"] {
+            max-width: calc(100vw - 20px) !important;
+          }
+        }
+
+        /* Telefon ekranı: şəbəkələr daha az sütuna düşür */
+        @media (max-width: 760px) {
+          .summary-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .right-sidebar {
+            display: flex !important;
+            flex-direction: column;
+          }
+
+          .mental-mini-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+          }
+
+          .events-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        /* ---------- Kiçik telefonlar (≤600px) ---------- */
+        @media (max-width: 600px) {
+          .app-header {
+            padding: 8px 10px !important;
+          }
+
+          .app-header > div:first-child {
+            gap: 6px !important;
+          }
+
+          .search-container {
+            padding: 7px 10px !important;
+            border-radius: 9px;
+          }
+
+          .search-container input {
+            font-size: 12px !important;
+          }
+
+          .header-icons {
+            gap: 10px !important;
+          }
+
+          .header-right button > svg {
+            width: 19px;
+            height: 19px;
+          }
+
+          .profile-img {
+            width: 32px !important;
+            height: 32px !important;
+          }
+
+          .profile-card > svg {
+            display: none;
+          }
+
+          .summary-card {
+            padding: 12px !important;
+            border-radius: 11px !important;
+          }
+
+          .summary-card h3 {
+            font-size: 15px !important;
+          }
+
+          .summary-card span {
+            font-size: 11px !important;
+          }
+
+          .right-sidebar {
+            gap: 10px !important;
+          }
+
+          .search-wrapper [style*="top: 44px"] {
+            width: 100% !important;
+            left: 0 !important;
+            right: auto !important;
+          }
+        }
+
+        @media (max-width: 560px) {
+          .summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+          }
+        }
+
+        /* ---------- Çox kiçik telefonlar (≤480px) ---------- */
+        @media (max-width: 480px) {
+          .main-content {
+            padding: 10px !important;
+          }
+
+          .mobile-menu-btn {
+            flex-basis: 36px;
+            width: 36px;
+            height: 36px;
+          }
+
+          .header-right {
+            gap: 5px !important;
+          }
+
+          .header-icons {
+            gap: 8px !important;
+          }
+
+          .search-container {
+            padding: 6px 9px !important;
+          }
+
+          .search-container svg {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px !important;
+          }
+
+          .search-container input {
+            font-size: 11.5px !important;
+          }
+
+          .profile-img {
+            width: 30px !important;
+            height: 30px !important;
+            font-size: 12px !important;
+          }
+
+          .summary-card {
+            padding: 11px !important;
+          }
+
+          .summary-card h3 {
+            font-size: 14.5px !important;
+          }
+
+          .mental-mini-grid > div {
+            min-height: 105px;
+          }
+
+          .welcome-banner-card {
+            padding: 18px 15px !important;
+            border-radius: 13px !important;
+          }
+
+          .welcome-banner-card h1 {
+            font-size: 19px !important;
+          }
+
+          .welcome-banner-card button {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .banner-quote {
+            font-size: 10.5px !important;
+            padding: 9px 11px !important;
+          }
+
+          .events-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .events-grid > div {
+            padding: 10px !important;
+          }
+
+          .ai-fab {
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+            right: 16px !important;
+          }
+        }
+
+        /* ---------- Ən kiçik ekranlar (≤360px) ---------- */
+        @media (max-width: 360px) {
+          .search-container input {
+            font-size: 11px !important;
+          }
+
+          .main-content {
+            padding: 8px !important;
+          }
+
+          .summary-grid {
+            gap: 6px;
+          }
+
+          .summary-card h3 {
+            font-size: 13.5px !important;
+          }
+        }
+
+        @media (max-width: 330px) {
+          .summary-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .sidebar {
+            transition: none !important;
+          }
+        }
+      `}</style>
+
       {/* AI Asistent Floating Button */}
       <button
+        className="ai-fab"
         onClick={() => setIsChatOpen(!isChatOpen)}
         title="E-Motion AI Asistent"
         style={{
           position: 'fixed',
-          bottom: '24px',
+          bottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
           right: '24px',
           width: '50px',
           height: '50px',
