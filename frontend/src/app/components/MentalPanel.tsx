@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Sparkles,
-  Heart,
   Brain,
   Wind,
   Music,
@@ -173,55 +171,54 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '20px', color: theme.textPrimary }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '30px', color: theme.textPrimary }}>
 
-      {/* Header Banner */}
+      {/* Top Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #2E5B4E 0%, #44766C 100%)',
-        borderRadius: '16px',
-        padding: '14px 20px',
+        borderRadius: '18px',
+        padding: '22px 26px',
         color: '#FFFFFF',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '12px',
-        boxShadow: '0 4px 14px -2px rgba(68, 118, 108, 0.2)'
+        gap: '14px',
+        boxShadow: '0 6px 16px -2px rgba(68, 118, 108, 0.22)'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-            <span style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Brain size={13} /> Mental Zonalıq & Dinclik
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+            <span style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', padding: '3px 10px', borderRadius: '14px', fontSize: '11.5px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Brain size={14} /> Mental Zonalıq & Dinclik
             </span>
           </div>
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>
             Zihnini sakitləşdir, daxili balansını tap
           </h2>
-          <p style={{ margin: '2px 0 0 0', fontSize: '12px', opacity: 0.9, maxWidth: '520px', lineHeight: '1.4' }}>
+          <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', opacity: 0.9, maxWidth: '540px', lineHeight: '1.4' }}>
             Günün gərginliyini azaltmaq və diqqətini toplamaq üçün interaktiv məşqlərdən istifadə et.
           </p>
         </div>
 
-        <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: '8px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
-          <Feather size={22} color="#A7F3D0" />
+        <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: '10px 16px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+          <Feather size={24} color="#A7F3D0" />
           <div>
-            <span style={{ fontSize: '10px', display: 'block', opacity: 0.85 }}>Günün Ruh Halı</span>
-            <strong style={{ fontSize: '13.5px', fontWeight: '800', color: '#A7F3D0' }}>Sakit & Fokusda</strong>
+            <span style={{ fontSize: '10.5px', display: 'block', opacity: 0.85 }}>Günün Ruh Halı</span>
+            <strong style={{ fontSize: '14px', fontWeight: '800', color: '#A7F3D0' }}>Sakit & Fokusda</strong>
           </div>
         </div>
       </div>
 
       {/* Main Grid: Mood Tracker & Ambient Audio Player */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
 
-        {/* Mood Tracker & Journal Input */}
-        <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '16px 18px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+        {/* Mood Tracker & Input Form */}
+        <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '18px 20px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <Smile size={18} color={theme.primary} />
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Bu gün özünü necə hiss edirsən?</h3>
           </div>
 
-          {/* Interactive Mood Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', marginBottom: '12px' }}>
             {moods.map((m) => {
               const isSelected = selectedMood === m.name;
@@ -250,7 +247,6 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
             })}
           </div>
 
-          {/* Journal Form */}
           <form onSubmit={handleAddEntry} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <textarea
               rows={2}
@@ -276,7 +272,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
                 backgroundColor: theme.primary,
                 color: '#FFFFFF',
                 border: 'none',
-                padding: '8px',
+                padding: '9px',
                 borderRadius: '10px',
                 fontSize: '12.5px',
                 fontWeight: '700',
@@ -293,8 +289,8 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
           </form>
         </div>
 
-        {/* Ambient Soundscape Player */}
-        <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '16px 18px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        {/* Ambient Audio Player */}
+        <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '18px 20px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -310,7 +306,6 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
               Dərs oxuyarkən və ya dincələrkən fonda dinləmək üçün sakitləşdirici səsləri başladın:
             </p>
 
-            {/* Sound Selector Buttons */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
               {AMBIENT_SOUNDS.map((snd) => {
                 const isActive = currentSoundId === snd.id;
@@ -344,7 +339,6 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
             </div>
           </div>
 
-          {/* Player Toggle Bar */}
           <div style={{ backgroundColor: theme.innerBg, padding: '8px 12px', borderRadius: '12px', border: `1px solid ${theme.borderColor}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Volume2 size={16} color={theme.purple} />
@@ -378,7 +372,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
       </div>
 
       {/* Quick Relaxation Exercises */}
-      <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '16px 18px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
+      <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '18px 20px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           <Wind size={18} color={theme.primary} />
           <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: '800' }}>Sürətli Rahatlama Məşqləri</h3>
@@ -386,7 +380,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
 
-          {/* Exercise 1: Breathing */}
+          {/* Breathing */}
           <div style={{ backgroundColor: theme.innerBg, border: `1px solid ${theme.borderColor}`, borderRadius: '12px', padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -405,7 +399,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
             </button>
           </div>
 
-          {/* Exercise 2: Focus Meditation */}
+          {/* Focus Meditation */}
           <div style={{ backgroundColor: theme.innerBg, border: `1px solid ${theme.borderColor}`, borderRadius: '12px', padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -424,7 +418,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
             </button>
           </div>
 
-          {/* Exercise 3: Affirmation */}
+          {/* Affirmations */}
           <div style={{ backgroundColor: theme.innerBg, border: `1px solid ${theme.borderColor}`, borderRadius: '12px', padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -444,6 +438,46 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
           </div>
 
         </div>
+      </div>
+
+      {/* Journal Entries History Section */}
+      <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '18px 20px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+          <BookOpen size={18} color={theme.primary} />
+          <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: '800' }}>Gündəlik Qeydlərin</h3>
+        </div>
+
+        {entries.length === 0 ? (
+          <p style={{ margin: 0, fontSize: '12.5px', color: theme.textSecondary }}>Hələ ki heç bir qeyd əlavə edilməyib.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {entries.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  backgroundColor: theme.innerBg,
+                  borderLeft: `4px solid ${item.moodColor}`,
+                  borderTop: `1px solid ${theme.borderColor}`,
+                  borderRight: `1px solid ${theme.borderColor}`,
+                  borderBottom: `1px solid ${theme.borderColor}`,
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: item.moodColor, backgroundColor: `${item.moodColor}1F`, padding: '2px 8px', borderRadius: '6px' }}>
+                    {item.mood}
+                  </span>
+                  <span style={{ fontSize: '11px', color: theme.textSecondary }}>{item.date}</span>
+                </div>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: theme.textPrimary, lineHeight: '1.4' }}>{item.note}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modals Container */}
@@ -477,7 +511,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
               <X size={18} />
             </button>
 
-            {/* Modal 1: 4-7-8 Breathing Exercise */}
+            {/* Breathing Modal */}
             {activeModal === 'breath' && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}>
                 <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800' }}>🫁 4-7-8 Nəfəs Məşqi</h3>
@@ -512,7 +546,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
               </div>
             )}
 
-            {/* Modal 2: Focus Meditation */}
+            {/* Meditation Modal */}
             {activeModal === 'meditation' && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}>
                 <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800' }}>🧘 Fokus Meditasiyası</h3>
@@ -542,7 +576,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
               </div>
             )}
 
-            {/* Modal 3: Positive Affirmations */}
+            {/* Affirmation Modal */}
             {activeModal === 'affirmation' && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}>
                 <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800' }}>✨ Pozitiv Affirmasiya</h3>
