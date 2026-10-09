@@ -188,9 +188,11 @@ export default function EditProfileModal({
 
       localStorage.setItem('user', JSON.stringify(mergedUser));
       localStorage.setItem('daily_step_goal', dailyStepGoal.toString());
+      localStorage.setItem('user_step_goal', dailyStepGoal.toString());
       localStorage.setItem('daily_water_goal', dailyWaterGoal.toString());
+      localStorage.setItem('user_water_goal', dailyWaterGoal.toString());
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
       };

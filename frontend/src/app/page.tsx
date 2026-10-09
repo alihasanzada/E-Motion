@@ -230,6 +230,8 @@ export default function Dashboard() {
   useEffect(() => {
     const loadUserData = async () => {
       const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('userToken');
+
       if (storedUser) {
         try {
           setUser(JSON.parse(storedUser));
@@ -241,17 +243,28 @@ export default function Dashboard() {
         return;
       }
 
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/user/profile`);
-        if (res.ok) {
-          const profileData = await res.json();
-          if (profileData) {
-            setUser(profileData);
-            localStorage.setItem('user', JSON.stringify(profileData));
+      if (token) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/user/profile`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const profileData = await res.json();
+            if (profileData && profileData.email) {
+              const currentStored = JSON.parse(localStorage.getItem('user') || '{}');
+              // Yalnız uyğun e-poçt olduqda profil məlumatını yeniləyirik
+              if (currentStored.email === profileData.email) {
+                const merged = { ...currentStored, ...profileData };
+                setUser(merged);
+                localStorage.setItem('user', JSON.stringify(merged));
+              }
+            }
           }
+        } catch (err) {
+          console.warn('Backend profil məlumatı alına bilmədi, lokal istifadəçi saxlanılır:', err);
         }
-      } catch (err) {
-        console.warn('Backend profil məlumatı alına bilmədi:', err);
       }
     };
 

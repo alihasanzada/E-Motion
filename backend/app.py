@@ -610,37 +610,26 @@ def user_profile_endpoint():
           properties:
             fullname:
               type: string
-              example: "Əli Həsənov"
             major:
               type: string
-              example: "Kompüter Mühəndisliyi"
             course:
               type: integer
-              example: 1
             student_id:
               type: string
-              example: "QU-2024-101"
             email:
               type: string
-              example: "st123456@qu.edu.az"
             phone:
               type: string
-              example: "+994 50 123 45 67"
             blood_group:
               type: string
-              example: "A+"
             emergency_contact:
               type: string
-              example: "+994 50 765 43 21"
             bio:
               type: string
-              example: "Qarabağ Universiteti tələbəsi."
             daily_step_goal:
               type: integer
-              example: 10000
             daily_water_goal:
               type: integer
-              example: 2000
     responses:
       200:
         description: User profile retrieved or updated successfully
@@ -648,68 +637,97 @@ def user_profile_endpoint():
     if request.method == 'OPTIONS':
         return '', 200
 
+    auth_header = request.headers.get('Authorization')
+    token = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+
     conn = get_db_connection()
     try:
         if request.method == 'GET':
-            user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
+            user = None
+            if token:
+                user = conn.execute('SELECT * FROM users WHERE token = ?', (token,)).fetchone()
+                if not user:
+                    user = conn.execute('SELECT * FROM user_profile WHERE token = ?', (token,)).fetchone()
+
+            if not user:
+                user = conn.execute('SELECT * FROM users ORDER BY id DESC LIMIT 1').fetchone()
+            if not user:
+                user = conn.execute('SELECT * FROM user_profile ORDER BY id DESC LIMIT 1').fetchone()
+
             if user:
-                return jsonify(dict(user)), 200
-            
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT OR REPLACE INTO user_profile 
-                (id, fullname, major, course, student_id, email, phone, blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal)
-                VALUES (1, 'Əli Həsənov', 'Kompüter Mühəndisliyi', 1, 'QU-2024-101', 'st123456@qu.edu.az', '+994 50 123 45 67', 'A+', '+994 50 765 43 21', 'Qarabağ Universiteti tələbəsi.', 10000, 2000)
-            """)
-            conn.commit()
-            user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
-            return jsonify(dict(user)), 200
+                u_dict = dict(user)
+                return jsonify({
+                    'fullname': u_dict.get('fullname') or u_dict.get('name') or '',
+                    'email': u_dict.get('email') or '',
+                    'major': u_dict.get('major') or '',
+                    'course': u_dict.get('course') or 1,
+                    'student_id': u_dict.get('student_id') or u_dict.get('studentId') or '',
+                    'phone': u_dict.get('phone') or '',
+                    'blood_group': u_dict.get('blood_group') or u_dict.get('bloodGroup') or '',
+                    'emergency_contact': u_dict.get('emergency_contact') or u_dict.get('emergencyContact') or '',
+                    'bio': u_dict.get('bio') or '',
+                    'daily_step_goal': u_dict.get('daily_step_goal') or u_dict.get('dailyStepGoal') or 10000,
+                    'daily_water_goal': u_dict.get('daily_water_goal') or u_dict.get('dailyWaterGoal') or 2000
+                }), 200
+
+            return jsonify({'error': 'İstifadəçi tapılmadı'}), 404
 
         data = request.get_json(silent=True) or {}
-        current = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
-        current_dict = dict(current) if current else {}
 
-        fullname = data.get('fullname') or data.get('name') or current_dict.get('fullname', 'Əli Həsənov')
-        major = data.get('major') or current_dict.get('major', 'Kompüter Mühəndisliyi')
-        course = data.get('course') if data.get('course') is not None else current_dict.get('course', 1)
-        student_id = data.get('student_id') or data.get('studentId') or current_dict.get('student_id', 'QU-2024-101')
-        email = data.get('email') or current_dict.get('email', 'st123456@qu.edu.az')
-        phone = data.get('phone') or current_dict.get('phone', '+994 50 123 45 67')
-        blood_group = data.get('blood_group') or data.get('bloodGroup') or current_dict.get('blood_group', 'A+')
-        emergency_contact = data.get('emergency_contact') or data.get('emergencyContact') or current_dict.get('emergency_contact', '+994 50 765 43 21')
-        bio = data.get('bio') if data.get('bio') is not None else current_dict.get('bio', '')
-        daily_step_goal = data.get('daily_step_goal') or data.get('dailyStepGoal') or current_dict.get('daily_step_goal', 10000)
-        daily_water_goal = data.get('daily_water_goal') or data.get('dailyWaterGoal') or current_dict.get('daily_water_goal', 2000)
+        fullname = data.get('fullname') or data.get('name') or ''
+        major = data.get('major') or ''
+        course = int(data.get('course') or 1)
+        student_id = data.get('student_id') or data.get('studentId') or ''
+        email = data.get('email') or ''
+        phone = data.get('phone') or ''
+        blood_group = data.get('blood_group') or data.get('bloodGroup') or ''
+        emergency_contact = data.get('emergency_contact') or data.get('emergencyContact') or ''
+        bio = data.get('bio') or ''
+        daily_step_goal = int(data.get('daily_step_goal') or data.get('dailyStepGoal') or 10000)
+        daily_water_goal = int(data.get('daily_water_goal') or data.get('dailyWaterGoal') or 2000)
 
         cursor = conn.cursor()
-        cursor.execute("""
-            INSERT OR REPLACE INTO user_profile 
-            (id, fullname, major, course, student_id, email, phone, blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal)
-            VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            fullname, major, int(course), student_id, email, phone, blood_group, emergency_contact, bio, int(daily_step_goal), int(daily_water_goal)
-        ))
-        conn.commit()
 
-        updated_user = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
+        if token:
+            cursor.execute("""
+                UPDATE users 
+                SET fullname = ?, major = ?, course = ?, student_id = ?, email = ?, 
+                    phone = ?, blood_group = ?, emergency_contact = ?, bio = ?, 
+                    daily_step_goal = ?, daily_water_goal = ?
+                WHERE token = ?
+            """, (
+                fullname, major, course, student_id, email,
+                phone, blood_group, emergency_contact, bio,
+                daily_step_goal, daily_water_goal, token
+            ))
+            conn.commit()
+
+        if email:
+            cursor.execute("""
+                UPDATE users 
+                SET fullname = ?, major = ?, course = ?, student_id = ?, 
+                    phone = ?, blood_group = ?, emergency_contact = ?, bio = ?, 
+                    daily_step_goal = ?, daily_water_goal = ?
+                WHERE email = ?
+            """, (
+                fullname, major, course, student_id,
+                phone, blood_group, emergency_contact, bio,
+                daily_step_goal, daily_water_goal, email
+            ))
+            conn.commit()
+
         return jsonify({
             "message": "Profil məlumatları uğurla yeniləndi!",
-            "user": dict(updated_user)
+            "user": data
         }), 200
+
     except Exception as e:
         app.logger.error(f"Profile error: {e}")
         return jsonify({"error": f"Profil yenilənərkən xəta baş verdi: {str(e)}"}), 500
     finally:
         conn.close()
-
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def init_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
 
     # 1. Users
     cursor.execute('''
