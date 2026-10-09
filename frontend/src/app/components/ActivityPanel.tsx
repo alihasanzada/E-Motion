@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { Footprints, Droplet, Plus, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react';
 
@@ -19,17 +20,20 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const stepGoal = 10000;
   const waterGoal = 2000;
 
+  // Google OAuth authorization handler 
   const connectGoogleFit = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const redirectUri = `${appUrl}/api/auth/callback/google`;
 
-    const scopes = [
-      "https://www.googleapis.com/auth/fitness.activity.read"
-    ].join(" ");
+    if (!clientId) {
+      fetchActivity();
+      return;
+    }
 
+    const scopes = ["https://www.googleapis.com/auth/fitness.activity.read"].join(" ");
     const options = {
-      client_id: clientId!,
+      client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
       scope: scopes,
@@ -41,7 +45,30 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${qs.toString()}`;
   };
 
-  const syncGoogleFitSteps = async (showSuccessAlert = false) => {
+  // Fetch activity from internal backend
+  const fetchActivity = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/activity`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.steps !== undefined && data.steps !== null) {
+          const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
+          setSteps(cappedSteps);
+          localStorage.setItem('user_steps', cappedSteps.toString());
+        }
+        if (data.water !== undefined && data.water !== null) {
+          const cappedWater = Math.min(waterGoal, Math.max(0, data.water));
+          setWater(cappedWater);
+          localStorage.setItem('user_water', cappedWater.toString());
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch activity:", error);
+    }
+  };
+
+  // Google Fit synchronization
+  const syncGoogleFitSteps = async () => {
     const accessToken = localStorage.getItem('google_access_token');
 
     if (!accessToken) {
@@ -62,7 +89,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
       const data = await res.json();
 
-      if (data.success && typeof data.steps === 'number') {
+      if (res.ok && data.success && typeof data.steps === 'number') {
         const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
         setSteps(cappedSteps);
         localStorage.setItem('user_steps', cappedSteps.toString());
@@ -72,18 +99,16 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ steps: cappedSteps, water_ml: water }),
         }).catch(() => { });
-
-        if (showSuccessAlert) {
-          alert(`Google Fit-dən ${cappedSteps.toLocaleString()} addım uğurla yeniləndi!`);
-        }
-      } else if (showSuccessAlert) {
-        alert('Google Fit-dən addım məlumatı alınamadı: ' + (data.error || 'Bilinməyən xəta'));
+      } else {
+        localStorage.removeItem('google_access_token');
+        setIsGoogleConnected(false);
+        await fetchActivity();
       }
     } catch (err) {
-      console.error('Sinxronlaşdırma xətası:', err);
-      if (showSuccessAlert) {
-        alert('Sinxronlaşdırma zamanı xəta baş verdi.');
-      }
+      console.error('Sync error:', err);
+      localStorage.removeItem('google_access_token');
+      setIsGoogleConnected(false);
+      await fetchActivity();
     } finally {
       setIsSyncing(false);
     }
@@ -109,28 +134,8 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     const token = localStorage.getItem('google_access_token');
     if (token) {
       setIsGoogleConnected(true);
-      syncGoogleFitSteps(false);
+      syncGoogleFitSteps();
     } else {
-      const fetchActivity = async () => {
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/activity`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.steps !== undefined && data.steps !== null) {
-              const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
-              setSteps(cappedSteps);
-              localStorage.setItem('user_steps', cappedSteps.toString());
-            }
-            if (data.water !== undefined && data.water !== null) {
-              const cappedWater = Math.min(waterGoal, Math.max(0, data.water));
-              setWater(cappedWater);
-              localStorage.setItem('user_water', cappedWater.toString());
-            }
-          }
-        } catch (error) {
-          console.error("Aktivlik məlumatı çəkilə bilmədi:", error);
-        }
-      };
       fetchActivity();
     }
   }, []);
@@ -155,7 +160,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
         body: JSON.stringify({ steps: cappedSteps, water_ml: cappedWater }),
       });
     } catch (error) {
-      console.error("Aktivlik yenilənə bilmədi:", error);
+      console.error("Failed to update activity:", error);
     }
   };
 
@@ -199,7 +204,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingBottom: '16px' }}>
 
-      {/* Banner */}
+      {/* Header Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #2E5B4E 0%, #44766C 100%)',
         borderRadius: '16px',
@@ -232,7 +237,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       {/* Metric Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
 
-        {/* Addım Kartı */}
+        {/* Steps Card */}
         <div style={{
           backgroundColor: theme.cardBg,
           padding: '22px',
@@ -255,12 +260,12 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               </div>
             </div>
 
-            {/* Google Fit Sync / Connect Button */}
+            {/* Sync Controls */}
             {isGoogleConnected ? (
               <button
-                onClick={() => syncGoogleFitSteps(true)}
+                onClick={syncGoogleFitSteps}
                 disabled={isSyncing}
-                title="Google Fit aktivdir. Anında yeniləmək üçün klikləyin."
+                title="Google Fit vasitəsilə yenilə"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -323,7 +328,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
             }} />
           </div>
 
-          {/* Sürətli Əlavə Et Düymələri */}
+          {/* Quick Add Buttons */}
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => handleQuickAdd(500, 0)}
@@ -340,7 +345,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           </div>
         </div>
 
-        {/* Su Kartı */}
+        {/* Water Card */}
         <div style={{
           backgroundColor: theme.cardBg,
           padding: '22px',
@@ -383,7 +388,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
             }} />
           </div>
 
-          {/* Sürətli Əlavə Et Düymələri */}
+          {/* Quick Add Buttons */}
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => handleQuickAdd(0, 250)}
@@ -402,7 +407,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
       </div>
 
-      {/* Manual Dəyər Daxiletmə Formu */}
+      {/* Manual Form */}
       <div style={{
         backgroundColor: theme.cardBg,
         padding: '22px 24px',
