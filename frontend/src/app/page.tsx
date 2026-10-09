@@ -89,6 +89,8 @@ export default function Dashboard() {
       setWaterCount(Number(localWaterGlasses));
     } else if (localWaterMl !== null) {
       setWaterCount(Math.floor(Number(localWaterMl) / 250));
+    } else {
+      setWaterCount(0);
     }
 
     const loadDashboardData = async () => {
@@ -106,7 +108,7 @@ export default function Dashboard() {
         if (activityRes.ok) {
           const activityData = await activityRes.json();
           if (activityData) {
-            if (activityData.steps && activityData.steps > 0) {
+            if (activityData.steps !== undefined && activityData.steps !== null && activityData.steps > 0) {
               setStepsCount(activityData.steps);
               setCaloriesCount(activityData.calories || Math.round(activityData.steps * 0.04));
               localStorage.setItem('user_steps', activityData.steps.toString());
@@ -236,6 +238,7 @@ export default function Dashboard() {
         }
       } else {
         router.push('/auth');
+        return;
       }
 
       try {
@@ -253,11 +256,15 @@ export default function Dashboard() {
     };
 
     loadUserData();
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('userToken');
+    localStorage.removeItem('user_steps');
+    localStorage.removeItem('user_water_ml');
+    localStorage.removeItem('user_water_glasses');
+    localStorage.removeItem('waterCount');
     router.push('/auth');
   };
 

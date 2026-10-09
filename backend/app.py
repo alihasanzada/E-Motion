@@ -550,7 +550,7 @@ def get_water():
     conn = get_db_connection()
     try:
         water = conn.execute('SELECT * FROM water WHERE id = 1').fetchone()
-        count = water["count"] if water else 4
+        count = water["count"] if water else 0
         return jsonify({"count": count}), 200
     finally:
         conn.close()
@@ -827,7 +827,7 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS water (
             id INTEGER PRIMARY KEY CHECK (id = 1),
-            count INTEGER NOT NULL DEFAULT 4
+            count INTEGER NOT NULL DEFAULT 0
         )
     ''')
 
@@ -896,7 +896,7 @@ def init_db():
         cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Tədbir xəbərdarlığı', 'Yoqa seansı 22 May tarixində keçiriləcək.', '3 saat əvvəl')")
         cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Dr. Əliyev (Tibb məntəqəsi)', 'Qan analizi nəticələriniz hazırdır.', '12:30')")
         cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Psixoloq Leyla M.', 'Növbəti seans üçün vaxtı təsdiqləyin.', 'Dünən')")
-        cursor.execute("INSERT INTO water (id, count) VALUES (1, 4)")
+        cursor.execute("INSERT INTO water (id, count) VALUES (1, 0)")
         conn.commit()
 
     conn.close()

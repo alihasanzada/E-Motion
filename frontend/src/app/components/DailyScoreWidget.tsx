@@ -24,8 +24,6 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
     const [targetSteps, setTargetSteps] = useState<number>(10000);
     const targetSleep = 8;
 
-<<<<<<< Updated upstream
-    // Yaddaşdan məlumatların oxunması
     useEffect(() => {
         setMounted(true);
 
@@ -38,12 +36,6 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
         const savedMood = localStorage.getItem('user_mood');
         if (savedMood) setMoodScore(Number(savedMood));
 
-=======
-    React.useEffect(() => {
-        const savedSteps = localStorage.getItem('user_steps');
-        if (savedSteps) setSteps(Number(savedSteps));
-
->>>>>>> Stashed changes
         const savedWaterMl = localStorage.getItem('user_water_ml');
         if (savedWaterMl) {
             setWaterLitres(Number(savedWaterMl) / 1000);
@@ -61,16 +53,19 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             try {
-                const u = JSON.parse(storedUser);
-                if (u.daily_step_goal || u.dailyStepGoal) setTargetSteps(Number(u.daily_step_goal || u.dailyStepGoal));
-                if (u.daily_water_goal || u.dailyWaterGoal) setTargetWater(Number(u.daily_water_goal || u.dailyWaterGoal) / 1000);
+                const parsed = JSON.parse(storedUser);
+                if (parsed.daily_step_goal || parsed.dailyStepGoal) {
+                    setTargetSteps(Number(parsed.daily_step_goal || parsed.dailyStepGoal));
+                }
+                if (parsed.daily_water_goal || parsed.dailyWaterGoal) {
+                    setTargetWater(Number(parsed.daily_water_goal || parsed.dailyWaterGoal) / 1000);
+                }
             } catch (e) {
-                console.error(e);
+                console.error("Lokal istifadəçi datası oxunarkən xəta:", e);
             }
         }
     }, []);
 
-    // Dəyişikliklərin localStorage-a yazılması
     const handleWaterChange = (val: number) => {
         setWaterLitres(val);
         localStorage.setItem('user_water_ml', (val * 1000).toString());
@@ -179,8 +174,6 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                     </span>
                 </div>
             </div>
-<<<<<<< Updated upstream
-
             {/* İnteraktiv Sliderlər */}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {/* Su */}
@@ -227,8 +220,6 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                     <input type="range" min="1" max="5" step="1" value={moodScore} onChange={(e) => handleMoodChange(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#EC4899", cursor: "pointer" }} />
                 </div>
             </div>
-=======
->>>>>>> Stashed changes
         </div>
     );
 }
