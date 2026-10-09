@@ -174,52 +174,6 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                     </span>
                 </div>
             </div>
-            {/* İnteraktiv Sliderlər */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {/* Su */}
-                <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: theme.textSecondary }}>
-                            <Droplets size={14} color="#3B82F6" /> Su
-                        </span>
-                        <span style={{ fontWeight: "600" }}>{waterLitres} L</span>
-                    </div>
-                    <input type="range" min="0" max="4" step="0.1" value={waterLitres} onChange={(e) => handleWaterChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer" }} />
-                </div>
-
-                {/* Yuxu */}
-                <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: theme.textSecondary }}>
-                            <Moon size={14} color="#8B5CF6" /> Yuxu
-                        </span>
-                        <span style={{ fontWeight: "600" }}>{sleepHours} saat</span>
-                    </div>
-                    <input type="range" min="0" max="12" step="0.5" value={sleepHours} onChange={(e) => handleSleepChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: "#8B5CF6", cursor: "pointer" }} />
-                </div>
-
-                {/* Addım */}
-                <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: theme.textSecondary }}>
-                            <Footprints size={14} color="#10B981" /> Addım
-                        </span>
-                        <span style={{ fontWeight: "600" }}>{steps.toLocaleString()}</span>
-                    </div>
-                    <input type="range" min="0" max="15000" step="500" value={steps} onChange={(e) => handleStepsChange(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#10B981", cursor: "pointer" }} />
-                </div>
-
-                {/* Əhval-ruhiyyə */}
-                <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: theme.textSecondary }}>
-                            <Smile size={14} color="#EC4899" /> Əhval (1-5)
-                        </span>
-                        <span style={{ fontWeight: "600" }}>{moodScore} / 5</span>
-                    </div>
-                    <input type="range" min="1" max="5" step="1" value={moodScore} onChange={(e) => handleMoodChange(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#EC4899", cursor: "pointer" }} />
-                </div>
-            </div>
         </div>
     );
 }

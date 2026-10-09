@@ -254,7 +254,6 @@ export default function Dashboard() {
             const profileData = await res.json();
             if (profileData && profileData.email) {
               const currentStored = JSON.parse(localStorage.getItem('user') || '{}');
-              // Yalnız uyğun e-poçt olduqda profil məlumatını yeniləyirik
               if (currentStored.email === profileData.email) {
                 const merged = { ...currentStored, ...profileData };
                 setUser(merged);
@@ -520,7 +519,7 @@ export default function Dashboard() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, maxWidth: '500px' }}>
 
-            {/* Mobil Hamburger Düyməsi */}
+            {/* Mobile Hamburger Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="mobile-menu-btn"
@@ -536,7 +535,7 @@ export default function Dashboard() {
               {isMobileMenuOpen ? '✕' : '☰'}
             </button>
 
-            {/* Axtarış Paneli */}
+            {/* Search Wrapper */}
             <div className="search-wrapper" style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
 
               <div
@@ -672,7 +671,7 @@ export default function Dashboard() {
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
-              {/* Bildirişlər */}
+              {/* Notifications */}
               <div ref={notificationRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                 <button
                   onClick={() => {
@@ -871,7 +870,7 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* Mesajlar */}
+              {/* Messages */}
               <div ref={messageRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                 <button
                   onClick={toggleMessagesModal}
