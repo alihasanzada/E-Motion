@@ -12,8 +12,6 @@ import {
   Footprints,
   Droplet,
   Save,
-  CheckCircle2,
-  AlertCircle,
   Building,
   Hash,
   Activity,
@@ -88,37 +86,47 @@ export default function EditProfileModal({
   const [activeTab, setActiveTab] = useState<'personal' | 'academic' | 'health'>('personal');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form State
   const [fullname, setFullname] = useState('');
   const [major, setMajor] = useState(QU_MAJORS[0]);
   const [course, setCourse] = useState<number>(1);
   const [studentId, setStudentId] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [bloodGroup, setBloodGroup] = useState('A (II) Rh+');
+  const [bloodGroup, setBloodGroup] = useState(BLOOD_GROUPS[0]);
   const [emergencyContact, setEmergencyContact] = useState('');
   const [bio, setBio] = useState('');
   const [dailyStepGoal, setDailyStepGoal] = useState<number>(10000);
   const [dailyWaterGoal, setDailyWaterGoal] = useState<number>(2000);
 
-  // Doldurulan cari dəyərlər
   useEffect(() => {
-    if (currentUser) {
-      setFullname(currentUser.fullname || '');
-      setMajor(currentUser.major || QU_MAJORS[0]);
-      setCourse(Number(currentUser.course) || 1);
-      setStudentId(currentUser.student_id || currentUser.studentId || 'QU-2024-101');
-      setEmail(currentUser.email || 'st123456@qu.edu.az');
-      setPhone(currentUser.phone || '+994 50 123 45 67');
-      setBloodGroup(currentUser.blood_group || currentUser.bloodGroup || 'A (II) Rh+');
-      setEmergencyContact(currentUser.emergency_contact || currentUser.emergencyContact || '+994 50 765 43 21');
-      setBio(currentUser.bio || 'Qarabağ Universiteti tələbəsi. Sağlam həyat tərzi və idman həvəskarı.');
-      setDailyStepGoal(Number(currentUser.daily_step_goal || currentUser.dailyStepGoal) || 10000);
-      setDailyWaterGoal(Number(currentUser.daily_water_goal || currentUser.dailyWaterGoal) || 2000);
+    let activeUserData = currentUser;
+
+    if (!activeUserData && typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          activeUserData = JSON.parse(storedUser);
+        } catch (err) {
+          console.error("Lokal istifadəçi datası oxunarkən xəta yarandı:", err);
+        }
+      }
+    }
+
+    if (activeUserData) {
+      setFullname(activeUserData.fullname || '');
+      setMajor(activeUserData.major || QU_MAJORS[0]);
+      setCourse(Number(activeUserData.course) || 1);
+      setStudentId(activeUserData.student_id || activeUserData.studentId || '');
+      setEmail(activeUserData.email || '');
+      setPhone(activeUserData.phone || '');
+      setBloodGroup(activeUserData.blood_group || activeUserData.bloodGroup || BLOOD_GROUPS[0]);
+      setEmergencyContact(activeUserData.emergency_contact || activeUserData.emergencyContact || '');
+      setBio(activeUserData.bio || '');
+      setDailyStepGoal(Number(activeUserData.daily_step_goal || activeUserData.dailyStepGoal) || 10000);
+      setDailyWaterGoal(Number(activeUserData.daily_water_goal || activeUserData.dailyWaterGoal) || 2000);
     }
   }, [currentUser, isOpen]);
 
-  // Modal açıq olduqda klaviatura ilə bağlamaq (Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -174,28 +182,37 @@ export default function EditProfileModal({
     };
 
     try {
-      // 1. LocalStorage-da dərhal yeniləmə
-      localStorage.setItem('user', JSON.stringify(updatedProfile));
+      const stored = localStorage.getItem('user');
+      const existingUser = stored ? JSON.parse(stored) : {};
+      const mergedUser = { ...existingUser, ...updatedProfile };
+
+      localStorage.setItem('user', JSON.stringify(mergedUser));
       localStorage.setItem('daily_step_goal', dailyStepGoal.toString());
       localStorage.setItem('daily_water_goal', dailyWaterGoal.toString());
 
-      // 2. Backend API-yə göndərmə
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(updatedProfile),
       });
 
       if (!response.ok) {
-        // PUT metodu ilə cəhd et
         await fetch(`${API_BASE_URL}/api/user/profile`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(updatedProfile),
         }).catch(() => null);
       }
 
-      onUpdate(updatedProfile);
+      onUpdate(mergedUser);
       toast.success('Profil məlumatları uğurla yeniləndi!');
       onClose();
     } catch (error) {
@@ -331,12 +348,12 @@ export default function EditProfileModal({
                 boxShadow: '0 2px 8px rgba(68, 118, 108, 0.35)'
               }}
             >
-              {fullname ? fullname.charAt(0).toUpperCase() : 'Ə'}
+              {fullname.trim() ? fullname.trim().charAt(0).toUpperCase() : 'T'}
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>
-                  {fullname || 'Ad Soyad'}
+                  {fullname || 'Tələbə Adı'}
                 </span>
                 <span
                   style={{
@@ -352,7 +369,7 @@ export default function EditProfileModal({
                 </span>
               </div>
               <p style={{ margin: '2px 0 0', fontSize: '12px', color: theme.textSecondary }}>
-                {major} • <span style={{ fontWeight: '500' }}>{studentId || 'QU-2024-XXX'}</span>
+                {major} {studentId ? `• ID: ${studentId}` : ''}
               </p>
             </div>
           </div>
@@ -446,7 +463,7 @@ export default function EditProfileModal({
               gap: '16px'
             }}
           >
-            {/* TAB 1: ŞƏXSİ MƏLUMAT */}
+            {/* Şəxsi Məlumat */}
             {activeTab === 'personal' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
@@ -460,7 +477,7 @@ export default function EditProfileModal({
                       required
                       value={fullname}
                       onChange={(e) => setFullname(e.target.value)}
-                      placeholder="Məs: Əli Həsənov"
+                      placeholder="Ad və soyadınızı daxil edin"
                       style={{
                         width: '100%',
                         padding: '10px 12px 10px 38px',
@@ -515,7 +532,7 @@ export default function EditProfileModal({
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="st123456@qu.edu.az"
+                        placeholder="ornek@qu.edu.az"
                         style={{
                           width: '100%',
                           padding: '10px 12px 10px 38px',
@@ -541,7 +558,7 @@ export default function EditProfileModal({
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+994 50 123 45 67"
+                        placeholder="+994 50 000 00 00"
                         style={{
                           width: '100%',
                           padding: '10px 12px 10px 38px',
@@ -560,7 +577,7 @@ export default function EditProfileModal({
               </div>
             )}
 
-            {/* TAB 2: TƏHSİL & ƏLAQƏ */}
+            {/* Təhsil & Əlaqə */}
             {activeTab === 'academic' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
@@ -637,7 +654,7 @@ export default function EditProfileModal({
                       type="text"
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
-                      placeholder="Məs: QU-2024-101"
+                      placeholder="Məs: QU-2024-XXXX"
                       style={{
                         width: '100%',
                         padding: '10px 12px 10px 38px',
@@ -668,13 +685,13 @@ export default function EditProfileModal({
                     <ShieldAlert size={16} /> Təcili Əlaqə Nömrəsi (Fövqəladə Hal / Tibb məntəqəsi üçün)
                   </label>
                   <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary }}>
-                    Universitet ərazisində qəfil sağlamlıq ehtiyacı olduqda təcili bildiriş göndəriləcək nömrə (valideyn, yaxın qohum və ya yataqxana rəhbərliyi).
+                    Universitet ərazisində qəfil sağlamlıq ehtiyacı olduqda təcili bildiriş göndəriləcək nömrə.
                   </p>
                   <input
                     type="tel"
                     value={emergencyContact}
                     onChange={(e) => setEmergencyContact(e.target.value)}
-                    placeholder="+994 50 765 43 21"
+                    placeholder="+994 50 000 00 00"
                     style={{
                       width: '100%',
                       padding: '9px 12px',
@@ -691,7 +708,7 @@ export default function EditProfileModal({
               </div>
             )}
 
-            {/* TAB 3: SAĞLAMLIQ & HƏDƏFLƏR */}
+            {/* Sağlamlıq & Hədəflər */}
             {activeTab === 'health' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
@@ -809,7 +826,7 @@ export default function EditProfileModal({
             )}
           </div>
 
-          {/* Footer Düymələri */}
+          {/* Footer Buttons */}
           <div
             style={{
               padding: '16px 24px',

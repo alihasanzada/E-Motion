@@ -235,36 +235,31 @@ export default function Dashboard() {
           console.error("İstifadəçi məlumatları oxunarkən xəta baş verdi:", e);
         }
       } else {
-        setUser({
-          fullname: "Əli Həsənov",
-          major: "Kompüter Mühəndisliyi",
-          course: 1,
-          student_id: "QU-2024-101",
-          email: "st123456@qu.edu.az",
-          phone: "+994 50 123 45 67",
-          blood_group: "A (II) Rh+",
-          emergency_contact: "+994 50 765 43 21",
-          daily_step_goal: 10000,
-          daily_water_goal: 2000
-        });
+        router.push('/auth');
       }
 
       try {
         const res = await fetch(`${API_BASE_URL}/api/user/profile`);
         if (res.ok) {
           const profileData = await res.json();
-          if (profileData && profileData.fullname) {
+          if (profileData) {
             setUser(profileData);
             localStorage.setItem('user', JSON.stringify(profileData));
           }
         }
       } catch (err) {
-        console.warn('Backend profil məlumatı alına bilmədi (offline/lokal rejim aktivdir):', err);
+        console.warn('Backend profil məlumatı alına bilmədi:', err);
       }
     };
 
     loadUserData();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('userToken');
+    router.push('/auth');
+  };
 
   const theme = darkMode ? {
     bgApp: '#121212',
@@ -430,11 +425,7 @@ export default function Dashboard() {
 
           <button
             className="nav-item"
-            onClick={() => {
-              localStorage.clear();
-              sessionStorage.clear();
-              router.push('/auth');
-            }}
+            onClick={handleLogout}
             style={{
               border: darkMode ? '1px solid #7F1D1D' : '1px solid #FEE2E2',
               background: darkMode ? '#451A1A' : '#FEF2F2',
@@ -978,10 +969,12 @@ export default function Dashboard() {
                 </div>
                 <div className="profile-info" style={{ textAlign: 'left' }}>
                   <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: theme.textPrimary }}>
-                    {user ? user.fullname : 'Əli Həsənov'}
+                    {user?.fullname || 'İstifadəçi'}
                   </h4>
                   <p style={{ margin: 0, fontSize: '10.5px', color: theme.textSecondary }}>
-                    {user ? `${user.major}, ${user.course}-ci kurs` : 'Yüklənir...'}
+                    {user?.major
+                      ? `${user.major}${user.course ? `, ${user.course}-ci kurs` : ''}`
+                      : 'Tələbə'}
                   </p>
                 </div>
                 <ChevronDown
@@ -1015,10 +1008,10 @@ export default function Dashboard() {
                 >
                   <div style={{ padding: '8px 10px', borderBottom: `1px solid ${theme.border}`, marginBottom: '4px' }}>
                     <p style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: theme.textPrimary }}>
-                      {user?.fullname || 'Əli Həsənov'}
+                      {user?.fullname || 'İstifadəçi'}
                     </p>
                     <p style={{ margin: '2px 0 0', fontSize: '10.5px', color: theme.textSecondary }}>
-                      {user?.email || 'st123456@qu.edu.az'}
+                      {user?.email || ''}
                     </p>
                   </div>
 
@@ -1110,7 +1103,7 @@ export default function Dashboard() {
                   <div className="banner-content">
                     <div className="banner-text">
                       <h1 style={{ margin: 0, fontSize: '23px', fontWeight: '700', letterSpacing: '-0.2px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-                        Xoş gəlmisiniz, {user ? user.fullname.split(' ')[0] : 'Əli'}!
+                        Xoş gəlmisiniz, {user?.fullname ? user.fullname.split(' ')[0] : 'İstifadəçi'}!
                       </h1>
                       <p style={{ margin: '8px 0 0', fontSize: '13px', opacity: 0.95, lineHeight: '1.45', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
                         Təbiətlə iç-içə, daha sağlam seçimlər və aydın bir zehin. Bu gün hədəfinizə bir addım daha yaxınlaşın.
@@ -1264,45 +1257,6 @@ export default function Dashboard() {
               {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <DailyScoreWidget isDarkMode={darkMode} />
-                <div
-                  onClick={() => setActiveTab('progress')}
-                  className="card"
-                  style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, cursor: 'pointer' }}
-                >
-                  <h3 style={{ margin: '0 0 14px 0', fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Ardıcıl sağlamlıq günləri</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ position: 'relative', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <svg width="50" height="50" viewBox="0 0 50 50" style={{ transform: 'rotate(-90deg)' }}>
-                        <circle
-                          cx="25"
-                          cy="25"
-                          r="21"
-                          stroke={darkMode ? '#374151' : '#E5E7EB'}
-                          strokeWidth="4"
-                          fill="transparent"
-                        />
-                        <circle
-                          cx="25"
-                          cy="25"
-                          r="21"
-                          stroke="#F97316"
-                          strokeWidth="4"
-                          fill="transparent"
-                          strokeDasharray={2 * Math.PI * 21}
-                          strokeDashoffset={2 * Math.PI * 21 * (1 - Math.min(1, (streakDays || 0) / 30))}
-                          strokeLinecap="round"
-                          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-                        />
-                      </svg>
-                      <span style={{ position: 'absolute', fontSize: '22px' }}>🔥</span>
-                    </div>
-
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: theme.textPrimary }}>{streakDays || 0} gün</h4>
-                      <p style={{ margin: '2px 0 0 0', fontSize: '11.5px', color: theme.textSecondary }}>Mükəmməl! Davam et!</p>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -1352,52 +1306,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-
-                <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '11px' }}>
-                    <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Su qəbulu izləyicisi</h3>
-                    <span onClick={() => setActiveTab('nutrition')} style={{ fontSize: '11px', color: theme.textSecondary, cursor: 'pointer' }}>Redaktə et</span>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px', marginBottom: '12px' }}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                      <div
-                        key={i}
-                        onClick={() => handleWaterUpdate(i <= waterCount ? i - 1 : i)}
-                        style={{
-                          flex: 1,
-                          height: '28px',
-                          borderRadius: '5.5px',
-                          backgroundColor: i <= waterCount ? '#3B82F6' : theme.bgInner,
-                          color: i <= waterCount ? '#FFFFFF' : theme.textSecondary,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          border: `1px solid ${theme.border}`
-                        }}
-                      >
-                        <Droplet size={12.5} />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: theme.textSecondary }}>
-                    <span>Gündəlik hədəf: 8 stəkan</span>
-                    <span style={{ fontWeight: '700', color: theme.textPrimary }}>{waterCount}/8 stəkan</span>
-                  </div>
-                </div>
-
-                <div style={{ background: darkMode ? 'linear-gradient(135deg, #1E293B, #0F172A)' : 'linear-gradient(135deg, #334155, #1E293B)', color: '#FFFFFF', padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <h4 style={{ margin: 0, fontSize: '12.5px', fontWeight: '600' }}>Motivasiyaya ehtiyacın var?</h4>
-                  </div>
-                  <p style={{ margin: '0 0 12px 0', fontSize: '11px', opacity: 0.85, lineHeight: '1.4' }}>
-                    Bədəninə qulluq et, çünki orada yaşamaq məcburiyyətindəsən.
-                  </p>
-                </div>
-
               </div>
 
             </div>

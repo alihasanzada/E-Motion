@@ -71,14 +71,17 @@ export default function AuthPage() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('userToken', data.token);
 
-          const fullNameFromBackend = data.user?.name || data.name || username || "Tələbə";
+          const fullNameFromBackend = data.user?.fullname || data.user?.name || data.name || email.split('@')[0];
 
           const userData = {
             fullname: fullNameFromBackend,
-            major: "Kompüter Mühəndisliyi",
-            course: 1,
-            username: fullNameFromBackend,
-            email: email
+            email: data.user?.email || email,
+            major: data.user?.major || "",
+            course: data.user?.course || null,
+            student_id: data.user?.student_id || "",
+            blood_group: data.user?.blood_group || "",
+            phone: data.user?.phone || "",
+            emergency_contact: data.user?.emergency_contact || ""
           };
           localStorage.setItem('user', JSON.stringify(userData));
 

@@ -63,17 +63,18 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       const data = await res.json();
 
       if (data.success && typeof data.steps === 'number') {
-        setSteps(data.steps);
-        localStorage.setItem('user_steps', data.steps.toString());
+        const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
+        setSteps(cappedSteps);
+        localStorage.setItem('user_steps', cappedSteps.toString());
 
         fetch(`${API_BASE_URL}/api/activity`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ steps: data.steps, water_ml: water }),
+          body: JSON.stringify({ steps: cappedSteps, water_ml: water }),
         }).catch(() => { });
 
         if (showSuccessAlert) {
-          alert(`Google Fit-dən ${data.steps.toLocaleString()} addım uğurla yeniləndi!`);
+          alert(`Google Fit-dən ${cappedSteps.toLocaleString()} addım uğurla yeniləndi!`);
         }
       } else if (showSuccessAlert) {
         alert('Google Fit-dən addım məlumatı alınamadı: ' + (data.error || 'Bilinməyən xəta'));
@@ -102,8 +103,8 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     const savedSteps = localStorage.getItem('user_steps');
     const savedWater = localStorage.getItem('user_water');
 
-    if (savedSteps !== null) setSteps(Number(savedSteps));
-    if (savedWater !== null) setWater(Number(savedWater));
+    if (savedSteps !== null) setSteps(Math.min(stepGoal, Math.max(0, Number(savedSteps))));
+    if (savedWater !== null) setWater(Math.min(waterGoal, Math.max(0, Number(savedWater))));
 
     const token = localStorage.getItem('google_access_token');
     if (token) {
@@ -116,12 +117,14 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           if (res.ok) {
             const data = await res.json();
             if (data.steps !== undefined && data.steps !== null) {
-              setSteps(data.steps);
-              localStorage.setItem('user_steps', data.steps.toString());
+              const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
+              setSteps(cappedSteps);
+              localStorage.setItem('user_steps', cappedSteps.toString());
             }
             if (data.water !== undefined && data.water !== null) {
-              setWater(data.water);
-              localStorage.setItem('user_water', data.water.toString());
+              const cappedWater = Math.min(waterGoal, Math.max(0, data.water));
+              setWater(cappedWater);
+              localStorage.setItem('user_water', cappedWater.toString());
             }
           }
         } catch (error) {
@@ -133,20 +136,23 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   }, []);
 
   const updateActivity = async (newSteps: number, newWaterMl: number) => {
-    setSteps(newSteps);
-    setWater(newWaterMl);
+    const cappedSteps = Math.min(stepGoal, Math.max(0, newSteps));
+    const cappedWater = Math.min(waterGoal, Math.max(0, newWaterMl));
 
-    const glassCount = Math.floor(newWaterMl / 250);
+    setSteps(cappedSteps);
+    setWater(cappedWater);
 
-    localStorage.setItem('user_water_ml', newWaterMl.toString());
+    const glassCount = Math.floor(cappedWater / 250);
+
+    localStorage.setItem('user_water_ml', cappedWater.toString());
     localStorage.setItem('user_water_glasses', glassCount.toString());
-    localStorage.setItem('user_steps', newSteps.toString());
+    localStorage.setItem('user_steps', cappedSteps.toString());
 
     try {
       await fetch(`${API_BASE_URL}/api/activity`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps: newSteps, water_ml: newWaterMl }),
+        body: JSON.stringify({ steps: cappedSteps, water_ml: cappedWater }),
       });
     } catch (error) {
       console.error("Aktivlik yenilənə bilmədi:", error);
@@ -170,24 +176,8 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const handleQuickAdd = async (addSteps: number, addWaterMl: number) => {
     const newSteps = steps + addSteps;
     const newWaterMl = water + addWaterMl;
-    const newGlasses = Math.floor(newWaterMl / 250);
 
-    setSteps(newSteps);
-    setWater(newWaterMl);
-
-    localStorage.setItem('user_steps', newSteps.toString());
-    localStorage.setItem('user_water_ml', newWaterMl.toString());
-    localStorage.setItem('user_water_glasses', newGlasses.toString());
-
-    try {
-      await fetch(`${API_BASE_URL}/api/activity`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps: newSteps, water_ml: newWaterMl }),
-      });
-    } catch (err) {
-      console.warn("Aktivlik yenilənə bilmədi:", err);
-    }
+    await updateActivity(newSteps, newWaterMl);
   };
 
   const stepPercentage = Math.min(Math.round((steps / stepGoal) * 100), 100);

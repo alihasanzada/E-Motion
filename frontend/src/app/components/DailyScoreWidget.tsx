@@ -24,6 +24,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
     const [targetSteps, setTargetSteps] = useState<number>(10000);
     const targetSleep = 8;
 
+<<<<<<< Updated upstream
     // Yaddaşdan məlumatların oxunması
     useEffect(() => {
         setMounted(true);
@@ -37,6 +38,12 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
         const savedMood = localStorage.getItem('user_mood');
         if (savedMood) setMoodScore(Number(savedMood));
 
+=======
+    React.useEffect(() => {
+        const savedSteps = localStorage.getItem('user_steps');
+        if (savedSteps) setSteps(Number(savedSteps));
+
+>>>>>>> Stashed changes
         const savedWaterMl = localStorage.getItem('user_water_ml');
         if (savedWaterMl) {
             setWaterLitres(Number(savedWaterMl) / 1000);
@@ -172,6 +179,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                     </span>
                 </div>
             </div>
+<<<<<<< Updated upstream
 
             {/* İnteraktiv Sliderlər */}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -219,6 +227,8 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                     <input type="range" min="1" max="5" step="1" value={moodScore} onChange={(e) => handleMoodChange(parseInt(e.target.value))} style={{ width: "100%", accentColor: "#EC4899", cursor: "pointer" }} />
                 </div>
             </div>
+=======
+>>>>>>> Stashed changes
         </div>
     );
 }
