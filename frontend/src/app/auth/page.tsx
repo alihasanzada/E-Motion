@@ -29,6 +29,11 @@ export default function AuthPage() {
       return;
     }
 
+    if (password.length < 8) {
+      alert("Xəta: Şifrə minimum 8 simvoldan ibarət olmalıdır!");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -44,7 +49,7 @@ export default function AuthPage() {
         setPassword('');
         setView('login');
       } else {
-        alert(`Xəta: ${data.message || 'Qeydiyyat baş tutmadı.'}`);
+        alert(`Xəta: ${data.error || data.message || 'Qeydiyyat baş tutmadı.'}`);
       }
     } catch (error) {
       console.error('Sorğu xətası:', error);

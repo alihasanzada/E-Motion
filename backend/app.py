@@ -962,6 +962,9 @@ def register():
     if not name or not email or not password:
         return jsonify({"error": "Bütün xanaları doldurun!"}), 400
 
+    if len(password) < 8:
+        return jsonify({"error": "Şifrə minimum 8 simvoldan ibarət olmalıdır!"}), 400
+
     email_pattern = r'^(?i:s|st)\d{6}@qu\.edu\.az$'
     if not re.match(email_pattern, email):
         return jsonify({"error": "Keçərsiz e-poçt formatı! Yalnız st123456@qu.edu.az formatında e-poçtlar qəbul edilir."}), 400
