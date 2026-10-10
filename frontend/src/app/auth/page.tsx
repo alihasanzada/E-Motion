@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -12,6 +13,9 @@ export default function AuthPage() {
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
 
@@ -24,12 +28,15 @@ export default function AuthPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email.toLowerCase().endsWith('@qu.edu.az')) {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail.toLowerCase().endsWith('@qu.edu.az')) {
       alert("Xəta: Qeydiyyat üçün yalnız @qu.edu.az domeninə malik tələbə e-poçtundan istifadə edə bilərsiniz.");
       return;
     }
 
-    if (password.length < 8) {
+    if (cleanPassword.length < 8) {
       alert("Xəta: Şifrə minimum 8 simvoldan ibarət olmalıdır!");
       return;
     }
@@ -40,12 +47,13 @@ export default function AuthPage() {
       const response = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: username, email, password }),
+        body: JSON.stringify({ name: username, email: cleanEmail, password: cleanPassword }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        alert("Qeydiyyat uğurla tamamlandı! İndi daxil ola bilərsiniz.");
         setPassword('');
         setView('login');
       } else {
@@ -67,7 +75,7 @@ export default function AuthPage() {
       const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password: password.trim() }),
       });
 
       const data = await response.json();
@@ -90,7 +98,6 @@ export default function AuthPage() {
           };
           localStorage.setItem('user', JSON.stringify(userData));
 
-          // Yeni istifadəçi üçün ilkin göstəriciləri 0 olaraq sıfırlayırıq
           if (!localStorage.getItem('user_steps')) localStorage.setItem('user_steps', '0');
           if (!localStorage.getItem('user_water_ml')) localStorage.setItem('user_water_ml', '0');
           if (!localStorage.getItem('user_water_glasses')) localStorage.setItem('user_water_glasses', '0');
@@ -112,7 +119,7 @@ export default function AuthPage() {
     <main style={styles.body}>
       <div style={styles.authContainer}>
 
-        {/* Qeydiyyat Formu */}
+        {/* Signup Form */}
         {view === 'signup' && (
           <div style={styles.formBox}>
             <h2 style={styles.heading}>Hesab Yarat</h2>
@@ -133,14 +140,25 @@ export default function AuthPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 style={styles.input}
               />
-              <input
-                type="password"
-                placeholder="Şifrəniz"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={styles.input}
-              />
+
+              <div style={styles.passwordWrapper}>
+                <input
+                  type={showRegisterPassword ? "text" : "password"}
+                  placeholder="Şifrəniz (min 8 simvol)"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={styles.inputWithIcon}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                  style={styles.eyeBtn}
+                >
+                  {showRegisterPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
               <button type="submit" disabled={loading} style={styles.button}>
                 {loading ? 'Yüklənir...' : 'Qeydiyyatdan Keç'}
               </button>
@@ -155,7 +173,7 @@ export default function AuthPage() {
           </div>
         )}
 
-        {/* Giriş Formu */}
+        {/* Login Form */}
         {view === 'login' && (
           <div style={styles.formBox}>
             <h2 style={styles.heading}>Daxil Ol</h2>
@@ -168,14 +186,25 @@ export default function AuthPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 style={styles.input}
               />
-              <input
-                type="password"
-                placeholder="Şifrəniz"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={styles.input}
-              />
+
+              <div style={styles.passwordWrapper}>
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  placeholder="Şifrəniz"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={styles.inputWithIcon}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  style={styles.eyeBtn}
+                >
+                  {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
               <button type="submit" disabled={loading} style={styles.button}>
                 {loading ? 'Yüklənir...' : 'Giriş Et'}
               </button>
@@ -235,6 +264,36 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '15px',
     marginBottom: '16px',
     outline: 'none',
+    boxSizing: 'border-box',
+  },
+  passwordWrapper: {
+    position: 'relative',
+    width: '100%',
+    marginBottom: '16px',
+  },
+  inputWithIcon: {
+    width: '100%',
+    padding: '12px 42px 12px 16px',
+    backgroundColor: '#1a1a22',
+    border: '1px solid #2a2a35',
+    borderRadius: '8px',
+    color: '#ffffff',
+    fontSize: '15px',
+    outline: 'none',
+    boxSizing: 'border-box',
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: '14px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: '#88889b',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    padding: 0,
   },
   button: {
     width: '100%',
