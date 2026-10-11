@@ -144,7 +144,7 @@ export default function AuthPage() {
               <div style={styles.passwordWrapper}>
                 <input
                   type={showRegisterPassword ? "text" : "password"}
-                  placeholder="Şifrəniz (min 8 simvol)"
+                  placeholder="Şifrəniz"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
