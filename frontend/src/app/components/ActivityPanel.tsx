@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Footprints, Droplet, Plus, RefreshCw, Sparkles, CheckCircle2, Watch } from 'lucide-react';
+import { Footprints, Droplet, Plus, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface ActivityPanelProps {
   isDarkMode?: boolean;
@@ -10,19 +10,47 @@ interface ActivityPanelProps {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
 
 export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps) {
-  const [steps, setSteps] = useState(0);
-  const [water, setWater] = useState(0);
+  const [steps, setSteps] = useState<number>(0);
+  const [water, setWater] = useState<number>(0);
   const [inputSteps, setInputSteps] = useState('');
   const [inputWater, setInputWater] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isGoogleConnected, setIsGoogleConnected] = useState(false);
 
-  const [isAppleConnected, setIsAppleConnected] = useState(false);
-  const [isAppleSyncing, setIsAppleSyncing] = useState(false);
-
   const stepGoal = 10000;
   const waterGoal = 2000;
 
+  // Save both locally and sync to Backend database
+  const saveAndSyncActivity = async (newSteps: number, newWaterMl: number) => {
+    const cappedSteps = Math.min(stepGoal, Math.max(0, newSteps));
+    const cappedWater = Math.min(waterGoal, Math.max(0, newWaterMl));
+
+    setSteps(cappedSteps);
+    setWater(cappedWater);
+
+    const glassCount = Math.floor(cappedWater / 250);
+
+    localStorage.setItem('user_steps', cappedSteps.toString());
+    localStorage.setItem('user_water', cappedWater.toString());
+    localStorage.setItem('user_water_ml', cappedWater.toString());
+    localStorage.setItem('user_water_glasses', glassCount.toString());
+
+    try {
+      const token = localStorage.getItem('userToken');
+      await fetch(`${API_BASE_URL}/api/activity`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ steps: cappedSteps, water_ml: cappedWater }),
+      });
+    } catch (error) {
+      console.error("Activity DB sync error:", error);
+    }
+  };
+
+  // Google OAuth authorization handler
   const connectGoogleFit = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -47,55 +75,49 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${qs.toString()}`;
   };
 
-  const connectAppleHealth = () => {
-    setIsAppleSyncing(true);
-    setTimeout(() => {
-      localStorage.setItem('apple_health_connected', 'true');
-      setIsAppleConnected(true);
-      setIsAppleSyncing(false);
-
-      const simulatedAppleSteps = 6840;
-      const cappedSteps = Math.min(stepGoal, Math.max(0, simulatedAppleSteps));
-      setSteps(cappedSteps);
-      localStorage.setItem('user_steps', cappedSteps.toString());
-
-      alert("Apple Health və Apple Watch uğurla qoşuldu! Addım məlumatı sinxronlaşdırıldı.");
-    }, 1200);
-  };
-
-  const syncAppleHealthSteps = () => {
-    setIsAppleSyncing(true);
-    setTimeout(() => {
-      const randomSteps = Math.floor(Math.random() * (9500 - 5000 + 1)) + 5000;
-      const cappedSteps = Math.min(stepGoal, Math.max(0, randomSteps));
-      setSteps(cappedSteps);
-      localStorage.setItem('user_steps', cappedSteps.toString());
-      setIsAppleSyncing(false);
-      alert(`Apple Health-dən ${cappedSteps.toLocaleString()} addım yeniləndi!`);
-    }, 1000);
-  };
-
+  // Fetch activity from internal backend with Token Authentication
   const fetchActivity = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/activity`);
+      const token = localStorage.getItem('userToken');
+      const res = await fetch(`${API_BASE_URL}/api/activity`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+
       if (res.ok) {
         const data = await res.json();
-        if (data.steps !== undefined && data.steps !== null) {
+        if (data.steps !== undefined && data.steps !== null && data.steps > 0) {
           const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
           setSteps(cappedSteps);
           localStorage.setItem('user_steps', cappedSteps.toString());
+        } else {
+          const savedSteps = localStorage.getItem('user_steps');
+          if (savedSteps) setSteps(Number(savedSteps));
         }
-        if (data.water !== undefined && data.water !== null) {
+
+        if (data.water !== undefined && data.water !== null && data.water > 0) {
           const cappedWater = Math.min(waterGoal, Math.max(0, data.water));
           setWater(cappedWater);
           localStorage.setItem('user_water', cappedWater.toString());
+        } else {
+          const savedWater = localStorage.getItem('user_water');
+          if (savedWater) setWater(Number(savedWater));
         }
+      } else {
+        const savedSteps = localStorage.getItem('user_steps');
+        const savedWater = localStorage.getItem('user_water');
+        if (savedSteps !== null) setSteps(Number(savedSteps));
+        if (savedWater !== null) setWater(Number(savedWater));
       }
     } catch (error) {
       console.error("Failed to fetch activity:", error);
+      const savedSteps = localStorage.getItem('user_steps');
+      const savedWater = localStorage.getItem('user_water');
+      if (savedSteps !== null) setSteps(Number(savedSteps));
+      if (savedWater !== null) setWater(Number(savedWater));
     }
   };
 
+  // Google Fit synchronization
   const syncGoogleFitSteps = async () => {
     const accessToken = localStorage.getItem('google_access_token');
 
@@ -118,15 +140,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       const data = await res.json();
 
       if (res.ok && data.success && typeof data.steps === 'number') {
-        const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
-        setSteps(cappedSteps);
-        localStorage.setItem('user_steps', cappedSteps.toString());
-
-        fetch(`${API_BASE_URL}/api/activity`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ steps: cappedSteps, water_ml: water }),
-        }).catch(() => { });
+        await saveAndSyncActivity(data.steps, water);
       } else {
         localStorage.removeItem('google_access_token');
         setIsGoogleConnected(false);
@@ -151,10 +165,6 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
         localStorage.setItem('google_access_token', fitToken);
         window.history.replaceState({}, document.title, window.location.pathname);
       }
-
-      if (localStorage.getItem('apple_health_connected') === 'true') {
-        setIsAppleConnected(true);
-      }
     }
 
     const savedSteps = localStorage.getItem('user_steps');
@@ -172,30 +182,6 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     }
   }, []);
 
-  const updateActivity = async (newSteps: number, newWaterMl: number) => {
-    const cappedSteps = Math.min(stepGoal, Math.max(0, newSteps));
-    const cappedWater = Math.min(waterGoal, Math.max(0, newWaterMl));
-
-    setSteps(cappedSteps);
-    setWater(cappedWater);
-
-    const glassCount = Math.floor(cappedWater / 250);
-
-    localStorage.setItem('user_water_ml', cappedWater.toString());
-    localStorage.setItem('user_water_glasses', glassCount.toString());
-    localStorage.setItem('user_steps', cappedSteps.toString());
-
-    try {
-      await fetch(`${API_BASE_URL}/api/activity`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps: cappedSteps, water_ml: cappedWater }),
-      });
-    } catch (error) {
-      console.error("Failed to update activity:", error);
-    }
-  };
-
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     const addedSteps = inputSteps ? Number(inputSteps) : 0;
@@ -207,14 +193,14 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     setInputSteps('');
     setInputWater('');
 
-    await updateActivity(newSteps, newWater);
+    await saveAndSyncActivity(newSteps, newWater);
   };
 
   const handleQuickAdd = async (addSteps: number, addWaterMl: number) => {
     const newSteps = steps + addSteps;
     const newWaterMl = water + addWaterMl;
 
-    await updateActivity(newSteps, newWaterMl);
+    await saveAndSyncActivity(newSteps, newWaterMl);
   };
 
   const stepPercentage = Math.min(Math.round((steps / stepGoal) * 100), 100);
@@ -257,7 +243,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
             Hədəflərinə doğru əla irəliləyirsən!
           </h2>
           <p style={{ margin: '6px 0 0 0', fontSize: '13px', opacity: 0.9, maxWidth: '520px', lineHeight: '1.5' }}>
-            Bədənini hərəkətdə saxla və su balansını tənzimlə. Google Fit və Apple Health dəstəyi ilə addımlarınız avtomatik sinxronlaşır.
+            Bədənini hərəkətdə saxla və su balansını tənzimlə. Google Fit dəstəyi ilə addımlarınız avtomatik sinxronlaşır.
           </p>
         </div>
         <div style={{ display: 'block', textAlign: 'right', background: 'rgba(255,255,255,0.1)', padding: '12px 20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)' }}>
@@ -292,9 +278,8 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               </div>
             </div>
 
-            {/* Sync Controls Group (Google Fit & Apple Health) */}
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {/* Google Fit Button */}
+            {/* Google Fit Sync Button */}
+            <div>
               {isGoogleConnected ? (
                 <button
                   onClick={syncGoogleFitSteps}
@@ -307,15 +292,15 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
                     backgroundColor: 'rgba(52, 211, 153, 0.15)',
                     color: '#059669',
                     border: '1px solid rgba(52, 211, 153, 0.3)',
-                    padding: '5px 10px',
+                    padding: '6px 12px',
                     borderRadius: '10px',
-                    fontSize: '11px',
+                    fontSize: '11.5px',
                     fontWeight: '600',
                     cursor: 'pointer',
                   }}
                 >
                   {isSyncing ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <CheckCircle2 size={12} />}
-                  Google Fit
+                  Google Fit Aktivdir
                 </button>
               ) : (
                 <button
@@ -327,61 +312,15 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
                     backgroundColor: '#44766C',
                     color: '#FFFFFF',
                     border: 'none',
-                    padding: '5px 10px',
+                    padding: '6px 12px',
                     borderRadius: '10px',
-                    fontSize: '11px',
+                    fontSize: '11.5px',
                     fontWeight: '600',
                     cursor: 'pointer',
                   }}
                 >
                   <RefreshCw size={12} />
                   Google Fit Qoş
-                </button>
-              )}
-
-              {/* Apple Health Button */}
-              {isAppleConnected ? (
-                <button
-                  onClick={syncAppleHealthSteps}
-                  disabled={isAppleSyncing}
-                  title="Apple Health aktivdir"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    backgroundColor: 'rgba(14, 165, 233, 0.15)',
-                    color: '#0284C7',
-                    border: '1px solid rgba(14, 165, 233, 0.3)',
-                    padding: '5px 10px',
-                    borderRadius: '10px',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {isAppleSyncing ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Watch size={12} />}
-                  Apple Health
-                </button>
-              ) : (
-                <button
-                  onClick={connectAppleHealth}
-                  disabled={isAppleSyncing}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    backgroundColor: '#0EA5E9',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    padding: '5px 10px',
-                    borderRadius: '10px',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Watch size={12} />
-                  Apple Health Qoş
                 </button>
               )}
             </div>
