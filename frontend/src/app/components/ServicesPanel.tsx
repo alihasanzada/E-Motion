@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ShieldCheck, Stethoscope, FileText, Plus, PhoneCall, Calendar, CheckCircle2, Clock, AlertCircle, X, ChevronRight } from 'lucide-react';
+import { ShieldCheck, Stethoscope, FileText, Plus, PhoneCall, Calendar, CheckCircle2, Clock, AlertCircle, X, ChevronRight, MessageSquare } from 'lucide-react';
 
 interface ServicesPanelProps {
   isDarkMode?: boolean;
@@ -21,6 +21,13 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [requestType, setRequestType] = useState('Həkim Qəbulu');
   const [description, setDescription] = useState('');
+
+  const [activePopup, setActivePopup] = useState<'insurance' | 'lab' | 'emergency' | null>(null);
+
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([
+    { sender: 'operator', text: 'Salam! Qarabağ Universiteti Tibb Xidməti mərkəzindəyik. Sizə necə kömək edə bilərik?' }
+  ]);
 
   const [requests, setRequests] = useState<any[]>([]);
 
@@ -77,10 +84,26 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
     setIsModalOpen(false);
   };
 
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatMessage.trim()) return;
+
+    setChatHistory(prev => [...prev, { sender: 'user', text: chatMessage }]);
+    const msg = chatMessage;
+    setChatMessage('');
+
+    setTimeout(() => {
+      setChatHistory(prev => [
+        ...prev,
+        { sender: 'operator', text: `Müraciətiniz qəbul olundu: "${msg}". Növbətçi tibb işçisi qısa zamanda sizinlə əlaqə saxlayacaq.` }
+      ]);
+    }, 1000);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
-      
-      {/* 1. Başlıq və Yeni Müraciət Düyməsi */}
+
+      {/* Header and New Request Button */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
@@ -116,10 +139,10 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
         </button>
       </div>
 
-      {/* 2. Əsas Xidmət Kartları (Sığorta, Həkim, Analizlər) */}
+      {/* Essential Service Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-        
-        {/* Tələbə Tibbi Sığortası */}
+
+        {/* Student Health Insurance */}
         <div style={{
           backgroundColor: theme.cardBg,
           padding: '20px',
@@ -147,13 +170,16 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
             <span style={{ backgroundColor: isDarkMode ? 'rgba(21, 128, 61, 0.25)' : '#DCFCE7', color: isDarkMode ? '#4ADE80' : '#15803D', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '700' }}>
               Aktiv Paket
             </span>
-            <button style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <button
+              onClick={() => setActivePopup('insurance')}
+              style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+            >
               Detallar <ChevronRight size={14} />
             </button>
           </div>
         </div>
 
-        {/* Kampus Həkimi */}
+        {/* Campus Doctor */}
         <div style={{
           backgroundColor: theme.cardBg,
           padding: '20px',
@@ -179,8 +205,8 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: `1px solid ${theme.borderColor}` }}>
             <span style={{ fontSize: '12px', color: theme.textSecondary }}>Növbəti qəbul: <strong style={{ color: theme.textPrimary }}>Bu gün</strong></span>
-            <button 
-              onClick={() => setIsModalOpen(true)}
+            <button
+              onClick={() => { setRequestType('Həkim Qəbulu'); setIsModalOpen(true); }}
               style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
             >
               Növbə al <ChevronRight size={14} />
@@ -188,7 +214,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
           </div>
         </div>
 
-        {/* Tibbi Analizlər */}
+        {/* Medical Tests */}
         <div style={{
           backgroundColor: theme.cardBg,
           padding: '20px',
@@ -216,7 +242,10 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
             <span style={{ backgroundColor: isDarkMode ? 'rgba(180, 83, 9, 0.25)' : '#FEF3C7', color: isDarkMode ? '#FBBF24' : '#B45309', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '700' }}>
               1 Yeni Cavab
             </span>
-            <button style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <button
+              onClick={() => setActivePopup('lab')}
+              style={{ background: 'none', border: 'none', color: isDarkMode ? '#4ADE80' : '#2E5B4E', fontWeight: '600', fontSize: '12.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+            >
               Görüntülə <ChevronRight size={14} />
             </button>
           </div>
@@ -224,10 +253,10 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
 
       </div>
 
-      {/* 3. Müraciətlər və Təcili Dəstək Bölməsi */}
+      {/* Inquiries and Emergency Support Section */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-        
-        {/* Müraciətlərin Statusu */}
+
+        {/* Application Status*/}
         <div style={{
           backgroundColor: theme.cardBg,
           padding: '24px',
@@ -263,7 +292,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <span style={{
-                    backgroundColor: isDarkMode 
+                    backgroundColor: isDarkMode
                       ? (req.status === 'Təsdiqləndi' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)')
                       : req.bgColor,
                     color: req.statusColor,
@@ -283,10 +312,10 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
           </div>
         </div>
 
-        {/* 7/24 Təcili Dəstək Banneri */}
+        {/* 7/24 Emergency Support Banner */}
         <div style={{
-          background: isDarkMode 
-            ? 'linear-gradient(135deg, #132A24 0%, #1E3E35 100%)' 
+          background: isDarkMode
+            ? 'linear-gradient(135deg, #132A24 0%, #1E3E35 100%)'
             : 'linear-gradient(135deg, #1E3E35 0%, #2E5B4E 100%)',
           padding: '24px',
           borderRadius: '20px',
@@ -310,28 +339,31 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
             </p>
           </div>
 
-          <button style={{
-            backgroundColor: isDarkMode ? '#2A2A2A' : '#FFFFFF',
-            color: isDarkMode ? '#FFFFFF' : '#2E5B4E',
-            border: `1px solid ${theme.borderColor}`,
-            padding: '12px',
-            borderRadius: '12px',
-            fontSize: '13.5px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            transition: 'all 0.2s ease'
-          }}>
+          <button
+            onClick={() => setActivePopup('emergency')}
+            style={{
+              backgroundColor: isDarkMode ? '#2A2A2A' : '#FFFFFF',
+              color: isDarkMode ? '#FFFFFF' : '#2E5B4E',
+              border: `1px solid ${theme.borderColor}`,
+              padding: '12px',
+              borderRadius: '12px',
+              fontSize: '13.5px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
+          >
             <PhoneCall size={16} /> Zəng Et / Canlı Çat
           </button>
         </div>
 
       </div>
 
-      {/* 4. MODAL: Yeni Müraciət Yaratma Formu */}
+      {/* New Request Creation Form */}
       {isModalOpen && (
         <div style={{
           position: 'fixed',
@@ -450,6 +482,159 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
         </div>
       )}
 
+      {/* Insurance Details */}
+      {activePopup === 'insurance' && (
+        <div style={popupStyles.overlay}>
+          <div style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}` }}>
+            <div style={popupStyles.header}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <ShieldCheck size={24} color="#10B981" />
+                <h3 style={{ margin: 0, fontSize: '16px' }}>Tələbə Tibbi Sığorta Detalları</h3>
+              </div>
+              <button onClick={() => setActivePopup(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textSecondary }}><X size={20} /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13.5px' }}>
+              <div style={popupStyles.row}><span>Sığorta Növü:</span> <strong>İcbari və Könüllü Tələbə Paketi</strong></div>
+              <div style={popupStyles.row}><span>Polis Nömrəsi:</span> <strong>QU-INS-2026-8942</strong></div>
+              <div style={popupStyles.row}><span>Etibarlılıq Müddəti:</span> <strong>01.09.2026 – 30.06.2027</strong></div>
+              <div style={popupStyles.row}><span>Əhatə Dairəsi:</span> <strong>Stomatologiya, Təcili Cərrahiyyə, Laboratoriya Testləri</strong></div>
+              <div style={popupStyles.row}><span>Tərəfdaş Klinika:</span> <strong>Qarabağ Universiteti Kampus Klinika</strong></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Medical Test Results */}
+      {activePopup === 'lab' && (
+        <div style={popupStyles.overlay}>
+          <div style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}` }}>
+            <div style={popupStyles.header}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <FileText size={24} color="#EF4444" />
+                <h3 style={{ margin: 0, fontSize: '16px' }}>Laboratoriya Analiz Nəticələri</h3>
+              </div>
+              <button onClick={() => setActivePopup(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textSecondary }}><X size={20} /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
+              <p style={{ margin: 0, color: theme.textSecondary }}>Tarix: 04 Avqust 2026 | Status: <span style={{ color: '#10B981', fontWeight: '700' }}>Normal / Təsdiqlənib</span></p>
+
+              <div style={{ border: `1px solid ${theme.borderColor}`, borderRadius: '10px', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: `1px solid ${theme.borderColor}`, fontWeight: '700', backgroundColor: theme.innerBg }}>
+                  <span>Göstərici</span><span>Nəticə</span><span>Normal Diapazon</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: `1px solid ${theme.borderColor}` }}>
+                  <span>Hemoglobin (HGB)</span><strong>14.2 g/dL</strong><span style={{ color: theme.textSecondary }}>13.0 - 17.0</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: `1px solid ${theme.borderColor}` }}>
+                  <span>Leukositlər (WBC)</span><strong>6.8 k/uL</strong><span style={{ color: theme.textSecondary }}>4.0 - 10.0</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px' }}>
+                  <span>Qlükoza (Şəkər)</span><strong>88 mg/dL</strong><span style={{ color: theme.textSecondary }}>70 - 99</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Line & Live Chat */}
+      {activePopup === 'emergency' && (
+        <div style={popupStyles.overlay}>
+          <div style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}`, maxWidth: '460px' }}>
+            <div style={popupStyles.header}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <PhoneCall size={24} color="#EF4444" />
+                <h3 style={{ margin: 0, fontSize: '16px' }}>Təcili Tibbi Xətt & Canlı Dəstək</h3>
+              </div>
+              <button onClick={() => setActivePopup(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textSecondary }}><X size={20} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <a href="tel:103" style={{ textDecoration: 'none', backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#EF4444', padding: '10px', borderRadius: '10px', textAlign: 'center', fontWeight: '700', fontSize: '12.5px' }}>
+                  📞 Təcili Yardım (103)
+                </a>
+                <a href="tel:+994120000000" style={{ textDecoration: 'none', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10B981', padding: '10px', borderRadius: '10px', textAlign: 'center', fontWeight: '700', fontSize: '12.5px' }}>
+                  🏥 Kampus Klinika
+                </a>
+              </div>
+
+              <div style={{ border: `1px solid ${theme.borderColor}`, borderRadius: '12px', padding: '10px', height: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: theme.innerBg }}>
+                {chatHistory.map((msg, idx) => (
+                  <div key={idx} style={{
+                    alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                    backgroundColor: msg.sender === 'user' ? '#2E5B4E' : theme.borderColor,
+                    color: msg.sender === 'user' ? '#FFFFFF' : theme.textPrimary,
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    maxWidth: '80%'
+                  }}>
+                    {msg.text}
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="Operatora mesaj yazın..."
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${theme.inputBorder}`,
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                />
+                <button type="submit" style={{ padding: '0 16px', backgroundColor: '#2E5B4E', color: '#FFF', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>Göndər</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+
+const popupStyles = {
+  overlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    padding: '16px',
+  },
+  box: {
+    width: '100%',
+    maxWidth: '420px',
+    borderRadius: '18px',
+    padding: '22px',
+    boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  row: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '8px 0',
+    borderBottom: '1px solid rgba(128,128,128,0.15)',
+  }
+};
