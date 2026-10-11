@@ -1006,7 +1006,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              {/* Profil Dropdown Menyusu */}
+              {/* Profile Dropdown Menu */}
               {isProfileDropdownOpen && (
                 <div
                   style={{
@@ -1384,7 +1384,7 @@ export default function Dashboard() {
         }}
       />
 
-      {/* İstifadəçi Profilini Redaktə Etmək üçün Modal */}
+      {/* Profile Edit */}
       <EditProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
