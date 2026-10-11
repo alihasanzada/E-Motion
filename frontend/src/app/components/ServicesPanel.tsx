@@ -551,11 +551,8 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <a href="tel:103" style={{ textDecoration: 'none', backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#EF4444', padding: '10px', borderRadius: '10px', textAlign: 'center', fontWeight: '700', fontSize: '12.5px' }}>
-                  📞 Təcili Yardım (103)
-                </a>
-                <a href="tel:+994120000000" style={{ textDecoration: 'none', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10B981', padding: '10px', borderRadius: '10px', textAlign: 'center', fontWeight: '700', fontSize: '12.5px' }}>
-                  🏥 Kampus Klinika
+                <a href="tel:+994555057162" style={{ textDecoration: 'none', backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#EF4444', padding: '10px', borderRadius: '10px', textAlign: 'center', fontWeight: '700', fontSize: '12.5px' }}>
+                  📞 Təcili Yardım
                 </a>
               </div>
 
