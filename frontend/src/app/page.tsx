@@ -65,16 +65,14 @@ export default function Dashboard() {
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Su hədəfi', desc: 'Gündəlik su qəbulunun 50%-nə çatdınız!', time: '10 dəq əvvəl', read: false },
-    { id: 2, title: 'Həkim qəbulu', desc: 'Sabah saat 14:00-da həkim müayinəniz var.', time: '1 saat əvvəl', read: false },
-    { id: 3, title: 'Tədbir xəbərdarlığı', desc: 'Yoqa seansı 22 May tarixində keçiriləcək.', time: '3 saat əvvəl', read: false }
-  ]);
+  // Bildiriş və həkim mesajları yalnız serverdən gələndə göstərilməlidir.
+  const [notifications, setNotifications] = useState<{
+    id: number; title: string; desc: string; time: string; read: boolean;
+  }[]>([]);
 
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'Dr. Əliyev (Tibb məntəqəsi)', text: 'Qan analizi nəticələriniz hazırdır.', time: '12:30', read: false },
-    { id: 2, sender: 'Psixoloq Leyla M.', text: 'Növbəti seans üçün vaxtı təsdiqləyin.', time: 'Dünən', read: false }
-  ]);
+  const [messages, setMessages] = useState<{
+    id: number; sender: string; text: string; time: string; read: boolean;
+  }[]>([]);
 
   useEffect(() => {
     const localSteps = localStorage.getItem('user_steps');
