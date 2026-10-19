@@ -8,6 +8,7 @@ export const apiFetch = async (endpoint, options = {}) => {
         ...options,
         headers: {
             'Content-Type': 'application/json',
+            'X-E-Motion-Request': '1',
             ...(options.headers || {})
         }
     });
