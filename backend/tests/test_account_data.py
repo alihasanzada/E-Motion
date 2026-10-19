@@ -77,6 +77,23 @@ class AccountDataTests(unittest.TestCase):
         bad = self.a.post("/api/nutrition", json={"water_ml": -1})
         self.assertEqual(bad.status_code, 400)
 
+    def test_cross_site_cookie_mutation_needs_app_header(self):
+        payload = {"steps": 250, "active_minutes": 15}
+        refused = self.a.post(
+            "/api/activity", json=payload,
+            headers={"Origin": "https://untrusted.example"}
+        )
+        self.assertEqual(refused.status_code, 403)
+
+        accepted = self.a.post(
+            "/api/activity", json=payload,
+            headers={
+                "Origin": "https://e-motion-iota.vercel.app",
+                "X-E-Motion-Request": "1"
+            }
+        )
+        self.assertEqual(accepted.status_code, 201)
+
     def test_z_logout_revokes_session(self):
         self.assertEqual(self.b.post("/api/logout").status_code, 200)
         self.assertEqual(self.b.get("/api/activity").status_code, 401)
