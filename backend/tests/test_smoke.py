@@ -44,10 +44,10 @@ class BackendSmokeTests(unittest.TestCase):
         response = self.client.post("/api/login", json={})
         self.assertEqual(response.status_code, 400)
 
-    def test_activity_endpoint_returns_json(self):
+    def test_activity_requires_login(self):
         response = self.client.get("/api/activity")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("steps", response.get_json())
+        self.assertEqual(response.status_code, 401)
+        self.assertIn("error", response.get_json())
 
 
 if __name__ == "__main__":
