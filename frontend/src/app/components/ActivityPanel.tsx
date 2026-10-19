@@ -36,50 +36,37 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const distanceKm = (steps * 0.00075).toFixed(2);
 
   const saveAndSyncActivity = async (newSteps: number, newMinutes: number) => {
-    const cappedSteps = Math.min(Math.max(0, newSteps), stepGoal);
-    const cappedMinutes = Math.min(Math.max(0, newMinutes), activeMinGoal);
-
-    setSteps(cappedSteps);
-    setActiveMinutes(cappedMinutes);
-
-    const totalCalories = Math.round(cappedSteps * 0.04 + cappedMinutes * 5);
-
-    localStorage.setItem('user_steps', cappedSteps.toString());
-    localStorage.setItem('user_active_minutes', cappedMinutes.toString());
-    localStorage.setItem('user_calories', totalCalories.toString());
-
-    window.dispatchEvent(new CustomEvent('activity-updated', {
-      detail: { steps: cappedSteps, activeMinutes: cappedMinutes, calories: totalCalories }
-    }));
-    window.dispatchEvent(new Event('storage'));
+    // Save on the server first; a local preview is not proof of persistence.
+    const stepsToSave = Math.max(0, Math.floor(newSteps));
+    const minutesToSave = Math.max(0, Math.floor(newMinutes));
 
     try {
       const response = await apiFetch('/api/activity', {
         method: 'POST',
-        body: JSON.stringify({ steps: cappedSteps, active_minutes: cappedMinutes }),
+        body: JSON.stringify({ steps: stepsToSave, active_minutes: minutesToSave }),
       });
       if (!response.ok) {
-        throw new Error(`Activity sync failed (HTTP ${response.status})`);
+        throw new Error(`Activity save failed (HTTP ${response.status})`);
       }
+      const saved = await response.json();
+      if (typeof saved.steps !== 'number' || typeof saved.active_minutes !== 'number') {
+        throw new Error('Invalid activity response from server');
+      }
+
+      const totalCalories = Math.round(saved.steps * 0.04 + saved.active_minutes * 5);
+      setSteps(saved.steps);
+      setActiveMinutes(saved.active_minutes);
+      localStorage.setItem('user_steps', String(saved.steps));
+      localStorage.setItem('user_active_minutes', String(saved.active_minutes));
+      localStorage.setItem('user_calories', String(totalCalories));
+
+      window.dispatchEvent(new CustomEvent('activity-updated', {
+        detail: { steps: saved.steps, activeMinutes: saved.active_minutes, calories: totalCalories }
+      }));
+      window.dispatchEvent(new Event('storage'));
     } catch (error) {
-      console.error("Activity DB sync error:", error);
-      // Local state is only a temporary cache; reload authoritative server data.
-      try {
-        const latest = await apiFetch('/api/activity');
-        if (latest.ok) {
-          const data = await latest.json();
-          setSteps(data.steps ?? 0);
-          setActiveMinutes(data.active_minutes ?? 0);
-          localStorage.setItem('user_steps', String(data.steps ?? 0));
-          localStorage.setItem('user_active_minutes', String(data.active_minutes ?? 0));
-          const restoredCalories = Math.round((data.steps ?? 0) * 0.04 + (data.active_minutes ?? 0) * 5);
-          localStorage.setItem('user_calories', String(restoredCalories));
-          window.dispatchEvent(new Event('storage'));
-        }
-      } catch (refreshError) {
-        console.error("Failed to restore activity from server:", refreshError);
-      }
-      window.alert('Aktivlik məlumatları serverdə saxlanmadı. İnternet bağlantısını yoxlayın və yenidən cəhd edin.');
+      console.error('Activity DB sync error:', error);
+      window.alert('Aktivlik məlumatları serverdə saxlanmadı. Yenidən cəhd edin.');
     }
   };
 
@@ -112,30 +99,29 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   };
 
   const fetchActivity = async () => {
-    const savedSteps = localStorage.getItem('user_steps');
-    const savedMins = localStorage.getItem('user_active_minutes');
-
-    if (savedSteps !== null) setSteps(Number(savedSteps));
-    if (savedMins !== null) setActiveMinutes(Number(savedMins));
+    // Show the cache briefly, but always replace it with account-specific server data.
+    const cachedSteps = localStorage.getItem('user_steps');
+    const cachedMinutes = localStorage.getItem('user_active_minutes');
+    if (cachedSteps !== null) setSteps(Number(cachedSteps));
+    if (cachedMinutes !== null) setActiveMinutes(Number(cachedMinutes));
 
     try {
       const res = await apiFetch('/api/activity');
-
-      if (res.ok) {
-        const data = await res.json();
-        if (savedSteps === null && data.steps !== undefined && data.steps !== null) {
-          setSteps(data.steps);
-          localStorage.setItem('user_steps', data.steps.toString());
-        }
-        if (savedMins === null && data.active_minutes !== undefined && data.active_minutes !== null) {
-          setActiveMinutes(data.active_minutes);
-          localStorage.setItem('user_active_minutes', data.active_minutes.toString());
-        }
+      if (!res.ok) {
+        throw new Error(`Activity load failed (HTTP ${res.status})`);
       }
+      const data = await res.json();
+      if (typeof data.steps !== 'number' || typeof data.active_minutes !== 'number') {
+        throw new Error('Invalid activity data from server');
+      }
+      setSteps(data.steps);
+      setActiveMinutes(data.active_minutes);
+      localStorage.setItem('user_steps', String(data.steps));
+      localStorage.setItem('user_active_minutes', String(data.active_minutes));
+      localStorage.setItem('user_calories', String(Math.round(data.steps * 0.04 + data.active_minutes * 5)));
+      window.dispatchEvent(new Event('storage'));
     } catch (error) {
-      console.error("Failed to fetch activity:", error);
-      if (savedSteps !== null) setSteps(Number(savedSteps));
-      if (savedMins !== null) setActiveMinutes(Number(savedMins));
+      console.error('Failed to restore saved activity from backend:', error);
     }
   };
 
