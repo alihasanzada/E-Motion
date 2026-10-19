@@ -50,6 +50,16 @@ def guard_legacy_admin_api():
         return jsonify({"error": "Bu əməliyyat yalnız administrator üçün nəzərdə tutulub."}), 403
 
 
+# Brauzerdə cross-site cookie sorğularının profil və sağlamlıq
+# məlumatlarını səssiz dəyişməsinin qarşısını alırıq.
+@app.before_request
+def protect_cookie_mutations():
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"} and request.cookies.get("token"):
+        origin = request.headers.get("Origin")
+        if origin and request.headers.get("X-E-Motion-Request") != "1":
+            return jsonify({"error": "Təhlükəsizlik yoxlaması uğursuz oldu."}), 403
+
+
 # Təhlükəsizlik Başlıqları
 @app.after_request
 def set_security_headers(response):
