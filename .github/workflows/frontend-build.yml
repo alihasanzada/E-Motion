@@ -1,0 +1,37 @@
+name: Frontend build check
+
+on:
+  push:
+    branches:
+      - demo-day-review-2026-10-19
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-build.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install packages
+        run: npm ci
+      - name: Run ESLint
+        run: npx eslint src/app/auth/page.tsx src/app/page.tsx src/utils/api.js || true
+      - name: Build Next.js
+        run: npm run build
