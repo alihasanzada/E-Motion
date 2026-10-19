@@ -5,6 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import re
 import os
+import hashlib
+import secrets
+import time
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -225,6 +228,34 @@ def init_db():
             daily_water_goal INTEGER DEFAULT 2000
         )
     ''')
+
+    # Login sessiyaları və hər tələbəyə məxsus profil məlumatları.
+    # Köhnə singleton user_profile cədvəli məlumat qarışıqlığına səbəb ola bilər:
+    # yeni istifadəçi məlumatlarını user_profiles cədvəlində saxlayırıq.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_sessions (
+            token_hash TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            expires_at INTEGER NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            user_id INTEGER PRIMARY KEY,
+            fullname TEXT NOT NULL DEFAULT '',
+            major TEXT NOT NULL DEFAULT '',
+            course INTEGER NOT NULL DEFAULT 1,
+            student_id TEXT NOT NULL DEFAULT '',
+            phone TEXT NOT NULL DEFAULT '',
+            blood_group TEXT NOT NULL DEFAULT '',
+            emergency_contact TEXT NOT NULL DEFAULT '',
+            bio TEXT NOT NULL DEFAULT '',
+            daily_step_goal INTEGER NOT NULL DEFAULT 10000,
+            daily_water_goal INTEGER NOT NULL DEFAULT 2000,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
 
     conn.commit()
 
@@ -773,140 +804,131 @@ def update_water():
         
     return jsonify({"error": "Səhv məlumat formatı"}), 400
 
+def get_authenticated_user(conn):
+    """Return the account associated with a valid, unexpired session cookie."""
+    auth_header = request.headers.get("Authorization", "")
+    token = (
+        auth_header[len("Bearer "):].strip()
+        if auth_header.startswith("Bearer ")
+        else request.cookies.get("token", "")
+    )
+    if not token:
+        return None
+
+    digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    return conn.execute("""
+        SELECT users.id, users.name, users.email
+        FROM user_sessions
+        JOIN users ON users.id = user_sessions.user_id
+        WHERE user_sessions.token_hash = ?
+          AND user_sessions.expires_at > ?
+    """, (digest, int(time.time()))).fetchone()
+
+
+def build_user_profile(conn, user):
+    """Merge account identity with the authenticated student's saved settings."""
+    student_id = user["email"].split("@")[0]
+    student = conn.execute(
+        "SELECT major, semester FROM students WHERE UPPER(student_id) = UPPER(?)",
+        (student_id,)
+    ).fetchone()
+    profile = conn.execute(
+        "SELECT * FROM user_profiles WHERE user_id = ?", (user["id"],)
+    ).fetchone()
+    values = dict(profile) if profile else {}
+    return {
+        "fullname": values.get("fullname") or user["name"],
+        "email": user["email"],
+        "major": values.get("major") or (student["major"] if student else ""),
+        "course": values.get("course") or ((student["semester"] + 1) // 2 if student else 1),
+        "student_id": values.get("student_id") or student_id.upper(),
+        "phone": values.get("phone") or "",
+        "blood_group": values.get("blood_group") or "",
+        "emergency_contact": values.get("emergency_contact") or "",
+        "bio": values.get("bio") or "",
+        "daily_step_goal": values.get("daily_step_goal") or 10000,
+        "daily_water_goal": values.get("daily_water_goal") or 2000
+    }
+
+
 @app.route('/api/user/profile', methods=['GET', 'POST', 'PUT', 'OPTIONS'])
 def user_profile_endpoint():
-    """
-    Get or update active user profile details
-    ---
-    tags:
-      - User
-    parameters:
-      - name: body
-        in: body
-        required: false
-        schema:
-          type: object
-          properties:
-            fullname:
-              type: string
-            major:
-              type: string
-            course:
-              type: integer
-            student_id:
-              type: string
-            email:
-              type: string
-            phone:
-              type: string
-            blood_group:
-              type: string
-            emergency_contact:
-              type: string
-            bio:
-              type: string
-            daily_step_goal:
-              type: integer
-            daily_water_goal:
-              type: integer
-    responses:
-      200:
-        description: User profile retrieved or updated successfully
-    """
+    """Read/update only the profile belonging to the authenticated account."""
     if request.method == 'OPTIONS':
         return '', 200
 
-    auth_header = request.headers.get('Authorization')
-    token = None
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-
     conn = get_db_connection()
     try:
+        user = get_authenticated_user(conn)
+        if user is None:
+            return jsonify({"error": "Giriş tələb olunur."}), 401
+
         if request.method == 'GET':
-            user = None
-            if token:
-                user = conn.execute('SELECT * FROM users WHERE token = ?', (token,)).fetchone()
-                if not user:
-                    user = conn.execute('SELECT * FROM user_profile WHERE token = ?', (token,)).fetchone()
+            return jsonify(build_user_profile(conn, user)), 200
 
-            if not user:
-                user = conn.execute('SELECT * FROM users ORDER BY id DESC LIMIT 1').fetchone()
-            if not user:
-                user = conn.execute('SELECT * FROM user_profile ORDER BY id DESC LIMIT 1').fetchone()
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"error": "Profil üçün JSON obyekt göndərin."}), 400
 
-            if user:
-                u_dict = dict(user)
-                return jsonify({
-                    'fullname': u_dict.get('fullname') or u_dict.get('name') or '',
-                    'email': u_dict.get('email') or '',
-                    'major': u_dict.get('major') or '',
-                    'course': u_dict.get('course') or 1,
-                    'student_id': u_dict.get('student_id') or u_dict.get('studentId') or '',
-                    'phone': u_dict.get('phone') or '',
-                    'blood_group': u_dict.get('blood_group') or u_dict.get('bloodGroup') or '',
-                    'emergency_contact': u_dict.get('emergency_contact') or u_dict.get('emergencyContact') or '',
-                    'bio': u_dict.get('bio') or '',
-                    'daily_step_goal': u_dict.get('daily_step_goal') or u_dict.get('dailyStepGoal') or 10000,
-                    'daily_water_goal': u_dict.get('daily_water_goal') or u_dict.get('dailyWaterGoal') or 2000
-                }), 200
+        existing = build_user_profile(conn, user)
+        supplied_email = str(data.get("email") or "").strip()
+        if supplied_email and supplied_email.lower() != user["email"].lower():
+            return jsonify({"error": "Başqa hesabın e-poçtu ilə profil dəyişdirilə bilməz."}), 403
 
-            return jsonify({'error': 'İstifadəçi tapılmadı'}), 404
+        def get_text(key, alias=None):
+            value = data.get(key, data.get(alias) if alias else existing[key])
+            return str(value).strip() if value is not None else ""
 
-        data = request.get_json(silent=True) or {}
+        try:
+            course = int(data.get("course", existing["course"]))
+            step_goal = int(data.get("daily_step_goal", data.get("dailyStepGoal", existing["daily_step_goal"])))
+            water_goal = int(data.get("daily_water_goal", data.get("dailyWaterGoal", existing["daily_water_goal"])))
+        except (ValueError, TypeError):
+            return jsonify({"error": "Hədəflər və kurs rəqəm olmalıdır."}), 400
 
-        fullname = data.get('fullname') or data.get('name') or ''
-        major = data.get('major') or ''
-        course = int(data.get('course') or 1)
-        student_id = data.get('student_id') or data.get('studentId') or ''
-        email = data.get('email') or ''
-        phone = data.get('phone') or ''
-        blood_group = data.get('blood_group') or data.get('bloodGroup') or ''
-        emergency_contact = data.get('emergency_contact') or data.get('emergencyContact') or ''
-        bio = data.get('bio') or ''
-        daily_step_goal = int(data.get('daily_step_goal') or data.get('dailyStepGoal') or 10000)
-        daily_water_goal = int(data.get('daily_water_goal') or data.get('dailyWaterGoal') or 2000)
+        if not 1 <= course <= 8 or not 1 <= step_goal <= 100000 or not 1 <= water_goal <= 10000:
+            return jsonify({"error": "Kurs və gündəlik hədəflər uyğun aralıqda olmalıdır."}), 400
 
-        cursor = conn.cursor()
+        fullname = get_text("fullname", "name") or user["name"]
+        if len(fullname) > 150:
+            return jsonify({"error": "Ad və soyad çox uzundur."}), 400
 
-        if token:
-            cursor.execute("""
-                UPDATE users 
-                SET fullname = ?, major = ?, course = ?, student_id = ?, email = ?, 
-                    phone = ?, blood_group = ?, emergency_contact = ?, bio = ?, 
-                    daily_step_goal = ?, daily_water_goal = ?
-                WHERE token = ?
-            """, (
-                fullname, major, course, student_id, email,
-                phone, blood_group, emergency_contact, bio,
-                daily_step_goal, daily_water_goal, token
-            ))
-            conn.commit()
-
-        if email:
-            cursor.execute("""
-                UPDATE users 
-                SET fullname = ?, major = ?, course = ?, student_id = ?, 
-                    phone = ?, blood_group = ?, emergency_contact = ?, bio = ?, 
-                    daily_step_goal = ?, daily_water_goal = ?
-                WHERE email = ?
-            """, (
-                fullname, major, course, student_id,
-                phone, blood_group, emergency_contact, bio,
-                daily_step_goal, daily_water_goal, email
-            ))
-            conn.commit()
+        profile_values = (
+            user["id"], fullname, get_text("major"), course,
+            get_text("student_id", "studentId"), get_text("phone"),
+            get_text("blood_group", "bloodGroup"),
+            get_text("emergency_contact", "emergencyContact"),
+            get_text("bio"), step_goal, water_goal
+        )
+        conn.execute("""
+            INSERT INTO user_profiles (
+                user_id, fullname, major, course, student_id, phone,
+                blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                fullname=excluded.fullname,
+                major=excluded.major,
+                course=excluded.course,
+                student_id=excluded.student_id,
+                phone=excluded.phone,
+                blood_group=excluded.blood_group,
+                emergency_contact=excluded.emergency_contact,
+                bio=excluded.bio,
+                daily_step_goal=excluded.daily_step_goal,
+                daily_water_goal=excluded.daily_water_goal
+        """, profile_values)
+        conn.commit()
 
         return jsonify({
             "message": "Profil məlumatları uğurla yeniləndi!",
-            "user": data
+            "user": build_user_profile(conn, user)
         }), 200
-
-    except Exception as e:
-        app.logger.error(f"Profile error: {e}")
-        return jsonify({"error": f"Profil yenilənərkən xəta baş verdi: {str(e)}"}), 500
+    except Exception:
+        app.logger.exception("Profile endpoint failed")
+        return jsonify({"error": "Profil yenilənərkən xəta baş verdi."}), 500
     finally:
         conn.close()
+
 
 # --- AUTHENTICATION ENDPOINTS ---
 
@@ -1030,39 +1052,34 @@ def login():
                 course = 1
                 student_name = user['name']
 
-            token = 'auth-token-xyz-12345'
+            # Hər giriş üçün kriptoqrafik təsadüfi sessiya; bazada yalnız hash saxlanılır.
+            token = secrets.token_urlsafe(32)
+            token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+            lifetime = 7 * 24 * 60 * 60
+            conn.execute(
+                "INSERT INTO user_sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)",
+                (token_hash, user["id"], int(time.time()) + lifetime)
+            )
+            conn.commit()
 
             response = make_response(jsonify({
-                'message': 'Giriş uğurludur!',
-                'user': {
-                    'id': user['id'],
-                    'name': student_name,
-                    'email': user['email'],
-                    'major': major,
-                    'course': f'{course}-ci kurs'
+                "message": "Giriş uğurludur!",
+                "user": {
+                    "id": user["id"],
+                    "name": student_name,
+                    "email": user["email"],
+                    "major": major,
+                    "course": course
                 }
             }), 200)
-
-            is_production = os.getenv('RENDER') is not None or os.getenv('FLASK_ENV') == 'production'
-
-            response = make_response(jsonify({
-                'message': 'Giriş uğurludur!',
-                'user': {
-                    'id': user['id'],
-                    'name': student_name,
-                    'email': user['email'],
-                    'major': major,
-                    'course': f'{course}-ci kurs'
-                }
-            }), 200)
-            
+            is_production = (
+                os.getenv("RENDER") is not None
+                or os.getenv("FLASK_ENV") == "production"
+            )
             response.set_cookie(
-                'token',
-                token,
-                httponly=True,
-                secure=is_production,
-                samesite='None' if is_production else 'Lax',
-                max_age=7 * 24 * 60 * 60
+                "token", token, httponly=True, secure=is_production,
+                samesite="None" if is_production else "Lax",
+                max_age=lifetime, path="/"
             )
 
             return response
