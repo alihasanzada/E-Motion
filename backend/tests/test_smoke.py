@@ -50,5 +50,17 @@ class BackendSmokeTests(unittest.TestCase):
         self.assertIn("error", response.get_json())
 
 
+    def test_student_records_are_not_public(self):
+        response = self.client.get("/api/students")
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("st123456", response.get_data(as_text=True))
+
+    def test_unrestricted_campus_admin_mutations_disabled(self):
+        for path in ["/api/events", "/api/courses", "/api/resources"]:
+            with self.subTest(path=path):
+                response = self.client.post(path, json={"title": "Test"})
+                self.assertEqual(response.status_code, 403)
+
+
 if __name__ == "__main__":
     unittest.main()
