@@ -39,6 +39,17 @@ limiter = Limiter(
     storage_uri="memory://"
 )
 
+# Admin rol sistemi hazır olmadığı üçün idarəetmə API-lərinin
+# anonim oxunmasını və sərbəst yazılmasını dayandırırıq.
+@app.before_request
+def guard_legacy_admin_api():
+    path = request.path
+    if path == "/api/students" or path.startswith("/api/students/"):
+        return jsonify({"error": "Tələbə məlumatları üçün administrator icazəsi tələb olunur."}), 403
+    if path in {"/api/courses", "/api/events", "/api/resources"} and request.method not in {"GET", "HEAD", "OPTIONS"}:
+        return jsonify({"error": "Bu əməliyyat yalnız administrator üçün nəzərdə tutulub."}), 403
+
+
 # Təhlükəsizlik Başlıqları
 @app.after_request
 def set_security_headers(response):
