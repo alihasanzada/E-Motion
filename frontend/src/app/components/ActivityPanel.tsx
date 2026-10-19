@@ -132,8 +132,10 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     setIsSyncing(true);
 
     try {
-      const res = await apiFetch('/api/google-fit/steps', {
+      // Google Fit API Next.js layihəsinin daxilindədir, Flask backend-də deyil.
+      const res = await fetch('/api/google-fit/steps', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessToken }),
       });
 
