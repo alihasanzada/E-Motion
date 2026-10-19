@@ -876,7 +876,11 @@ def user_profile_endpoint():
             return jsonify({"error": "Başqa hesabın e-poçtu ilə profil dəyişdirilə bilməz."}), 403
 
         def get_text(key, alias=None):
-            value = data.get(key, data.get(alias) if alias else existing[key])
+            value = data.get(key)
+            if value is None and alias:
+                value = data.get(alias)
+            if value is None:
+                value = existing[key]
             return str(value).strip() if value is not None else ""
 
         try:
