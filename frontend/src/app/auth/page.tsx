@@ -1,6 +1,6 @@
 'use client';
 
-import { apiFetch } from '@/utils/api';
+import { apiFetch, clearPrivateLocalData } from '@/utils/api';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
@@ -92,6 +92,7 @@ export default function AuthPage() {
             phone: data.user?.phone || "",
             emergency_contact: data.user?.emergency_contact || ""
           };
+          clearPrivateLocalData();
           localStorage.setItem('user', JSON.stringify(userData));
 
           if (!localStorage.getItem('user_steps')) localStorage.setItem('user_steps', '0');
