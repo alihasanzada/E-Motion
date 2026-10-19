@@ -120,12 +120,12 @@ export default function Dashboard() {
         if (activityRes.ok) {
           const activityData = await activityRes.json();
           if (activityData) {
-            if (activityData.steps !== undefined && activityData.steps !== null && activityData.steps > 0) {
+            if (activityData.steps !== undefined && activityData.steps !== null) {
               setStepsCount(activityData.steps);
               localStorage.setItem('user_steps', activityData.steps.toString());
             }
 
-            if (activityData.active_minutes !== undefined && activityData.active_minutes !== null && activityData.active_minutes > 0) {
+            if (activityData.active_minutes !== undefined && activityData.active_minutes !== null) {
               setActivityMinutes(activityData.active_minutes);
               localStorage.setItem('user_active_minutes', activityData.active_minutes.toString());
             }
@@ -137,7 +137,7 @@ export default function Dashboard() {
             localStorage.setItem('user_calories', totalCal.toString());
 
             const serverWaterMl = activityData.water ?? activityData.water_ml;
-            if (serverWaterMl !== undefined && serverWaterMl !== null && serverWaterMl > 0) {
+            if (serverWaterMl !== undefined && serverWaterMl !== null) {
               const calculatedGlasses = Math.floor(serverWaterMl / 250);
               setWaterCount(calculatedGlasses);
               localStorage.setItem('user_water_ml', serverWaterMl.toString());
