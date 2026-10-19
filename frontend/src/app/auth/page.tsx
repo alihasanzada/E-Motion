@@ -95,9 +95,8 @@ export default function AuthPage() {
           clearPrivateLocalData();
           localStorage.setItem('user', JSON.stringify(userData));
 
-          if (!localStorage.getItem('user_steps')) localStorage.setItem('user_steps', '0');
-          if (!localStorage.getItem('user_water_ml')) localStorage.setItem('user_water_ml', '0');
-          if (!localStorage.getItem('user_water_glasses')) localStorage.setItem('user_water_glasses', '0');
+          // Profilin şəxsi göstəricilərini lokal olaraq sıfırlamayın.
+          // Dashboard və Aktivlik paneli bunları girişdən sonra serverdən oxuyacaq.
         }
 
         router.push('/');
