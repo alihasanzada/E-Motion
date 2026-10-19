@@ -77,7 +77,7 @@ class AccountDataTests(unittest.TestCase):
         bad = self.a.post("/api/nutrition", json={"water_ml": -1})
         self.assertEqual(bad.status_code, 400)
 
-    def test_logout_revokes_session(self):
+    def test_z_logout_revokes_session(self):
         self.assertEqual(self.b.post("/api/logout").status_code, 200)
         self.assertEqual(self.b.get("/api/activity").status_code, 401)
         self.assertEqual(self.a.get("/api/activity").status_code, 200)
