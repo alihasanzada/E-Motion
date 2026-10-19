@@ -22,9 +22,7 @@ import EditProfileModal, { UserProfileData } from './components/EditProfileModal
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import EmptyState from "./components/EmptyState";
-import { apiFetch } from '@/utils/api';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
+import { apiFetch, clearPrivateLocalData } from '@/utils/api';
 
 const searchIndex = [
   { keywords: ['idarə', 'panel', 'əsas', 'home', 'dashboard'], tabId: 'dashboard', title: 'İdarə paneli' },
@@ -113,9 +111,9 @@ export default function Dashboard() {
       setIsLoading(true);
       try {
         const [notifRes, msgRes, activityRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/notifications`),
-          fetch(`${API_BASE_URL}/api/messages`),
-          fetch(`${API_BASE_URL}/api/activity`)
+          apiFetch('/api/notifications'),
+          apiFetch('/api/messages'),
+          apiFetch('/api/activity')
         ]);
 
         if (notifRes.ok) setNotifications(await notifRes.json());
@@ -243,7 +241,7 @@ export default function Dashboard() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+      await apiFetch('/api/notifications/read-all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -286,7 +284,7 @@ export default function Dashboard() {
     localStorage.setItem('user_water_ml', newWaterMl.toString());
 
     try {
-      await fetch(`${API_BASE_URL}/api/activity`, {
+      await apiFetch('/api/activity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ steps: stepsCount, water_ml: newWaterMl }),
@@ -299,54 +297,47 @@ export default function Dashboard() {
   useEffect(() => {
     const loadUserData = async () => {
       const storedUser = localStorage.getItem('user');
-      const token = localStorage.getItem('userToken');
-
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (e) {
-          console.error("İstifadəçi məlumatları oxunarkən xəta baş verdi:", e);
-        }
-      } else {
-        router.push('/auth');
+      if (!storedUser) {
+        router.replace('/auth');
         return;
       }
-
-      if (token) {
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/user/profile`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          if (res.ok) {
-            const profileData = await res.json();
-            if (profileData && profileData.email) {
-              const currentStored = JSON.parse(localStorage.getItem('user') || '{}');
-              if (currentStored.email === profileData.email) {
-                const merged = { ...currentStored, ...profileData };
-                setUser(merged);
-                localStorage.setItem('user', JSON.stringify(merged));
-              }
-            }
-          }
-        } catch (err) {
-          console.warn('Backend profil məlumatı alına bilmədi, lokal istifadəçi saxlanılır:', err);
+      try {
+        const res = await apiFetch('/api/user/profile');
+        if (res.status === 401) {
+          clearPrivateLocalData();
+          router.replace('/auth');
+          return;
         }
+        if (!res.ok) {
+          console.warn('Profil sorğusu uğursuz oldu:', res.status);
+          return;
+        }
+        const profileData = await res.json();
+        const cachedUser = JSON.parse(storedUser);
+        if (profileData.email !== cachedUser.email) {
+          clearPrivateLocalData();
+          router.replace('/auth');
+          return;
+        }
+        const merged = { ...cachedUser, ...profileData };
+        setUser(merged);
+        localStorage.setItem('user', JSON.stringify(merged));
+      } catch (err) {
+        console.warn('Backend profil məlumatı oxunmadı:', err);
       }
     };
-
     loadUserData();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('user_steps');
-    localStorage.removeItem('user_water_ml');
-    localStorage.removeItem('user_water_glasses');
-    localStorage.removeItem('waterCount');
-    router.push('/auth');
+  const handleLogout = async () => {
+    try {
+      await apiFetch('/api/logout', { method: 'POST' });
+    } catch (err) {
+      console.warn('Server sessiyasını bağlamaq mümkün olmadı:', err);
+    } finally {
+      clearPrivateLocalData();
+      router.replace('/auth');
+    }
   };
 
   const theme = isDarkMode ? {
@@ -370,7 +361,7 @@ export default function Dashboard() {
   const handleMarkAllNotificationsAsRead = async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/read-all`, { method: 'POST' });
+      await apiFetch('/api/notifications/read-all', { method: 'POST' });
     } catch (err) {
       console.error('Bildiriş sıfırlama xətası:', err);
     }
@@ -385,7 +376,7 @@ export default function Dashboard() {
       setMessages(prev => prev.map(m => ({ ...m, read: true })));
 
       try {
-        await fetch(`${API_BASE_URL}/api/messages/read-all`, {
+        await apiFetch('/api/messages/read-all', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -1134,9 +1125,7 @@ export default function Dashboard() {
                   <button
                     onClick={() => {
                       setisProfileDropdownOpen(false);
-                      localStorage.clear();
-                      sessionStorage.clear();
-                      router.push('/auth');
+                      void handleLogout();
                     }}
                     style={{
                       display: 'flex',
