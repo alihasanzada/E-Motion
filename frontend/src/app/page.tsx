@@ -108,45 +108,45 @@ export default function Dashboard() {
     const loadDashboardData = async () => {
       setIsLoading(true);
       try {
-        const [notifRes, msgRes, activityRes] = await Promise.all([
+        // A slow or failing notifications endpoint must not prevent activity
+        // and water from being restored after the student signs in.
+        const [notificationResult, messageResult, activityResult] = await Promise.allSettled([
           apiFetch('/api/notifications'),
           apiFetch('/api/messages'),
           apiFetch('/api/activity')
         ]);
 
-        if (notifRes.ok) setNotifications(await notifRes.json());
-        if (msgRes.ok) setMessages(await msgRes.json());
+        if (notificationResult.status === 'fulfilled' && notificationResult.value.ok) {
+          setNotifications(await notificationResult.value.json());
+        }
+        if (messageResult.status === 'fulfilled' && messageResult.value.ok) {
+          setMessages(await messageResult.value.json());
+        }
 
-        if (activityRes.ok) {
-          const activityData = await activityRes.json();
-          if (activityData) {
-            if (activityData.steps !== undefined && activityData.steps !== null) {
-              setStepsCount(activityData.steps);
-              localStorage.setItem('user_steps', activityData.steps.toString());
-            }
-
-            if (activityData.active_minutes !== undefined && activityData.active_minutes !== null) {
-              setActivityMinutes(activityData.active_minutes);
-              localStorage.setItem('user_active_minutes', activityData.active_minutes.toString());
-            }
-
-            const currentMins = activityData.active_minutes || mins;
-            const currentSteps = activityData.steps || (localSteps ? Number(localSteps) : 0);
-            const totalCal = Math.round(currentSteps * 0.04 + currentMins * 5);
-            setCaloriesCount(totalCal);
-            localStorage.setItem('user_calories', totalCal.toString());
-
-            const serverWaterMl = activityData.water ?? activityData.water_ml;
-            if (serverWaterMl !== undefined && serverWaterMl !== null) {
-              const calculatedGlasses = Math.floor(serverWaterMl / 250);
-              setWaterCount(calculatedGlasses);
-              localStorage.setItem('user_water_ml', serverWaterMl.toString());
-              localStorage.setItem('user_water_glasses', calculatedGlasses.toString());
-            }
+        if (activityResult.status === 'fulfilled' && activityResult.value.ok) {
+          const activityData = await activityResult.value.json();
+          const serverSteps = Number(activityData.steps ?? 0);
+          const serverMinutes = Number(activityData.active_minutes ?? 0);
+          const serverWaterMl = Number(activityData.water_ml ?? activityData.water ?? 0);
+          if ([serverSteps, serverMinutes, serverWaterMl].every(Number.isFinite)) {
+            // Always trust the authenticated server, including valid zero values.
+            const totalCalories = Math.round(serverSteps * 0.04 + serverMinutes * 5);
+            const glasses = Math.floor(serverWaterMl / 250);
+            setStepsCount(serverSteps);
+            setActivityMinutes(serverMinutes);
+            setCaloriesCount(totalCalories);
+            setWaterCount(glasses);
+            localStorage.setItem('user_steps', String(serverSteps));
+            localStorage.setItem('user_active_minutes', String(serverMinutes));
+            localStorage.setItem('user_calories', String(totalCalories));
+            localStorage.setItem('user_water_ml', String(serverWaterMl));
+            localStorage.setItem('user_water_glasses', String(glasses));
           }
+        } else {
+          console.warn('Şəxsi aktivlik məlumatları serverdən alına bilmədi.');
         }
       } catch (err) {
-        console.warn('Backend serveri ilə əlaqə yaradılmadı:', err);
+        console.warn('Dashboard məlumatları yenilənə bilmədi:', err);
       } finally {
         setIsLoading(false);
       }
@@ -274,21 +274,24 @@ export default function Dashboard() {
   }, []);
 
   const handleWaterUpdate = async (newGlasses: number) => {
-    setWaterCount(newGlasses);
-
     const newWaterMl = newGlasses * 250;
-
-    localStorage.setItem('user_water_glasses', newGlasses.toString());
-    localStorage.setItem('user_water_ml', newWaterMl.toString());
-
     try {
-      await apiFetch('/api/activity', {
+      // Do not send stepsCount here: it may still be zero while dashboard loads,
+      // and would otherwise overwrite the saved steps on the server.
+      const response = await apiFetch('/api/activity', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps: stepsCount, water_ml: newWaterMl }),
+        body: JSON.stringify({ water_ml: newWaterMl }),
       });
+      if (!response.ok) throw new Error(`Su qəbulu yazılmadı: HTTP ${response.status}`);
+      const data = await response.json();
+      const savedGlasses = Math.floor(Number(data.water_ml ?? newWaterMl) / 250);
+      setWaterCount(savedGlasses);
+      localStorage.setItem('user_water_glasses', String(savedGlasses));
+      localStorage.setItem('user_water_ml', String(data.water_ml ?? newWaterMl));
+      window.dispatchEvent(new Event('storage'));
     } catch (err) {
-      console.warn("Su miqdarı yenilənə bilmədi:", err);
+      console.error('Su miqdarı saxlanılmadı:', err);
+      toast.error('Su qəbulu serverdə saxlanmadı. Yenidən cəhd edin.');
     }
   };
 
