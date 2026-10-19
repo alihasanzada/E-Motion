@@ -54,12 +54,32 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     window.dispatchEvent(new Event('storage'));
 
     try {
-      await apiFetch('/api/activity', {
+      const response = await apiFetch('/api/activity', {
         method: 'POST',
         body: JSON.stringify({ steps: cappedSteps, active_minutes: cappedMinutes }),
       });
+      if (!response.ok) {
+        throw new Error(`Activity sync failed (HTTP ${response.status})`);
+      }
     } catch (error) {
       console.error("Activity DB sync error:", error);
+      // Local state is only a temporary cache; reload authoritative server data.
+      try {
+        const latest = await apiFetch('/api/activity');
+        if (latest.ok) {
+          const data = await latest.json();
+          setSteps(data.steps ?? 0);
+          setActiveMinutes(data.active_minutes ?? 0);
+          localStorage.setItem('user_steps', String(data.steps ?? 0));
+          localStorage.setItem('user_active_minutes', String(data.active_minutes ?? 0));
+          const restoredCalories = Math.round((data.steps ?? 0) * 0.04 + (data.active_minutes ?? 0) * 5);
+          localStorage.setItem('user_calories', String(restoredCalories));
+          window.dispatchEvent(new Event('storage'));
+        }
+      } catch (refreshError) {
+        console.error("Failed to restore activity from server:", refreshError);
+      }
+      window.alert('Aktivlik məlumatları serverdə saxlanmadı. İnternet bağlantısını yoxlayın və yenidən cəhd edin.');
     }
   };
 
