@@ -31,7 +31,5 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install packages
         run: npm ci
-      - name: Run ESLint
-        run: npx eslint src/app/auth/page.tsx src/app/page.tsx src/utils/api.js || true
       - name: Build Next.js
         run: npm run build
