@@ -58,20 +58,20 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
   const [sleepVerified, setSleepVerified] = useState<boolean>(false);
 
   const theme = {
-    cardBg: isDarkMode ? '#1E293B' : '#FFFFFF',
+    cardBg: isDarkMode ? '#1A1D20' : '#FFFFFF',
     bannerBg: isDarkMode ? '#18181B' : '#FFFFFF',
-    innerBg: isDarkMode ? '#0F172A' : '#F8FAFC',
-    inputBg: isDarkMode ? '#0F172A' : '#F1F5F9',
+    innerBg: isDarkMode ? '#15181B' : '#F8FAFC',
+    inputBg: isDarkMode ? '#15181B' : '#F1F5F9',
     inputText: isDarkMode ? '#F8FAFC' : '#0F172A',
     textPrimary: isDarkMode ? '#F8FAFC' : '#0F172A',
     textSecondary: isDarkMode ? '#94A3B8' : '#475569',
     textMuted: isDarkMode ? '#64748B' : '#64748B',
-    borderColor: isDarkMode ? '#334155' : '#E2E8F0',
-    progressBg: isDarkMode ? '#334155' : '#E2E8F0',
-    lockedCardBg: isDarkMode ? '#1E293B' : '#F8FAFC',
-    lockedCardBorder: isDarkMode ? '#334155' : '#E2E8F0',
-    btnBg: isDarkMode ? '#334155' : '#44766C',
-    btnHoverBg: isDarkMode ? '#475569' : '#38635A',
+    borderColor: isDarkMode ? '#2E353D' : '#E2E8F0',
+    progressBg: isDarkMode ? '#2E353D' : '#E2E8F0',
+    lockedCardBg: isDarkMode ? '#1A1D20' : '#F8FAFC',
+    lockedCardBorder: isDarkMode ? '#2E353D' : '#E2E8F0',
+    btnBg: isDarkMode ? '#2E353D' : '#44766C',
+    btnHoverBg: isDarkMode ? '#3F4752' : '#38635A',
     primary: '#44766C',
     accentGreen: '#10B981',
     gold: isDarkMode ? '#F59E0B' : '#D97706'
@@ -101,7 +101,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
       unit: 'Litr',
       completed: false,
       type: 'water',
-      iconBg: isDarkMode ? '#1E3A8A' : '#E0F2FE',
+      iconBg: isDarkMode ? 'rgba(14, 165, 233, 0.15)' : '#E0F2FE',
       icon: <Droplet size={20} color="#0EA5E9" />
     },
     {
@@ -115,7 +115,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
       unit: 'Addım',
       completed: true,
       type: 'steps',
-      iconBg: isDarkMode ? '#064E3B' : '#DCFCE7',
+      iconBg: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7',
       icon: <Activity size={20} color="#10B981" />
     },
     {
@@ -129,7 +129,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
       unit: 'Gün',
       completed: false,
       type: 'sleep',
-      iconBg: isDarkMode ? '#312E81' : '#EDE9FE',
+      iconBg: isDarkMode ? 'rgba(139, 92, 246, 0.15)' : '#EDE9FE',
       icon: <Moon size={20} color="#8B5CF6" />
     },
     {
@@ -143,7 +143,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
       unit: 'Məşq',
       completed: false,
       type: 'workout',
-      iconBg: isDarkMode ? '#78350F' : '#FEF3C7',
+      iconBg: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7',
       icon: <Dumbbell size={20} color="#D97706" />
     }
   ]);
@@ -227,7 +227,6 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: theme.textPrimary }}>Həftəlik Motivasiya Çağırışları</h2>
-              <Sparkles size={16} color={theme.gold} />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
@@ -634,7 +633,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
         </div>
       )}
 
-      {/* Achievement Badges  */}
+      {/* Achievement Badges */}
       {activeTab === 'badges' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
           {badges.map((b) => (
@@ -730,7 +729,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
               </div>
             </div>
 
-            {/* Modal Task Contents */}
+            {/* Modal Task Specific Inner Content */}
             {activeModalTask.type === 'water' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
                 <p style={{ fontSize: '13px', color: theme.textSecondary, margin: 0 }}>

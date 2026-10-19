@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 from flasgger import Swagger
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,13 +6,35 @@ import sqlite3
 import re
 import os
 from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 load_dotenv()
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
-CORS(app)
+CORS(app, supports_credentials=True, origins=[
+    "http://localhost:3000", 
+    "http://127.0.0.1:3000", 
+    "https://e-motion-7vds.onrender.com"
+])
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
+
+# Rate Limiter konfiqurasiyası
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+# Təhlükəsizlik Başlıqları
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
 
 # Swagger Konfiqurasiyası
 swagger_config = {
@@ -43,6 +65,181 @@ swagger = Swagger(app, config=swagger_config, template=template)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, 'kuds_database.db')
+
+# --- DATABASE HELPER & INITIALIZATION ---
+
+def get_db_connection():
+    """Verilənlər bazası ilə əlaqə yaradır və row_factory təyin edir"""
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    """Cəvəlləri yaradır və ilkin dataları daxil edir"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 1. Users
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+
+    # 2. Students
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            student_id TEXT UNIQUE NOT NULL,
+            major TEXT NOT NULL,
+            semester INTEGER NOT NULL
+        )
+    ''')
+
+    # 3. Courses
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS courses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            code TEXT UNIQUE NOT NULL,
+            credits INTEGER NOT NULL
+        )
+    ''')
+
+    # 4. Events
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            date TEXT NOT NULL,
+            location TEXT NOT NULL
+        )
+    ''')
+
+    # 5. Resources
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS resources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            category TEXT NOT NULL,
+            link TEXT NOT NULL
+        )
+    ''')
+
+    # 6. Physical Activity
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS physical_activity (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            steps INTEGER NOT NULL,
+            water_ml INTEGER NOT NULL,
+            date TEXT DEFAULT (DATE('now', 'localtime'))
+        )
+    ''')
+
+    # 7. Mood Logs
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS mood_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mood TEXT NOT NULL,
+            note TEXT,
+            date TEXT DEFAULT (DATE('now', 'localtime'))
+        )
+    ''')
+
+    # 8. Nutrition
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS nutrition (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            meal TEXT NOT NULL,
+            calories INTEGER NOT NULL,
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # 9. Challenges
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS challenges (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            completed INTEGER DEFAULT 0
+        )
+    ''')
+
+    # 10. Notifications Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            desc TEXT NOT NULL,
+            time TEXT NOT NULL,
+            read BOOLEAN NOT NULL DEFAULT 0
+        )
+    ''')
+
+    # 11. Messages Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sender TEXT NOT NULL,
+            text TEXT NOT NULL,
+            time TEXT NOT NULL,
+            read BOOLEAN NOT NULL DEFAULT 0
+        )
+    ''')
+
+    # 12. Water Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS water (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            count INTEGER NOT NULL DEFAULT 0
+        )
+    ''')
+
+    # 13. User Profile Cədvəli
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_profile (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            fullname TEXT NOT NULL,
+            major TEXT NOT NULL,
+            course INTEGER NOT NULL,
+            student_id TEXT DEFAULT 'QU-2024-101',
+            email TEXT DEFAULT 'st123456@qu.edu.az',
+            phone TEXT DEFAULT '+994 50 123 45 67',
+            blood_group TEXT DEFAULT 'A+',
+            emergency_contact TEXT DEFAULT '+994 50 765 43 21',
+            bio TEXT DEFAULT 'Qarabağ Universiteti tələbəsi. Sağlam həyat tərzi və idman həvəskarı.',
+            daily_step_goal INTEGER DEFAULT 10000,
+            daily_water_goal INTEGER DEFAULT 2000
+        )
+    ''')
+
+    conn.commit()
+
+    # Seed initial test data if empty
+    cursor.execute('SELECT COUNT(*) FROM students')
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("INSERT INTO students (name, student_id, major, semester) VALUES ('Əli Məmmədov', 'st123456', 'Kompüter Mühəndisliyi', 4)")
+        cursor.execute("INSERT INTO students (name, student_id, major, semester) VALUES ('Aysel Əliyeva', 'st123457', 'İnformasiya Texnologiyaları', 2)")
+        cursor.execute("INSERT INTO courses (title, code, credits) VALUES ('Veb Proqramlaşdırma', 'CS301', 6)")
+        cursor.execute("INSERT INTO courses (title, code, credits) VALUES ('Verilənlər Bazası Sistemləri', 'CS204', 5)")
+        cursor.execute("INSERT INTO events (title, date, location) VALUES ('AI və Gələcək Seminarı', '2026-04-15', 'Əsas Bina, Zal A')")
+        cursor.execute("INSERT INTO resources (title, category, link) VALUES ('Flask Sənədləşməsi', 'Dərslik', 'https://flask.palletsprojects.com/')")
+        cursor.execute("INSERT INTO challenges (title, description, completed) VALUES ('Su Kampaniyası', 'Hər gün 2 litr su iç', 0)")
+        cursor.execute("INSERT INTO challenges (title, description, completed) VALUES ('Aktiv Həyat', 'Həftə sonuna qədər günlük 7000 addım at', 0)")
+        cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Su hədəfi', 'Gündəlik su qəbulunun 50%-nə çatdınız!', '10 dəq əvvəl')")
+        cursor.execute("INSERT INTO messages (sender, text, time, read) VALUES ('Dr. Əliyev', 'Qan analizi nəticələriniz hazırdır.', '12:30', 0)")
+        cursor.execute("INSERT INTO water (id, count) VALUES (1, 0)")
+        conn.commit()
+
+    conn.close()
+
+# Bazanı işə salırıq
+init_db()
 
 @app.route('/', methods=['GET'])
 def root():
@@ -96,20 +293,8 @@ def ai_chat():
     responses:
       200:
         description: AI asistentin cavabı uğurla qaytarıldı
-        schema:
-          type: object
-          properties:
-            result:
-              type: string
-              example: "Salam! İmtahan hazırlığı prosesində sənə dəstək olmaqdan çox məmnun olaram..."
       400:
         description: Sorğuda prompt daxil edilməyib
-        schema:
-          type: object
-          properties:
-            error:
-              type: string
-              example: "Prompt sahəsi boş ola bilməz"
       500:
         description: AI xidmətində və ya serverdə daxili xəta
     """
@@ -241,17 +426,11 @@ def add_mood():
           properties:
             mood:
               type: string
-              example: "Xoşbəxt"
             note:
               type: string
-              example: "Bu gün dərslər əla keçdi."
     responses:
       201:
         description: Mood entry successfully logged
-      400:
-        description: Validation error
-      500:
-        description: Internal server error
     """
     data = request.get_json(silent=True) or {}
     mood = data.get('mood')
@@ -293,7 +472,7 @@ def get_nutrition():
 @app.route('/api/nutrition', methods=['POST'])
 def add_nutrition():
     """
-    Add nutrition and calorie record
+    Add nutrition/calorie record or update water balance
     ---
     tags:
       - Health & Activity
@@ -306,15 +485,20 @@ def add_nutrition():
           properties:
             meal:
               type: string
-              example: "Toyuq və Düyü"
             calories:
               type: integer
-              example: 650
+            water_ml:
+              type: integer
     responses:
       201:
-        description: Nutrition log added successfully
+        description: Record processed successfully
     """
     data = request.get_json(silent=True) or {}
+    
+    water_ml = data.get('water_ml')
+    if water_ml is not None:
+        return jsonify({'success': True, 'water_ml': water_ml}), 200
+
     meal = data.get('meal')
     calories = data.get('calories')
 
@@ -336,7 +520,7 @@ def add_nutrition():
 @app.route('/api/challenges/<int:challenge_id>/toggle', methods=['POST'])
 def toggle_challenge(challenge_id):
     """
-    Toggle challenge status (Completed/Pending)
+    Toggle challenge status
     ---
     tags:
       - Health & Activity
@@ -399,7 +583,7 @@ def read_all_notifications():
       - Notifications
     responses:
       200:
-        description: Success status and updated notifications
+        description: Success status
     """
     if request.method == 'OPTIONS':
         return '', 200
@@ -427,7 +611,7 @@ def read_all_notifications():
 @app.route('/api/notifications/reset', methods=['GET'])
 def reset_notifications():
     """
-    Reset notifications to default state
+    Reset notifications
     ---
     tags:
       - Notifications
@@ -445,7 +629,7 @@ def reset_notifications():
         ''')
         conn.execute('UPDATE notifications SET read = 0')
         conn.commit()
-        return jsonify({"message": "Bildirişlər bərpa olundu və oxunmamış vəziyyətə gətirildi!"}), 200
+        return jsonify({"message": "Bildirişlər bərpa olundu!"}), 200
     finally:
         conn.close()
 
@@ -464,7 +648,6 @@ def get_messages():
     conn = get_db_connection()
     try:
         messages = conn.execute('SELECT * FROM messages').fetchall()
-        
         if not messages:
             conn.execute('''
                 INSERT OR IGNORE INTO messages (id, sender, text, time, read)
@@ -492,7 +675,7 @@ def get_messages():
 @app.route('/api/messages/reset', methods=['GET'])
 def reset_messages():
     """
-    Reset messages to default state
+    Reset messages
     ---
     tags:
       - Notifications
@@ -523,7 +706,7 @@ def mark_all_messages_read():
       - Notifications
     responses:
       200:
-        description: Messages marked as read
+        description: Success status
     """
     if request.method == 'OPTIONS':
         return '', 200
@@ -562,21 +745,9 @@ def update_water():
     ---
     tags:
       - Health & Activity
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            count:
-              type: integer
-              example: 5
     responses:
       200:
         description: Water count updated
-      400:
-        description: Invalid payload
     """
     if request.method == 'OPTIONS':
         return '', 200
@@ -729,201 +900,10 @@ def user_profile_endpoint():
     finally:
         conn.close()
 
-    # 1. Users
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        )
-    ''')
-
-    # 2. Students
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS students (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            student_id TEXT UNIQUE NOT NULL,
-            major TEXT NOT NULL,
-            semester INTEGER NOT NULL
-        )
-    ''')
-
-    # 3. Courses
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS courses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            code TEXT UNIQUE NOT NULL,
-            credits INTEGER NOT NULL
-        )
-    ''')
-
-    # 4. Events
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS events (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            date TEXT NOT NULL,
-            location TEXT NOT NULL
-        )
-    ''')
-
-    # 5. Resources
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS resources (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            category TEXT NOT NULL,
-            link TEXT NOT NULL
-        )
-    ''')
-
-    # 6. Physical Activity
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS physical_activity (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            steps INTEGER NOT NULL,
-            water_ml INTEGER NOT NULL,
-            date TEXT DEFAULT (DATE('now', 'localtime'))
-        )
-    ''')
-
-    # 7. Mood Logs
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS mood_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            mood TEXT NOT NULL,
-            note TEXT,
-            date TEXT DEFAULT (DATE('now', 'localtime'))
-        )
-    ''')
-
-    # 8. Nutrition
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS nutrition (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            meal TEXT NOT NULL,
-            calories INTEGER NOT NULL,
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # 9. Challenges
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS challenges (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            completed INTEGER DEFAULT 0
-        )
-    ''')
-
-    # 10. Notifications Cədvəli
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS notifications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            desc TEXT NOT NULL,
-            time TEXT NOT NULL,
-            read BOOLEAN NOT NULL DEFAULT 0
-        )
-    ''')
-
-    # 11. Messages Cədvəli
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sender TEXT NOT NULL,
-            text TEXT NOT NULL,
-            time TEXT NOT NULL
-        )
-    ''')
-
-    # 12. Water Cədvəli
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS water (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            count INTEGER NOT NULL DEFAULT 0
-        )
-    ''')
-
-    # 13. User Profile Cədvəli
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_profile (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            fullname TEXT NOT NULL,
-            major TEXT NOT NULL,
-            course INTEGER NOT NULL,
-            student_id TEXT DEFAULT 'QU-2024-101',
-            email TEXT DEFAULT 'st123456@qu.edu.az',
-            phone TEXT DEFAULT '+994 50 123 45 67',
-            blood_group TEXT DEFAULT 'A+',
-            emergency_contact TEXT DEFAULT '+994 50 765 43 21',
-            bio TEXT DEFAULT 'Qarabağ Universiteti tələbəsi. Sağlam həyat tərzi və idman həvəskarı.',
-            daily_step_goal INTEGER DEFAULT 10000,
-            daily_water_goal INTEGER DEFAULT 2000
-        )
-    ''')
-
-    # Mövcud bazaya sütun miqrasiyası (əgər köhnə cədvəl yaradılıbsa)
-    existing_cols = [row[1] for row in cursor.execute('PRAGMA table_info(user_profile)').fetchall()]
-    profile_columns = [
-        ('student_id', "TEXT DEFAULT 'QU-2024-101'"),
-        ('email', "TEXT DEFAULT 'st123456@qu.edu.az'"),
-        ('phone', "TEXT DEFAULT '+994 50 123 45 67'"),
-        ('blood_group', "TEXT DEFAULT 'A+'"),
-        ('emergency_contact', "TEXT DEFAULT '+994 50 765 43 21'"),
-        ('bio', "TEXT DEFAULT 'Qarabağ Universiteti tələbəsi.'"),
-        ('daily_step_goal', "INTEGER DEFAULT 10000"),
-        ('daily_water_goal', "INTEGER DEFAULT 2000")
-    ]
-    for col, col_def in profile_columns:
-        if col not in existing_cols:
-            try:
-                cursor.execute(f"ALTER TABLE user_profile ADD COLUMN {col} {col_def}")
-            except Exception as e:
-                app.logger.warning(f"Column {col} migration skipped: {e}")
-
-    conn.commit()
-
-    # Seed user_profile if empty
-    cursor.execute('SELECT COUNT(*) FROM user_profile')
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("""
-            INSERT INTO user_profile (id, fullname, major, course, student_id, email, phone, blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal)
-            VALUES (1, 'Əli Həsənov', 'Kompüter Mühəndisliyi', 1, 'QU-2024-101', 'st123456@qu.edu.az', '+994 50 123 45 67', 'A+', '+994 50 765 43 21', 'Qarabağ Universiteti tələbəsi. Sağlam həyat tərzi və idman həvəskarı.', 10000, 2000)
-        """)
-        conn.commit()
-
-    # Seed initial test data
-    cursor.execute('SELECT COUNT(*) FROM students')
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("INSERT INTO students (name, student_id, major, semester) VALUES ('Əli Məmmədov', 'st123456', 'Kompüter Mühəndisliyi', 4)")
-        cursor.execute("INSERT INTO students (name, student_id, major, semester) VALUES ('Aysel Əliyeva', 'st123457', 'İnformasiya Texnologiyaları', 2)")
-        cursor.execute("INSERT INTO students (name, student_id, major, semester) VALUES ('Aylin Əliyeva', 'st123458', 'Hüquq', 4)")
-        cursor.execute("INSERT INTO courses (title, code, credits) VALUES ('Veb Proqramlaşdırma', 'CS301', 6)")
-        cursor.execute("INSERT INTO courses (title, code, credits) VALUES ('Verilənlər Bazası Sistemləri', 'CS204', 5)")
-        cursor.execute("INSERT INTO events (title, date, location) VALUES ('AI və Gələcək Seminarı', '2026-04-15', 'Əsas Bina, Zal A')")
-        cursor.execute("INSERT INTO resources (title, category, link) VALUES ('Flask Sənədləşməsi', 'Dərslik', 'https://flask.palletsprojects.com/')")
-        cursor.execute("INSERT INTO challenges (title, description, completed) VALUES ('Su Kampaniyası', 'Hər gün 2 litr su iç', 0)")
-        cursor.execute("INSERT INTO challenges (title, description, completed) VALUES ('Aktiv Həyat', 'Həftə sonuna qədər günlük 7000 addım at', 0)")
-        cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Su hədəfi', 'Gündəlik su qəbulunun 50%-nə çatdınız!', '10 dəq əvvəl')")
-        cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Həkim qəbulu', 'Sabah saat 14:00-da həkim müayinəniz var.', '1 saat əvvəl')")
-        cursor.execute("INSERT INTO notifications (title, desc, time) VALUES ('Tədbir xəbərdarlığı', 'Yoqa seansı 22 May tarixində keçiriləcək.', '3 saat əvvəl')")
-        cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Dr. Əliyev (Tibb məntəqəsi)', 'Qan analizi nəticələriniz hazırdır.', '12:30')")
-        cursor.execute("INSERT INTO messages (sender, text, time) VALUES ('Psixoloq Leyla M.', 'Növbəti seans üçün vaxtı təsdiqləyin.', 'Dünən')")
-        cursor.execute("INSERT INTO water (id, count) VALUES (1, 0)")
-        conn.commit()
-
-    conn.close()
-
-init_db()
-
 # --- AUTHENTICATION ENDPOINTS ---
 
 @app.route('/api/register', methods=['POST'])
+@limiter.limit("5 per 15 minutes")
 def register():
     """
     User registration
@@ -991,6 +971,7 @@ def register():
         conn.close()
 
 @app.route('/api/login', methods=['POST'])
+@limiter.limit("5 per 15 minutes")
 def login():
     """
     User login
@@ -1012,7 +993,7 @@ def login():
               example: "secret123"
     responses:
       200:
-        description: Login successful
+        description: Login successful (Token HttpOnly cookie olaraq yazılır)
       401:
         description: Email or password is incorrect
     """
@@ -1041,9 +1022,10 @@ def login():
                 course = 1
                 student_name = user['name']
 
-            return jsonify({
+            token = 'auth-token-xyz-12345'
+
+            response = make_response(jsonify({
                 'message': 'Giriş uğurludur!',
-                'token': 'auth-token-xyz-12345',
                 'user': {
                     'id': user['id'],
                     'name': student_name,
@@ -1051,7 +1033,31 @@ def login():
                     'major': major,
                     'course': f'{course}-ci kurs'
                 }
-            }), 200
+            }), 200)
+
+            is_production = os.getenv('RENDER') is not None or os.getenv('FLASK_ENV') == 'production'
+
+            response = make_response(jsonify({
+                'message': 'Giriş uğurludur!',
+                'user': {
+                    'id': user['id'],
+                    'name': student_name,
+                    'email': user['email'],
+                    'major': major,
+                    'course': f'{course}-ci kurs'
+                }
+            }), 200)
+            
+            response.set_cookie(
+                'token',
+                token,
+                httponly=True,
+                secure=is_production,
+                samesite='None' if is_production else 'Lax',
+                max_age=7 * 24 * 60 * 60
+            )
+
+            return response
 
         return jsonify({'error': 'E-poçt və ya şifrə yanlışdır!'}), 401
     except Exception as e:

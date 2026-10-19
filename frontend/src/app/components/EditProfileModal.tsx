@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from '@/utils/api';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -192,26 +193,20 @@ export default function EditProfileModal({
       localStorage.setItem('daily_water_goal', dailyWaterGoal.toString());
       localStorage.setItem('user_water_goal', dailyWaterGoal.toString());
 
-      const token = localStorage.getItem('userToken') || localStorage.getItem('token');
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+      // apiFetch automatically carries the HttpOnly cookie
+      const response = await apiFetch('/api/user/profile', {
         method: 'POST',
-        headers,
         body: JSON.stringify(updatedProfile),
       });
 
       if (!response.ok) {
-        await fetch(`${API_BASE_URL}/api/user/profile`, {
+        const putResponse = await apiFetch('/api/user/profile', {
           method: 'PUT',
-          headers,
           body: JSON.stringify(updatedProfile),
-        }).catch(() => null);
+        });
+        if (!putResponse.ok) {
+          throw new Error('Profil yenilənmədi');
+        }
       }
 
       onUpdate(mergedUser);

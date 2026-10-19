@@ -1,59 +1,75 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Footprints, Droplet, Plus, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react';
+import { apiFetch } from '@/utils/api';
+import {
+  Footprints,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  CheckCircle2,
+  Flame,
+  MapPin,
+  Smartphone,
+  Timer,
+  Dumbbell,
+  Activity
+} from 'lucide-react';
 
 interface ActivityPanelProps {
   isDarkMode?: boolean;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
-
 export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps) {
   const [steps, setSteps] = useState<number>(0);
-  const [water, setWater] = useState<number>(0);
+  const [activeMinutes, setActiveMinutes] = useState<number>(0);
   const [inputSteps, setInputSteps] = useState('');
-  const [inputWater, setInputWater] = useState('');
+  const [inputMinutes, setInputMinutes] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const [showIosModal, setShowIosModal] = useState(false);
 
   const stepGoal = 10000;
-  const waterGoal = 2000;
+  const activeMinGoal = 60;
 
-  // Save both locally and sync to Backend database
-  const saveAndSyncActivity = async (newSteps: number, newWaterMl: number) => {
-    const cappedSteps = Math.min(stepGoal, Math.max(0, newSteps));
-    const cappedWater = Math.min(waterGoal, Math.max(0, newWaterMl));
+  const caloriesBurned = Math.round(steps * 0.04 + activeMinutes * 5);
+  const distanceKm = (steps * 0.00075).toFixed(2);
+
+  const saveAndSyncActivity = async (newSteps: number, newMinutes: number) => {
+    const cappedSteps = Math.min(Math.max(0, newSteps), stepGoal);
+    const cappedMinutes = Math.min(Math.max(0, newMinutes), activeMinGoal);
 
     setSteps(cappedSteps);
-    setWater(cappedWater);
+    setActiveMinutes(cappedMinutes);
 
-    const glassCount = Math.floor(cappedWater / 250);
+    const totalCalories = Math.round(cappedSteps * 0.04 + cappedMinutes * 5);
 
     localStorage.setItem('user_steps', cappedSteps.toString());
-    localStorage.setItem('user_water', cappedWater.toString());
-    localStorage.setItem('user_water_ml', cappedWater.toString());
-    localStorage.setItem('user_water_glasses', glassCount.toString());
+    localStorage.setItem('user_active_minutes', cappedMinutes.toString());
+    localStorage.setItem('user_calories', totalCalories.toString());
+
+    window.dispatchEvent(new CustomEvent('activity-updated', {
+      detail: { steps: cappedSteps, activeMinutes: cappedMinutes, calories: totalCalories }
+    }));
+    window.dispatchEvent(new Event('storage'));
 
     try {
-      const token = localStorage.getItem('userToken');
-      await fetch(`${API_BASE_URL}/api/activity`, {
+      await apiFetch('/api/activity', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ steps: cappedSteps, water_ml: cappedWater }),
+        body: JSON.stringify({ steps: cappedSteps, active_minutes: cappedMinutes }),
       });
     } catch (error) {
       console.error("Activity DB sync error:", error);
     }
   };
 
-  // Google OAuth authorization handler
   const connectGoogleFit = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    let appUrl = 'https://e-motion-7vds.onrender.com';
+    if (typeof window !== 'undefined') {
+      appUrl = window.location.origin;
+    }
+
     const redirectUri = `${appUrl}/api/auth/callback/google`;
 
     if (!clientId) {
@@ -75,49 +91,34 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${qs.toString()}`;
   };
 
-  // Fetch activity from internal backend with Token Authentication
   const fetchActivity = async () => {
+    const savedSteps = localStorage.getItem('user_steps');
+    const savedMins = localStorage.getItem('user_active_minutes');
+
+    if (savedSteps !== null) setSteps(Number(savedSteps));
+    if (savedMins !== null) setActiveMinutes(Number(savedMins));
+
     try {
-      const token = localStorage.getItem('userToken');
-      const res = await fetch(`${API_BASE_URL}/api/activity`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
+      const res = await apiFetch('/api/activity');
 
       if (res.ok) {
         const data = await res.json();
-        if (data.steps !== undefined && data.steps !== null && data.steps > 0) {
-          const cappedSteps = Math.min(stepGoal, Math.max(0, data.steps));
-          setSteps(cappedSteps);
-          localStorage.setItem('user_steps', cappedSteps.toString());
-        } else {
-          const savedSteps = localStorage.getItem('user_steps');
-          if (savedSteps) setSteps(Number(savedSteps));
+        if (savedSteps === null && data.steps !== undefined && data.steps !== null) {
+          setSteps(data.steps);
+          localStorage.setItem('user_steps', data.steps.toString());
         }
-
-        if (data.water !== undefined && data.water !== null && data.water > 0) {
-          const cappedWater = Math.min(waterGoal, Math.max(0, data.water));
-          setWater(cappedWater);
-          localStorage.setItem('user_water', cappedWater.toString());
-        } else {
-          const savedWater = localStorage.getItem('user_water');
-          if (savedWater) setWater(Number(savedWater));
+        if (savedMins === null && data.active_minutes !== undefined && data.active_minutes !== null) {
+          setActiveMinutes(data.active_minutes);
+          localStorage.setItem('user_active_minutes', data.active_minutes.toString());
         }
-      } else {
-        const savedSteps = localStorage.getItem('user_steps');
-        const savedWater = localStorage.getItem('user_water');
-        if (savedSteps !== null) setSteps(Number(savedSteps));
-        if (savedWater !== null) setWater(Number(savedWater));
       }
     } catch (error) {
       console.error("Failed to fetch activity:", error);
-      const savedSteps = localStorage.getItem('user_steps');
-      const savedWater = localStorage.getItem('user_water');
       if (savedSteps !== null) setSteps(Number(savedSteps));
-      if (savedWater !== null) setWater(Number(savedWater));
+      if (savedMins !== null) setActiveMinutes(Number(savedMins));
     }
   };
 
-  // Google Fit synchronization
   const syncGoogleFitSteps = async () => {
     const accessToken = localStorage.getItem('google_access_token');
 
@@ -131,16 +132,15 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     setIsSyncing(true);
 
     try {
-      const res = await fetch('/api/google-fit/steps', {
+      const res = await apiFetch('/api/google-fit/steps', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessToken }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success && typeof data.steps === 'number') {
-        await saveAndSyncActivity(data.steps, water);
+        await saveAndSyncActivity(data.steps, activeMinutes);
       } else {
         localStorage.removeItem('google_access_token');
         setIsGoogleConnected(false);
@@ -168,10 +168,10 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
     }
 
     const savedSteps = localStorage.getItem('user_steps');
-    const savedWater = localStorage.getItem('user_water');
+    const savedMins = localStorage.getItem('user_active_minutes');
 
-    if (savedSteps !== null) setSteps(Math.min(stepGoal, Math.max(0, Number(savedSteps))));
-    if (savedWater !== null) setWater(Math.min(waterGoal, Math.max(0, Number(savedWater))));
+    if (savedSteps !== null) setSteps(Number(savedSteps));
+    if (savedMins !== null) setActiveMinutes(Number(savedMins));
 
     const token = localStorage.getItem('google_access_token');
     if (token) {
@@ -185,122 +185,175 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     const addedSteps = inputSteps ? Number(inputSteps) : 0;
-    const addedWater = inputWater ? Number(inputWater) : 0;
+    const addedMins = inputMinutes ? Number(inputMinutes) : 0;
 
     const newSteps = steps + addedSteps;
-    const newWater = water + addedWater;
+    const newMins = activeMinutes + addedMins;
 
     setInputSteps('');
-    setInputWater('');
+    setInputMinutes('');
 
-    await saveAndSyncActivity(newSteps, newWater);
+    await saveAndSyncActivity(newSteps, newMins);
   };
 
-  const handleQuickAdd = async (addSteps: number, addWaterMl: number) => {
-    const newSteps = steps + addSteps;
-    const newWaterMl = water + addWaterMl;
-
-    await saveAndSyncActivity(newSteps, newWaterMl);
+  const handleQuickAdd = async (addSteps: number, addMins: number) => {
+    await saveAndSyncActivity(steps + addSteps, activeMinutes + addMins);
   };
 
   const stepPercentage = Math.min(Math.round((steps / stepGoal) * 100), 100);
-  const waterPercentage = Math.min(Math.round((water / waterGoal) * 100), 100);
+  const activeMinPercentage = Math.min(Math.round((activeMinutes / activeMinGoal) * 100), 100);
 
   const theme = {
-    cardBg: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-    border: isDarkMode ? '#2D3748' : '#E2E8F0',
-    textPrimary: isDarkMode ? '#F7FAFC' : '#0F172A',
-    textSecondary: isDarkMode ? '#A0AEC0' : '#64748B',
-    inputBg: isDarkMode ? '#2D3748' : '#F8FAFC',
-    inputBorder: isDarkMode ? '#4A5568' : '#CBD5E1',
-    btnSecondaryBg: isDarkMode ? '#2D3748' : '#F8FAFC',
+    cardBg: isDarkMode ? '#1A1D20' : '#FFFFFF',
+    border: isDarkMode ? '#2E353D' : '#E2E8F0',
+    textPrimary: isDarkMode ? '#F1F5F9' : '#0F172A',
+    textSecondary: isDarkMode ? '#94A3B8' : '#64748B',
+    inputBg: isDarkMode ? '#15181B' : '#FFFFFF',
+    inputBorder: isDarkMode ? '#2E353D' : '#CBD5E1',
+    btnSecondaryBg: isDarkMode ? '#22262B' : '#F8FAFC',
     btnSecondaryText: isDarkMode ? '#E2E8F0' : '#334155',
-    progressBg: isDarkMode ? '#2D3748' : '#F1F5F9',
-    iconBgStep: isDarkMode ? '#1A365D' : '#F0FDF4',
+    progressBg: isDarkMode ? '#22262B' : '#F1F5F9',
+
+    iconFlameBg: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2',
+    iconFlameColor: '#EF4444',
+
+    iconMapBg: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF',
+    iconMapColor: '#3B82F6',
+
+    iconStepBg: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#F0FDF4',
+    iconStepColor: '#10B981',
+
+    iconTimerBg: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7',
+    iconTimerColor: '#F59E0B',
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingBottom: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingBottom: '0px' }}>
 
       {/* Header Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #2E5B4E 0%, #44766C 100%)',
         borderRadius: '16px',
-        padding: '22px 26px',
+        padding: '19px 24px',
         color: '#FFFFFF',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: '0 6px 16px -4px rgba(68, 118, 108, 0.25)'
+        flexWrap: 'wrap',
+        gap: '12px',
+        boxShadow: '0 4px 14px -2px rgba(68, 118, 108, 0.22)'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-            <span style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Sparkles size={14} /> Gündəlik Status
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <span style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Sparkles size={12} /> Fiziki Aktivlik Hub-ı
             </span>
           </div>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800', letterSpacing: '-0.3px' }}>
-            Hədəflərinə doğru əla irəliləyirsən!
+          <h2 style={{ margin: 0, fontSize: '19px', fontWeight: '800', letterSpacing: '-0.3px' }}>
+            Hər bir hərəkət bədəninizə enerji qatır!
           </h2>
-          <p style={{ margin: '6px 0 0 0', fontSize: '13px', opacity: 0.9, maxWidth: '520px', lineHeight: '1.5' }}>
-            Bədənini hərəkətdə saxla və su balansını tənzimlə. Google Fit dəstəyi ilə addımlarınız avtomatik sinxronlaşır.
+          <p style={{ margin: '3px 0 0 0', fontSize: '13px', opacity: 0.9, maxWidth: '520px', lineHeight: '1.3' }}>
+            Günlük addımlarınızı, qət olunan məsafəni və idman dəqiqələrinizi izləyin.
           </p>
         </div>
-        <div style={{ display: 'block', textAlign: 'right', background: 'rgba(255,255,255,0.1)', padding: '12px 20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)' }}>
-          <span style={{ fontSize: '12px', opacity: 0.85, display: 'block' }}>Ümumi Gedişat</span>
-          <span style={{ fontSize: '24px', fontWeight: '800', color: '#A7F3D0' }}>{Math.round((stepPercentage + waterPercentage) / 2)}%</span>
+
+        <div style={{ textAlign: 'center', background: 'rgba(255,255,255,0.12)', padding: '10px 16px', borderRadius: '13px', border: '1px solid rgba(255,255,255,0.18)' }}>
+          <span style={{ fontSize: '11px', opacity: 0.85, display: 'block' }}>Gündəlik Aktivlik</span>
+          <span style={{ fontSize: '20px', fontWeight: '800', color: '#A7F3D0' }}>{Math.round((stepPercentage + activeMinPercentage) / 2)}%</span>
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
+      {/* Stats Summary Bar */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+
+        <div style={{ backgroundColor: theme.cardBg, padding: '13px 16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ backgroundColor: theme.iconFlameBg, padding: '8px', borderRadius: '10px', color: theme.iconFlameColor }}>
+            <Flame size={17} />
+          </div>
+          <div>
+            <span style={{ fontSize: '11px', color: theme.textSecondary, display: 'block' }}>Yandırılan Kalori</span>
+            <span style={{ fontSize: '16.5px', fontWeight: '800', color: theme.textPrimary }}>{caloriesBurned} kcal</span>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: theme.cardBg, padding: '13px 16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ backgroundColor: theme.iconMapBg, padding: '8px', borderRadius: '10px', color: theme.iconMapColor }}>
+            <MapPin size={17} />
+          </div>
+          <div>
+            <span style={{ fontSize: '11px', color: theme.textSecondary, display: 'block' }}>Qət Edilən Məsafə</span>
+            <span style={{ fontSize: '16.5px', fontWeight: '800', color: theme.textPrimary }}>{distanceKm} km</span>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: theme.cardBg, padding: '13px 16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ backgroundColor: theme.iconStepBg, padding: '8px', borderRadius: '10px', color: theme.iconStepColor }}>
+            <Footprints size={17} />
+          </div>
+          <div>
+            <span style={{ fontSize: '11px', color: theme.textSecondary, display: 'block' }}>Günün Addımı</span>
+            <span style={{ fontSize: '16.5px', fontWeight: '800', color: theme.textPrimary }}>{steps.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: theme.cardBg, padding: '13px 16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ backgroundColor: theme.iconTimerBg, padding: '8px', borderRadius: '10px', color: theme.iconTimerColor }}>
+            <Timer size={17} />
+          </div>
+          <div>
+            <span style={{ fontSize: '11px', color: theme.textSecondary, display: 'block' }}>Aktiv Məşq Vaxtı</span>
+            <span style={{ fontSize: '16.5px', fontWeight: '800', color: theme.textPrimary }}>{activeMinutes} dəq</span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Main Metric Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '14px' }}>
 
         {/* Steps Card */}
         <div style={{
           backgroundColor: theme.cardBg,
-          padding: '22px',
-          borderRadius: '16px',
+          padding: '19px 21px',
+          borderRadius: '15px',
           border: `1px solid ${theme.border}`,
-          boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.05)',
           position: 'relative',
           overflow: 'hidden'
         }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #44766C, #A7F3D0)' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #44766C, #A7F3D0)' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ backgroundColor: theme.iconBgStep, padding: '10px', borderRadius: '12px', color: '#44766C' }}>
-                <Footprints size={20} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ backgroundColor: theme.iconStepBg, padding: '8px', borderRadius: '10px', color: theme.iconStepColor }}>
+                <Footprints size={18} />
               </div>
               <div>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Atılan Addım</h4>
-                <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hədəf: {stepGoal.toLocaleString()}</span>
+                <span style={{ fontSize: '11px', color: theme.textSecondary }}>Hədəf: {stepGoal.toLocaleString()} addım</span>
               </div>
             </div>
 
-            {/* Google Fit Sync Button */}
-            <div>
+            <div style={{ display: 'flex', gap: '5px' }}>
               {isGoogleConnected ? (
                 <button
                   onClick={syncGoogleFitSteps}
                   disabled={isSyncing}
-                  title="Google Fit aktivdir"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '5px',
+                    gap: '4px',
                     backgroundColor: 'rgba(52, 211, 153, 0.15)',
                     color: '#059669',
                     border: '1px solid rgba(52, 211, 153, 0.3)',
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    fontSize: '11.5px',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
                     fontWeight: '600',
                     cursor: 'pointer',
                   }}
                 >
-                  {isSyncing ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <CheckCircle2 size={12} />}
-                  Google Fit Aktivdir
+                  {isSyncing ? <RefreshCw size={11} style={{ animation: 'spin 1s linear infinite' }} /> : <CheckCircle2 size={11} />}
+                  Google Fit
                 </button>
               ) : (
                 <button
@@ -308,140 +361,158 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '5px',
+                    gap: '4px',
                     backgroundColor: '#44766C',
                     color: '#FFFFFF',
                     border: 'none',
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    fontSize: '11.5px',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
                     fontWeight: '600',
                     cursor: 'pointer',
                   }}
                 >
-                  <RefreshCw size={12} />
+                  <RefreshCw size={11} />
                   Google Fit Qoş
                 </button>
               )}
+
+              <button
+                onClick={() => setShowIosModal(true)}
+                title="iOS Apple Health"
+                style={{
+                  backgroundColor: theme.btnSecondaryBg,
+                  color: theme.textSecondary,
+                  border: `1px solid ${theme.border}`,
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px'
+                }}
+              >
+                <Smartphone size={11} />
+                iOS
+              </button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '12px 0' }}>
-            <span style={{ fontSize: '30px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>{steps.toLocaleString()}</span>
-            <span style={{ fontSize: '13px', color: theme.textSecondary, fontWeight: '600' }}>addım</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', margin: '10px 0' }}>
+            <span style={{ fontSize: '26px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>{steps.toLocaleString()}</span>
+            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>/ {stepGoal.toLocaleString()}</span>
           </div>
 
           {/* Progress Bar */}
-          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '10px', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px' }}>
+          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '8px', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px' }}>
             <div style={{
               width: `${stepPercentage}%`,
               background: 'linear-gradient(90deg, #44766C, #619B8D)',
               height: '100%',
-              borderRadius: '8px',
+              borderRadius: '6px',
               transition: 'width 0.5s ease'
             }} />
           </div>
 
           {/* Quick Add Buttons */}
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => handleQuickAdd(500, 0)}
-              style={{ flex: 1, padding: '9px', borderRadius: '10px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
               +500 addım
             </button>
             <button
               onClick={() => handleQuickAdd(1000, 0)}
-              style={{ flex: 1, padding: '9px', borderRadius: '10px', border: '1px solid rgba(52, 211, 153, 0.3)', backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.3)', backgroundColor: 'rgba(52, 211, 153, 0.15)', color: isDarkMode ? '#A7F3D0' : '#059669', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
               +1,000 addım
             </button>
           </div>
         </div>
 
-        {/* Water Card */}
+        {/* Active Exercise Card */}
         <div style={{
           backgroundColor: theme.cardBg,
-          padding: '22px',
-          borderRadius: '16px',
+          padding: '19px 21px',
+          borderRadius: '15px',
           border: `1px solid ${theme.border}`,
-          boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.05)',
           position: 'relative',
           overflow: 'hidden'
         }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #44766C, #A7F3D0)' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #F59E0B, #FDE68A)' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ backgroundColor: theme.iconBgStep || 'rgba(52, 211, 153, 0.15)', padding: '10px', borderRadius: '12px', color: '#44766C' }}>
-                <Droplet size={20} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ backgroundColor: theme.iconTimerBg, padding: '8px', borderRadius: '10px', color: theme.iconTimerColor }}>
+                <Dumbbell size={18} />
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>İçilən Su</h4>
-                <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hədəf: 2000 ml</span>
+                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>İdman / Məşq Vaxtı</h4>
+                <span style={{ fontSize: '11px', color: theme.textSecondary }}>Hədəf: {activeMinGoal} dəqiqə</span>
               </div>
             </div>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.15)', padding: '5px 12px', borderRadius: '16px' }}>
-              {Math.min(Math.round((water / 2000) * 100), 100)}%
+            <span style={{ fontSize: '11px', fontWeight: '700', color: '#D97706', backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.2)' : '#FEF3C7', padding: '3px 8px', borderRadius: '12px' }}>
+              {activeMinPercentage}%
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '12px 0' }}>
-            <span style={{ fontSize: '30px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>{water.toLocaleString()}</span>
-            <span style={{ fontSize: '13px', color: theme.textSecondary, fontWeight: '600' }}>ml</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', margin: '10px 0' }}>
+            <span style={{ fontSize: '26px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>{activeMinutes}</span>
+            <span style={{ fontSize: '12px', color: theme.textSecondary, fontWeight: '600' }}>/ {activeMinGoal} dəqiqə</span>
           </div>
 
           {/* Progress Bar */}
-          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '10px', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px' }}>
+          <div style={{ width: '100%', backgroundColor: theme.progressBg, height: '8px', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px' }}>
             <div style={{
-              width: `${waterPercentage}%`,
-              background: 'linear-gradient(90deg, #44766C, #619B8D)',
+              width: `${activeMinPercentage}%`,
+              background: 'linear-gradient(90deg, #F59E0B, #FBBF24)',
               height: '100%',
-              borderRadius: '8px',
+              borderRadius: '6px',
               transition: 'width 0.5s ease'
             }} />
           </div>
 
-          {/* Quick Add Buttons */}
-          <div style={{ display: 'flex', gap: '10px' }}>
+          {/* Quick Add Exercise Buttons */}
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
-              onClick={() => handleQuickAdd(0, 250)}
-              style={{ flex: 1, padding: '9px', borderRadius: '10px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              onClick={() => handleQuickAdd(0, 15)}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `1px solid ${theme.border}`, backgroundColor: theme.btnSecondaryBg, color: theme.btnSecondaryText, fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
-              +250 ml (Stəkan)
+              +15 dəq Məşq
             </button>
             <button
-              onClick={() => handleQuickAdd(0, 500)}
-              style={{ flex: 1, padding: '9px', borderRadius: '10px', border: '1px solid rgba(52, 211, 153, 0.3)', backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+              onClick={() => handleQuickAdd(0, 30)}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.3)', backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7', color: isDarkMode ? '#FDE68A' : '#D97706', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer' }}
             >
-              +500 ml (Şüşə)
+              +30 dəq Məşq
             </button>
           </div>
         </div>
 
       </div>
 
-      {/* Manual Form */}
+      {/* Manual Input Section */}
       <div style={{
         backgroundColor: theme.cardBg,
-        padding: '22px 24px',
-        borderRadius: '16px',
+        padding: '16px 21px',
+        borderRadius: '15px',
         border: `1px solid ${theme.border}`,
-        boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.05)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-          <div style={{ backgroundColor: theme.progressBg, padding: '8px', borderRadius: '10px', color: theme.textPrimary }}>
-            <RefreshCw size={18} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <div style={{ backgroundColor: theme.progressBg, padding: '6px', borderRadius: '8px', color: theme.textPrimary }}>
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: theme.textPrimary }}>Manual Dəyər Daxil Et</h3>
-            <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: theme.textSecondary }}>İstədiyiniz dəqiq miqdarı əlavə edin.</p>
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Aktivlik Əlavə Et</h3>
+            <p style={{ margin: '1px 0 0 0', fontSize: '11px', color: theme.textSecondary }}>Manual olaraq addım və ya məşq müddətinizi yeniləyin.</p>
           </div>
         </div>
 
-        <form onSubmit={handleUpdate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', alignItems: 'end' }}>
+        <form onSubmit={handleUpdate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', alignItems: 'end' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: theme.textSecondary, marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: theme.textSecondary, marginBottom: '5px' }}>
               Addım Əlavə Et
             </label>
             <input
@@ -451,10 +522,10 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               onChange={(e) => setInputSteps(e.target.value)}
               style={{
                 width: '100%',
-                padding: '11px 14px',
-                borderRadius: '10px',
+                padding: '9px 12px',
+                borderRadius: '8px',
                 border: `1px solid ${theme.inputBorder}`,
-                fontSize: '13.5px',
+                fontSize: '12.5px',
                 outline: 'none',
                 backgroundColor: theme.inputBg,
                 color: theme.textPrimary,
@@ -464,20 +535,20 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: theme.textSecondary, marginBottom: '8px' }}>
-              Su Əlavə Et (ml)
+            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: theme.textSecondary, marginBottom: '5px' }}>
+              Məşq Müddəti (Dəqiqə)
             </label>
             <input
               type="number"
-              placeholder="Məs: 300"
-              value={inputWater}
-              onChange={(e) => setInputWater(e.target.value)}
+              placeholder="Məs: 30"
+              value={inputMinutes}
+              onChange={(e) => setInputMinutes(e.target.value)}
               style={{
                 width: '100%',
-                padding: '11px 14px',
-                borderRadius: '10px',
+                padding: '9px 12px',
+                borderRadius: '8px',
                 border: `1px solid ${theme.inputBorder}`,
-                fontSize: '13.5px',
+                fontSize: '12.5px',
                 outline: 'none',
                 backgroundColor: theme.inputBg,
                 color: theme.textPrimary,
@@ -492,23 +563,91 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
               backgroundColor: '#44766C',
               color: '#FFFFFF',
               border: 'none',
-              padding: '11px 20px',
-              borderRadius: '10px',
-              fontSize: '13.5px',
+              padding: '9px 18px',
+              borderRadius: '8px',
+              fontSize: '12.5px',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(68, 118, 108, 0.25)'
+              gap: '6px',
+              boxShadow: '0 3px 8px rgba(68, 118, 108, 0.2)'
             }}
           >
-            <Plus size={18} />
-            Məlumatı Yenilə
+            <Plus size={15} />
+            Yenilə
           </button>
         </form>
       </div>
+
+      {/* iOS Modal */}
+      {showIosModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          zIndex: 999,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: theme.cardBg,
+            borderRadius: '16px',
+            padding: '20px',
+            maxWidth: '420px',
+            width: '100%',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+            border: `1px solid ${theme.border}`
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ backgroundColor: theme.btnSecondaryBg, padding: '7px', borderRadius: '10px', color: theme.textPrimary }}>
+                <Smartphone size={18} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>iOS (Apple Health) Qoşulması</h3>
+                <span style={{ fontSize: '11px', color: theme.textSecondary }}>iPhone istifadəçiləri üçün</span>
+              </div>
+            </div>
+
+            <div style={{ fontSize: '12px', color: theme.textSecondary, lineHeight: '1.4', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <p style={{ margin: 0 }}>
+                Apple-ın təhlükəsizlik siyasətinə görə Apple Health məlumatları vebdə avtomatik oxuna bilmir.
+              </p>
+              <div style={{ backgroundColor: theme.inputBg, padding: '10px', borderRadius: '10px', border: `1px solid ${theme.border}` }}>
+                <strong style={{ color: theme.textPrimary, display: 'block', marginBottom: '4px' }}>Tövsiyə olunan 2 həll yolu:</strong>
+                <ol style={{ margin: 0, paddingLeft: '16px' }}>
+                  <li>Google Fit tətbiqini yükləyib Apple Health ilə sinxronlaşdırın, sonra "Google Fit Qoş" düyməsini basın.</li>
+                  <li style={{ marginTop: '4px' }}>Günün sonunda Health tətbiqindəki addımı "Aktivlik Əlavə Et" bölməsinə yazın.</li>
+                </ol>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowIosModal(false)}
+              style={{
+                width: '100%',
+                marginTop: '14px',
+                backgroundColor: '#44766C',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '9px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Anladım
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

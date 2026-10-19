@@ -1,7 +1,8 @@
 "use client";
 import FoodScanner from './FoodScanner';
 import React, { useState, useEffect } from 'react';
-import { Utensils, Plus, Flame, Trash2, Zap, Apple, Egg, UtensilsCrossed, Coffee, Sparkles } from 'lucide-react';
+import { Utensils, Plus, Flame, Trash2, Zap, Apple, Egg, UtensilsCrossed, Coffee, Sparkles, Droplet, RotateCcw } from 'lucide-react';
+import { apiFetch } from '@/utils/api';
 import { toast } from 'sonner';
 
 interface Meal {
@@ -28,7 +29,6 @@ interface FoodItem {
   aliases: string[];
 }
 
-// REAL USDA VƏ MİLLİ QİDA STANDARTLARI BAZASI
 const COMPREHENSIVE_FOOD_DATABASE: FoodItem[] = [
   { aliases: ['toyuq', 'toyuq əti', 'toyuq filəsi', 'çolpa'], cal: 165, p: 31, c: 0, f: 3.6 },
   { aliases: ['mal əti', 'dana əti', 'ət'], cal: 250, p: 26, c: 0, f: 15 },
@@ -38,7 +38,6 @@ const COMPREHENSIVE_FOOD_DATABASE: FoodItem[] = [
   { aliases: ['kəsmik', 'tvoroq', 'süzmə'], cal: 98, p: 11, c: 3.4, f: 4.3 },
   { aliases: ['protein', 'protein tozu', 'whey'], cal: 120, p: 24, c: 3, f: 1.5, isPiece: true },
   { aliases: ['shake', 'protein shake'], cal: 210, p: 25, c: 15, f: 3, isPiece: true },
-
   { aliases: ['dönər', 'lavaş dönər', 'çörək dönər'], cal: 480, p: 24, c: 50, f: 18, isPiece: true },
   { aliases: ['plov', 'aşı'], cal: 210, p: 5, c: 30, f: 8 },
   { aliases: ['dolma', 'yarpaq dolması'], cal: 160, p: 8, c: 9, f: 9 },
@@ -46,14 +45,12 @@ const COMPREHENSIVE_FOOD_DATABASE: FoodItem[] = [
   { aliases: ['xəngəl', 'yarpaq xəngəli'], cal: 230, p: 7, c: 35, f: 6 },
   { aliases: ['pizza'], cal: 266, p: 11, c: 33, f: 10, isPiece: true },
   { aliases: ['burger', 'humburger'], cal: 310, p: 16, c: 32, f: 13, isPiece: true },
-
   { aliases: ['düyü', 'bişmiş düyü'], cal: 130, p: 2.7, c: 28, f: 0.3 },
   { aliases: ['yulaf', 'gerkules', 'oatmeal'], cal: 389, p: 16.9, c: 66, f: 6.9 },
   { aliases: ['çörək', 'qara çörək', 'ağ çörək'], cal: 265, p: 9, c: 49, f: 3.2 },
   { aliases: ['kartof', 'kartof fri', 'bişmiş kartof'], cal: 87, p: 2, c: 20, f: 0.1 },
   { aliases: ['makaron', 'spagetti', 'pasta'], cal: 131, p: 5, c: 25, f: 1.1 },
   { aliases: ['pendir', 'şor'], cal: 350, p: 22, c: 2, f: 28 },
-
   { aliases: ['alma'], cal: 52, p: 0.3, c: 14, f: 0.2, isPiece: true },
   { aliases: ['banan'], cal: 89, p: 1.1, c: 23, f: 0.3, isPiece: true },
   { aliases: ['xiyar'], cal: 15, p: 0.7, c: 3.6, f: 0.1 },
@@ -79,6 +76,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   };
 
   const goals = { calories: 2000, protein: 130, carbs: 220, fat: 65 };
+  const waterGoal = 2000;
 
   const [mealName, setMealName] = useState('');
   const [calories, setCalories] = useState('');
@@ -88,15 +86,16 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   const [fatInput, setFatInput] = useState('');
   const [autoDetected, setAutoDetected] = useState(false);
 
+  const [water, setWater] = useState<number>(0);
   const [meals, setMeals] = useState<Meal[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('user_meals');
-    if (saved) {
+    const savedMeals = localStorage.getItem('user_meals');
+    if (savedMeals) {
       try {
-        setMeals(JSON.parse(saved));
+        setMeals(JSON.parse(savedMeals));
       } catch (e) {
-        console.error('Qidalar oxunarkən xəta:', e);
+        console.error('Error reading meals:', e);
       }
     } else {
       setMeals([
@@ -104,11 +103,36 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         { id: 2, name: 'Yulaf və Giləmeyvə', calories: 280, type: 'Səhər Yeməyi', time: '08:45', protein: 10, carbs: 45, fat: 5 }
       ]);
     }
+
+    const savedWater = localStorage.getItem('user_water') || localStorage.getItem('user_water_ml');
+    if (savedWater !== null) {
+      setWater(Math.min(waterGoal, Math.max(0, Number(savedWater))));
+    }
   }, []);
 
   const saveMeals = (newMeals: Meal[]) => {
     setMeals(newMeals);
     localStorage.setItem('user_meals', JSON.stringify(newMeals));
+  };
+
+  const saveWater = async (newWater: number) => {
+    const cappedWater = Math.min(waterGoal, Math.max(0, newWater));
+    setWater(cappedWater);
+    const glassCount = Math.round(cappedWater / 250);
+
+    localStorage.setItem('user_water', cappedWater.toString());
+    localStorage.setItem('user_water_ml', cappedWater.toString());
+    localStorage.setItem('user_water_glasses', glassCount.toString());
+    window.dispatchEvent(new Event('storage'));
+
+    try {
+      await apiFetch('/api/nutrition', {
+        method: 'POST',
+        body: JSON.stringify({ water_ml: cappedWater }),
+      });
+    } catch (error) {
+      console.error('Water sync error:', error);
+    }
   };
 
   useEffect(() => {
@@ -118,7 +142,6 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
     }
 
     const inputLower = mealName.toLowerCase();
-
     const segments = inputLower.split(/[,+\&]|\bvə\b/);
 
     let totalCal = 0;
@@ -154,17 +177,22 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       if (foundItem) {
         matchesFound++;
         let multiplier = 1;
-
         if (foundItem.isPiece || isExplicitPiece) {
           multiplier = amount > 10 ? amount / 100 : amount;
         } else {
           multiplier = amount / 100;
         }
-
         totalCal += foundItem.cal * multiplier;
         totalP += foundItem.p * multiplier;
         totalC += foundItem.c * multiplier;
         totalF += foundItem.f * multiplier;
+      } else if (amount > 0 && seg.length > 2) {
+        matchesFound++;
+        let multiplier = isExplicitPiece ? amount : (amount / 100);
+        totalCal += 160 * multiplier;
+        totalP += 10 * multiplier;
+        totalC += 20 * multiplier;
+        totalF += 5 * multiplier;
       }
     });
 
@@ -188,6 +216,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   const proteinPercent = Math.min(Math.round((totalProtein / goals.protein) * 100), 100);
   const carbsPercent = Math.min(Math.round((totalCarbs / goals.carbs) * 100), 100);
   const fatPercent = Math.min(Math.round((totalFat / goals.fat) * 100), 100);
+  const waterPercent = Math.min(Math.round((water / waterGoal) * 100), 100);
 
   const getFoodIcon = (name: string) => {
     const lowerName = name.toLowerCase();
@@ -243,17 +272,17 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
 
-      {/* Başlıq */}
+      {/* Header section */}
       <div>
         <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
-          Gündəlik Qidalanma və Kalori İzləyicisi
+          Gündəlik Qidalanma və Su İzləyicisi
         </h2>
         <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: theme.textSecondary }}>
-          Enerjinizi yüksək saxlamaq üçün gündəlik qida qəbulunuzu və kalorilərinizi rahatlıqla qeyd edin.
+          Enerjinizi yüksək saxlamaq üçün qidalarınızı qeyd edin və hidrasiya balansınızı qoruyun.
         </p>
       </div>
 
-      {/* Dinamik İcmal Paneli */}
+      {/* Dashboard Overview */}
       <div style={{
         backgroundColor: theme.cardBg,
         borderRadius: '20px',
@@ -261,7 +290,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         border: `1px solid ${theme.borderColor}`,
         boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: '24px',
         alignItems: 'center'
       }}>
@@ -286,34 +315,111 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
           </div>
         </div>
 
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Droplet size={16} color="#06B6D4" /> Su Balansı Hədəfi
+            </span>
+            <span style={{ fontSize: '13px', fontWeight: '800', color: theme.textPrimary }}>
+              {water} / {waterGoal} ml ({waterPercent}%)
+            </span>
+          </div>
+
+          <div style={{ width: '100%', height: '10px', backgroundColor: theme.progressBg, borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{
+              width: `${waterPercent}%`,
+              height: '100%',
+              backgroundColor: '#06B6D4',
+              borderRadius: '10px',
+              transition: 'width 0.4s ease'
+            }} />
+          </div>
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'space-around', borderLeft: `1px solid ${theme.macroBorder}`, paddingLeft: '16px' }}>
           <div style={{ textAlign: 'center' }}>
             <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>ZÜLAL</span>
-            <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalProtein}g <span style={{ fontSize: '10px', color: theme.textSecondary }}>/ {goals.protein}g</span></strong>
-            <div style={{ width: '54px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
-              <div style={{ width: `${proteinPercent}%`, height: '100%', backgroundColor: '#3B82F6', borderRadius: '4px', transition: 'width 0.3s' }} />
+            <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalProtein}g</strong>
+            <div style={{ width: '40px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
+              <div style={{ width: `${proteinPercent}%`, height: '100%', backgroundColor: '#3B82F6', borderRadius: '4px' }} />
             </div>
           </div>
-
           <div style={{ textAlign: 'center' }}>
-            <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>KARBOHİDRAT</span>
-            <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalCarbs}g <span style={{ fontSize: '10px', color: theme.textSecondary }}>/ {goals.carbs}g</span></strong>
-            <div style={{ width: '54px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
-              <div style={{ width: `${carbsPercent}%`, height: '100%', backgroundColor: '#F59E0B', borderRadius: '4px', transition: 'width 0.3s' }} />
+            <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>KARB</span>
+            <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalCarbs}g</strong>
+            <div style={{ width: '40px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
+              <div style={{ width: `${carbsPercent}%`, height: '100%', backgroundColor: '#F59E0B', borderRadius: '4px' }} />
             </div>
           </div>
-
           <div style={{ textAlign: 'center' }}>
             <span style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, fontWeight: '700' }}>YAĞ</span>
-            <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalFat}g <span style={{ fontSize: '10px', color: theme.textSecondary }}>/ {goals.fat}g</span></strong>
-            <div style={{ width: '54px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
-              <div style={{ width: `${fatPercent}%`, height: '100%', backgroundColor: '#EC4899', borderRadius: '4px', transition: 'width 0.3s' }} />
+            <strong style={{ fontSize: '14px', color: theme.textPrimary }}>{totalFat}g</strong>
+            <div style={{ width: '40px', height: '4px', backgroundColor: theme.progressBg, borderRadius: '4px', margin: '4px auto 0' }}>
+              <div style={{ width: `${fatPercent}%`, height: '100%', backgroundColor: '#EC4899', borderRadius: '4px' }} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Form və Siyahı */}
+      {/* Water Tracker Controls */}
+      <div style={{
+        backgroundColor: theme.cardBg,
+        padding: '20px 24px',
+        borderRadius: '20px',
+        border: `1px solid ${theme.borderColor}`,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '16px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ backgroundColor: isDarkMode ? 'rgba(6, 182, 212, 0.15)' : '#ECFEFF', padding: '10px', borderRadius: '12px', color: '#06B6D4' }}>
+            <Droplet size={22} />
+          </div>
+          <div>
+            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: theme.textPrimary }}>Su Qəbulu İdarəetməsi</h4>
+            <span style={{ fontSize: '12.5px', color: theme.textSecondary }}>Maksimum hədəf: {waterGoal} ml </span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={() => saveWater(water - 250)}
+            disabled={water <= 0}
+            style={{ padding: '8px 12px', borderRadius: '10px', border: `1px solid ${theme.borderColor}`, backgroundColor: theme.inputBg, color: water <= 0 ? theme.textSecondary : theme.textPrimary, fontSize: '12px', fontWeight: '600', cursor: water <= 0 ? 'not-allowed' : 'pointer', opacity: water <= 0 ? 0.5 : 1 }}
+          >
+            -250 ml
+          </button>
+          <button
+            type="button"
+            onClick={() => saveWater(water + 250)}
+            disabled={water >= waterGoal}
+            style={{ padding: '8px 12px', borderRadius: '10px', border: `1px solid ${theme.borderColor}`, backgroundColor: theme.inputBg, color: water >= waterGoal ? theme.textSecondary : theme.textPrimary, fontSize: '12px', fontWeight: '600', cursor: water >= waterGoal ? 'not-allowed' : 'pointer', opacity: water >= waterGoal ? 0.5 : 1 }}
+          >
+            +250 ml
+          </button>
+          <button
+            type="button"
+            onClick={() => saveWater(water + 500)}
+            disabled={water >= waterGoal}
+            style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid rgba(6, 182, 212, 0.3)', backgroundColor: isDarkMode ? 'rgba(6, 182, 212, 0.15)' : '#ECFEFF', color: '#06B6D4', fontSize: '12px', fontWeight: '600', cursor: water >= waterGoal ? 'not-allowed' : 'pointer', opacity: water >= waterGoal ? 0.5 : 1 }}
+          >
+            +500 ml
+          </button>
+          <button
+            type="button"
+            onClick={() => saveWater(0)}
+            title="Reset"
+            style={{ padding: '8px 10px', borderRadius: '10px', border: `1px solid ${theme.borderColor}`, backgroundColor: theme.inputBg, color: '#EF4444', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <RotateCcw size={15} />
+          </button>
+        </div>
+      </div>
+
+      {/* Meal Form and Scanner */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
 
         <div style={{
@@ -337,12 +443,12 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
           <form onSubmit={handleAddMeal} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '4px' }}>
-                Yeməyin Adı və Miqdarı *
+                Yeməyin Adı və Miqdarı
               </label>
               <input
                 type="text"
                 required
-                placeholder="Məl. 200g toyuq və 150g düyü, 2 ədəd yumurta..."
+                placeholder="Məl. 250g boranı, 3 ədəd qutab, kabab..."
                 value={mealName}
                 onChange={(e) => setMealName(e.target.value)}
                 style={{
@@ -498,11 +604,11 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
           </div>
         </div>
 
-        {/* AI Skaner */}
+        {/* AI Scanner */}
         <FoodScanner isDarkMode={isDarkMode} />
       </div>
 
-      {/* Bugünkü Qeydlər Siyahısı */}
+      {/* Meals List */}
       <div style={{
         marginTop: '20px',
         backgroundColor: theme.cardBg,

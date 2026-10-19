@@ -22,6 +22,7 @@ import EditProfileModal, { UserProfileData } from './components/EditProfileModal
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import EmptyState from "./components/EmptyState";
+import { apiFetch } from '@/utils/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
 
@@ -38,13 +39,16 @@ const searchIndex = [
 ];
 
 export default function Dashboard() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setisMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDarkMode, setisDarkMode] = useState(false);
+  const [isChatOpen, setisChatOpen] = useState(false);
+
+  const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
+  const [sleepInputValue, setSleepInputValue] = useState('8');
 
   const [stepsCount, setStepsCount] = useState(0);
   const [sleepHours, setSleepHours] = useState(0);
@@ -53,10 +57,10 @@ export default function Dashboard() {
   const [activityMinutes, setActivityMinutes] = useState(0);
   const [waterCount, setWaterCount] = useState(0);
 
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isNotificationsOpen, setisNotificationsOpen] = useState(false);
+  const [isMessagesOpen, setisMessagesOpen] = useState(false);
+  const [isProfileModalOpen, setisProfileModalOpen] = useState(false);
+  const [isProfileDropdownOpen, setisProfileDropdownOpen] = useState(false);
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
@@ -78,11 +82,19 @@ export default function Dashboard() {
     const localSteps = localStorage.getItem('user_steps');
     const localWaterGlasses = localStorage.getItem('user_water_glasses');
     const localWaterMl = localStorage.getItem('user_water_ml');
+    const localCalories = localStorage.getItem('user_calories');
+    const localMinutes = localStorage.getItem('user_active_minutes');
+    const localSleep = localStorage.getItem('user_sleep_hours');
+
+    const mins = localMinutes ? Number(localMinutes) : 0;
+    setActivityMinutes(mins);
 
     if (localSteps) {
       const stepsNum = Number(localSteps);
       setStepsCount(stepsNum);
-      setCaloriesCount(Math.round(stepsNum * 0.04));
+
+      const calculatedCalories = localCalories ? Number(localCalories) : Math.round(stepsNum * 0.04 + mins * 5);
+      setCaloriesCount(calculatedCalories);
     }
 
     if (localWaterGlasses !== null) {
@@ -91,6 +103,10 @@ export default function Dashboard() {
       setWaterCount(Math.floor(Number(localWaterMl) / 250));
     } else {
       setWaterCount(0);
+    }
+
+    if (localSleep !== null) {
+      setSleepHours(Number(localSleep));
     }
 
     const loadDashboardData = async () => {
@@ -110,9 +126,19 @@ export default function Dashboard() {
           if (activityData) {
             if (activityData.steps !== undefined && activityData.steps !== null && activityData.steps > 0) {
               setStepsCount(activityData.steps);
-              setCaloriesCount(activityData.calories || Math.round(activityData.steps * 0.04));
               localStorage.setItem('user_steps', activityData.steps.toString());
             }
+
+            if (activityData.active_minutes !== undefined && activityData.active_minutes !== null && activityData.active_minutes > 0) {
+              setActivityMinutes(activityData.active_minutes);
+              localStorage.setItem('user_active_minutes', activityData.active_minutes.toString());
+            }
+
+            const currentMins = activityData.active_minutes || mins;
+            const currentSteps = activityData.steps || (localSteps ? Number(localSteps) : 0);
+            const totalCal = Math.round(currentSteps * 0.04 + currentMins * 5);
+            setCaloriesCount(totalCal);
+            localStorage.setItem('user_calories', totalCal.toString());
 
             const serverWaterMl = activityData.water ?? activityData.water_ml;
             if (serverWaterMl !== undefined && serverWaterMl !== null && serverWaterMl > 0) {
@@ -130,26 +156,80 @@ export default function Dashboard() {
       }
     };
 
+    const handleStorageChange = () => {
+      const updatedSteps = localStorage.getItem('user_steps');
+      const updatedMins = localStorage.getItem('user_active_minutes');
+      const updatedWaterG = localStorage.getItem('user_water_glasses');
+      const updatedSleep = localStorage.getItem('user_sleep_hours');
+      const updatedCals = localStorage.getItem('user_calories');
+
+      if (updatedSteps !== null) setStepsCount(Number(updatedSteps));
+      if (updatedMins !== null) setActivityMinutes(Number(updatedMins));
+      if (updatedWaterG !== null) setWaterCount(Number(updatedWaterG));
+      if (updatedSleep !== null) setSleepHours(Number(updatedSleep));
+
+      const steps = updatedSteps ? Number(updatedSteps) : stepsCount;
+      const mins = updatedMins ? Number(updatedMins) : activityMinutes;
+      const cals = updatedCals ? Number(updatedCals) : Math.round(steps * 0.04 + mins * 5);
+      setCaloriesCount(cals);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+
     loadDashboardData();
   }, [activeTab]);
 
   useEffect(() => {
+    const handleActivityUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        if (customEvent.detail.steps !== undefined) setStepsCount(Number(customEvent.detail.steps));
+        if (customEvent.detail.activeMinutes !== undefined) setActivityMinutes(Number(customEvent.detail.activeMinutes));
+        if (customEvent.detail.calories !== undefined) setCaloriesCount(Number(customEvent.detail.calories));
+      }
+    };
+
+    const handleStorageChange = () => {
+      const savedSteps = localStorage.getItem('user_steps');
+      const savedMins = localStorage.getItem('user_active_minutes');
+      const savedCals = localStorage.getItem('user_calories');
+      const savedWater = localStorage.getItem('user_water_glasses');
+      const savedSleep = localStorage.getItem('user_sleep_hours');
+
+      if (savedSteps !== null) setStepsCount(Number(savedSteps));
+      if (savedMins !== null) setActivityMinutes(Number(savedMins));
+      if (savedCals !== null) setCaloriesCount(Number(savedCals));
+      if (savedWater !== null) setWaterCount(Number(savedWater));
+      if (savedSleep !== null) setSleepHours(Number(savedSleep));
+    };
+
+    window.addEventListener('activity-updated', handleActivityUpdate as EventListener);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('activity-updated', handleActivityUpdate as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
-      setDarkMode(true);
+      setisDarkMode(true);
     }
   }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setIsNotificationsOpen(false);
+        setisNotificationsOpen(false);
       }
       if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
-        setIsMessagesOpen(false);
+        setisMessagesOpen(false);
       }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
-        setIsProfileDropdownOpen(false);
+        setisProfileDropdownOpen(false);
       }
     }
 
@@ -173,35 +253,24 @@ export default function Dashboard() {
   };
 
   const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
+    const newMode = !isDarkMode;
+    setisDarkMode(newMode);
     localStorage.setItem('theme', newMode ? 'dark' : 'light');
   };
   const router = useRouter();
 
   const [user, setUser] = useState<UserProfileData | null>(null);
 
-
   useEffect(() => {
     const fetchWater = async () => {
-      const savedWater = localStorage.getItem('waterCount');
+      const savedWater = localStorage.getItem('user_water') || localStorage.getItem('user_water_ml');
 
       if (savedWater !== null) {
-        setWaterCount(Number(savedWater));
+        const ml = Number(savedWater);
+        const glasses = ml > 10 ? Math.round(ml / 250) : ml;
+        setWaterCount(glasses);
       } else {
         setWaterCount(0);
-      }
-
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/water`);
-        if (res.ok) {
-          const data = await res.json();
-          const count = data.count ?? 0;
-          setWaterCount(count);
-          localStorage.setItem('waterCount', count.toString());
-        }
-      } catch (err) {
-        console.warn('Backend-dən su məlumatı alınmadı:', err);
       }
     };
 
@@ -280,7 +349,7 @@ export default function Dashboard() {
     router.push('/auth');
   };
 
-  const theme = darkMode ? {
+  const theme = isDarkMode ? {
     bgApp: '#121212',
     bgCard: '#1E1E1E',
     bgInner: '#2A2A2A',
@@ -309,8 +378,8 @@ export default function Dashboard() {
 
   const toggleMessagesModal = async () => {
     const nextState = !isMessagesOpen;
-    setIsMessagesOpen(nextState);
-    setIsNotificationsOpen(false);
+    setisMessagesOpen(nextState);
+    setisNotificationsOpen(false);
 
     if (nextState && unreadMessagesCount > 0) {
       setMessages(prev => prev.map(m => ({ ...m, read: true })));
@@ -390,7 +459,7 @@ export default function Dashboard() {
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
-                    setIsMobileMenuOpen(false);
+                    setisMobileMenuOpen(false);
                   }}
                   className={`nav-item ${isActive ? 'active' : ''}`}
                   style={{
@@ -432,8 +501,8 @@ export default function Dashboard() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ background: darkMode ? '#143826' : '#F0FDF4', padding: '11px 12px', borderRadius: '10px', border: darkMode ? '1px solid #1C5438' : '1px solid #DCFCE7', textAlign: 'center' }}>
-            <p style={{ margin: '0 0 6px 0', fontSize: '11px', fontWeight: '600', color: darkMode ? '#A7F3D0' : '#166534', lineHeight: '1.3' }}>Nəfəs al. Rahatla.<br />Özünə vaxt ayır.</p>
+          <div style={{ background: isDarkMode ? '#143826' : '#F0FDF4', padding: '11px 12px', borderRadius: '10px', border: isDarkMode ? '1px solid #1C5438' : '1px solid #DCFCE7', textAlign: 'center' }}>
+            <p style={{ margin: '0 0 6px 0', fontSize: '11px', fontWeight: '600', color: isDarkMode ? '#A7F3D0' : '#166534', lineHeight: '1.3' }}>Nəfəs al. Rahatla.<br />Özünə vaxt ayır.</p>
             <button
               onClick={() => setActiveTab('mental')}
               style={{ background: '#44766C', color: '#FFFFFF', border: 'none', padding: '7px 12px', borderRadius: '6px', fontSize: '11.5px', fontWeight: '600', cursor: 'pointer', width: '100%', transition: 'opacity 0.2s' }}
@@ -446,8 +515,8 @@ export default function Dashboard() {
             className="nav-item"
             onClick={handleLogout}
             style={{
-              border: darkMode ? '1px solid #7F1D1D' : '1px solid #FEE2E2',
-              background: darkMode ? '#451A1A' : '#FEF2F2',
+              border: isDarkMode ? '1px solid #7F1D1D' : '1px solid #FEE2E2',
+              background: isDarkMode ? '#451A1A' : '#FEF2F2',
               padding: '9px 12px',
               borderRadius: '8px',
               width: '100%',
@@ -456,18 +525,18 @@ export default function Dashboard() {
               display: 'flex',
               alignItems: 'center',
               gap: '11px',
-              color: darkMode ? '#FCA5A5' : '#EF4444',
+              color: isDarkMode ? '#FCA5A5' : '#EF4444',
               fontWeight: '600',
               fontSize: '13px',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = darkMode ? '#7F1D1D' : '#FEE2E2';
-              e.currentTarget.style.color = darkMode ? '#FFFFFF' : '#DC2626';
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#7F1D1D' : '#FEE2E2';
+              e.currentTarget.style.color = isDarkMode ? '#FFFFFF' : '#DC2626';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = darkMode ? '#451A1A' : '#FEF2F2';
-              e.currentTarget.style.color = darkMode ? '#FCA5A5' : '#EF4444';
+              e.currentTarget.style.backgroundColor = isDarkMode ? '#451A1A' : '#FEF2F2';
+              e.currentTarget.style.color = isDarkMode ? '#FCA5A5' : '#EF4444';
             }}
           >
             <LogOut size={17} />
@@ -479,7 +548,7 @@ export default function Dashboard() {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
-          onClick={() => setIsMobileMenuOpen(false)}
+          onClick={() => setisMobileMenuOpen(false)}
           style={{
             position: 'fixed',
             top: 0,
@@ -521,7 +590,7 @@ export default function Dashboard() {
 
             {/* Mobile Hamburger Button */}
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => setisMobileMenuOpen(!isMobileMenuOpen)}
               className="mobile-menu-btn"
               style={{
                 background: 'none',
@@ -595,7 +664,7 @@ export default function Dashboard() {
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
                     borderRadius: '10px',
-                    boxShadow: darkMode ? '0 10px 25px rgba(0, 0, 0, 0.5)' : '0 10px 25px rgba(0, 0, 0, 0.08)',
+                    boxShadow: isDarkMode ? '0 10px 25px rgba(0, 0, 0, 0.5)' : '0 10px 25px rgba(0, 0, 0, 0.08)',
                     zIndex: 100,
                     maxHeight: '250px',
                     overflowY: 'auto',
@@ -653,7 +722,7 @@ export default function Dashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
               <button
                 onClick={toggleDarkMode}
-                title={darkMode ? "Açıq rejimə keç" : "Qaranlıq rejimə keç"}
+                title={isDarkMode ? "Açıq rejimə keç" : "Qaranlıq rejimə keç"}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -661,22 +730,22 @@ export default function Dashboard() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: darkMode ? '#FBBF24' : theme.textSecondary,
+                  color: isDarkMode ? '#FBBF24' : theme.textSecondary,
                   transition: 'transform 0.2s ease, color 0.2s ease',
                   padding: 0
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
               {/* Notifications */}
               <div ref={notificationRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                 <button
                   onClick={() => {
-                    setIsNotificationsOpen(!isNotificationsOpen);
-                    setIsMessagesOpen(false);
+                    setisNotificationsOpen(!isNotificationsOpen);
+                    setisMessagesOpen(false);
                   }}
                   title="Bildirişlər"
                   style={{
@@ -726,7 +795,7 @@ export default function Dashboard() {
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
                     borderRadius: '16px',
-                    boxShadow: darkMode ? '0 12px 32px rgba(0, 0, 0, 0.5)' : '0 12px 30px rgba(0, 0, 0, 0.08)',
+                    boxShadow: isDarkMode ? '0 12px 32px rgba(0, 0, 0, 0.5)' : '0 12px 30px rgba(0, 0, 0, 0.08)',
                     zIndex: 100,
                     overflow: 'hidden'
                   }}>
@@ -784,7 +853,7 @@ export default function Dashboard() {
                             style={{
                               padding: '12px 16px',
                               borderBottom: `1px solid ${theme.border}`,
-                              backgroundColor: darkMode ? 'rgba(16, 185, 129, 0.08)' : '#F0FDF4',
+                              backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.08)' : '#F0FDF4',
                               display: 'flex',
                               gap: '10px',
                               alignItems: 'flex-start',
@@ -846,7 +915,7 @@ export default function Dashboard() {
                             width: '44px',
                             height: '44px',
                             borderRadius: '12px',
-                            backgroundColor: darkMode ? 'rgba(16, 185, 129, 0.12)' : '#ECFDF5',
+                            backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.12)' : '#ECFDF5',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -922,7 +991,7 @@ export default function Dashboard() {
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
                     borderRadius: '12px',
-                    boxShadow: darkMode ? '0 10px 25px rgba(0, 0, 0, 0.6)' : '0 10px 25px rgba(0, 0, 0, 0.1)',
+                    boxShadow: isDarkMode ? '0 10px 25px rgba(0, 0, 0, 0.6)' : '0 10px 25px rgba(0, 0, 0, 0.1)',
                     zIndex: 100,
                     overflow: 'hidden'
                   }}>
@@ -956,7 +1025,7 @@ export default function Dashboard() {
             <div ref={profileDropdownRef} style={{ position: 'relative' }}>
               <div
                 className="profile-card"
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                onClick={() => setisProfileDropdownOpen(!isProfileDropdownOpen)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1036,8 +1105,8 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => {
-                      setIsProfileDropdownOpen(false);
-                      setIsProfileModalOpen(true);
+                      setisProfileDropdownOpen(false);
+                      setisProfileModalOpen(true);
                     }}
                     style={{
                       display: 'flex',
@@ -1064,7 +1133,7 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => {
-                      setIsProfileDropdownOpen(false);
+                      setisProfileDropdownOpen(false);
                       localStorage.clear();
                       sessionStorage.clear();
                       router.push('/auth');
@@ -1085,7 +1154,7 @@ export default function Dashboard() {
                       textAlign: 'left',
                       transition: 'background-color 0.15s'
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = darkMode ? '#451A1A' : '#FEE2E2')}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDarkMode ? '#451A1A' : '#FEE2E2')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     <LogOut size={16} />
@@ -1143,15 +1212,21 @@ export default function Dashboard() {
                 {/* Summary Cards Grid */}
                 <div className="summary-grid">
                   {[
-                    { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: darkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
-                    { id: 'activity', title: 'Aktivlik', value: `${activityMinutes} dəq`, sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: darkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
-                    { id: 'nutrition', title: 'Kalori', value: `${caloriesCount} kkal`, sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: darkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
-                    { id: 'nutrition', title: 'Su qəbulu', value: `${waterCount} stəkan`, sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: darkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
-                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: darkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
+                    { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: isDarkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
+                    { id: 'activity', title: 'Aktivlik', value: `${activityMinutes} dəq`, sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
+                    { id: 'nutrition', title: 'Kalori', value: `${caloriesCount} kkal`, sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
+                    { id: 'nutrition', title: 'Su qəbulu', value: `${waterCount} stəkan`, sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
+                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
                   ].map((card, idx) => (
                     <div
                       key={idx}
-                      onClick={() => setActiveTab(card.id)}
+                      onClick={() => {
+                        if (card.id === 'mental') {
+                          setIsSleepModalOpen(true);
+                        } else {
+                          setActiveTab(card.id);
+                        }
+                      }}
                       className="summary-card"
                       style={{
                         backgroundColor: theme.bgCard,
@@ -1181,25 +1256,45 @@ export default function Dashboard() {
                 {/* Challenge & Mental Row */}
                 <div className="challenge-mental-row">
 
+                  {/* Active Campus Challenge Card */}
                   <div
                     onClick={() => setActiveTab('challenges')}
-                    className="card"
-                    style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+                    style={{
+                      position: 'relative',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      padding: '20px',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      minHeight: '160px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.75)), url("https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80")',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '14px' }}></span>
-                      <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Aktiv kampus çağırışı</h3>
+                    <div>
+                      <span style={{
+                        backgroundColor: '#10B981',
+                        color: '#FFFFFF',
+                        padding: '3px 10px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        display: 'inline-block',
+                        marginBottom: '10px'
+                      }}>
+                        Aktiv iştirak
+                      </span>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', letterSpacing: '-0.3px', color: '#FFFFFF' }}>
+                        Su balansı çağırışı
+                      </h3>
                     </div>
-                    <div style={{ overflow: 'hidden', borderRadius: '9px', border: `1px solid ${theme.border}`, position: 'relative', height: '100px', marginBottom: '10px', backgroundColor: theme.bgInner }}>
-                      <div style={{ position: 'absolute', top: '7px', left: '7px', zIndex: 2 }}>
-                        <span style={{ fontSize: '9.5px', background: '#10B981', color: '#FFFFFF', padding: '2.5px 6px', borderRadius: '4px', fontWeight: '600' }}>Aktiv iştirak</span>
-                      </div>
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', padding: '9px', color: '#FFFFFF', zIndex: 2 }}>
-                        <h4 style={{ margin: 0, fontSize: '12.5px', fontWeight: '600' }}>Su balansı çağırışı</h4>
-                      </div>
-                      <div style={{ width: '100%', height: '100%', background: 'linear-gradient(45deg, #334155, #1E293B)', opacity: 0.5 }}></div>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '11.5px', color: theme.textSecondary, lineHeight: '1.35' }}>
+
+                    <p style={{ margin: '8px 0 0 0', fontSize: '12.5px', opacity: 0.9, lineHeight: '1.4', color: '#FFFFFF' }}>
                       Susuzlaşmanın qarşısını almaq üçün hər gün hüceyrələri yenilə.
                     </p>
                   </div>
@@ -1215,20 +1310,20 @@ export default function Dashboard() {
 
                     <div className="mental-mini-grid">
                       {[
-                        { title: 'Meditasiya', desc: 'Stressi azaldın', time: '10 dəq', bg: darkMode ? '#3B0764' : '#F3E8FF', border: darkMode ? '#581C87' : '#E9D5FF', icon: <Flower2 size={16} />, color: darkMode ? '#E9D5FF' : '#6B21A8' },
-                        { title: 'Nəfəs məşqləri', desc: 'Rahatla və fokuslan', time: '5 dəq', bg: darkMode ? '#1E3A8A' : '#EFF6FF', border: darkMode ? '#1D4ED8' : '#DBEAFE', icon: <Wind size={16} />, color: darkMode ? '#BFDBFE' : '#1E40AF' },
-                        { title: 'Yaddaş dəftəri', desc: 'Düşüncələrini yaz', time: '10 dəq', bg: darkMode ? '#7C2D12' : '#FFF7ED', border: darkMode ? '#9A3412' : '#FFEDD5', icon: <BookOpen size={16} />, color: darkMode ? '#FFEDD5' : '#9A3412' },
-                        { title: 'Özünüqiymətləndirmə', desc: 'Öz rifahını yoxla', time: '5 dəq', bg: darkMode ? '#064E3B' : '#E6F4EA', border: darkMode ? '#047857' : '#D1FAE5', icon: <Smile size={16} />, color: darkMode ? '#A7F3D0' : '#065F46' }
+                        { title: 'Meditasiya', desc: 'Stressi azaldın', time: '10 dəq', bg: isDarkMode ? '#3B0764' : '#F3E8FF', border: isDarkMode ? '#581C87' : '#E9D5FF', icon: <Flower2 size={16} />, color: isDarkMode ? '#E9D5FF' : '#6B21A8' },
+                        { title: 'Nəfəs məşqləri', desc: 'Rahatla və fokuslan', time: '5 dəq', bg: isDarkMode ? '#1E3A8A' : '#EFF6FF', border: isDarkMode ? '#1D4ED8' : '#DBEAFE', icon: <Wind size={16} />, color: isDarkMode ? '#BFDBFE' : '#1E40AF' },
+                        { title: 'Yaddaş dəftəri', desc: 'Düşüncələrini yaz', time: '10 dəq', bg: isDarkMode ? '#7C2D12' : '#FFF7ED', border: isDarkMode ? '#9A3412' : '#FFEDD5', icon: <BookOpen size={16} />, color: isDarkMode ? '#FFEDD5' : '#9A3412' },
+                        { title: 'Özünüqiymətləndirmə', desc: 'Öz rifahını yoxla', time: '5 dəq', bg: isDarkMode ? '#064E3B' : '#E6F4EA', border: isDarkMode ? '#047857' : '#D1FAE5', icon: <Smile size={16} />, color: isDarkMode ? '#A7F3D0' : '#065F46' }
                       ].map((box, i) => (
                         <div
                           key={i}
                           onClick={() => setActiveTab('mental')}
                           style={{ padding: '10px 4px', background: box.bg, borderRadius: '11px', border: `1px solid ${box.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-around', textAlign: 'center', cursor: 'pointer', boxSizing: 'border-box' }}
                         >
-                          <div style={{ color: box.color, background: darkMode ? 'rgba(0,0,0,0.4)' : '#FFFFFF', padding: '5.5px', borderRadius: '50%', display: 'flex' }}>{box.icon}</div>
+                          <div style={{ color: box.color, background: isDarkMode ? 'rgba(0,0,0,0.4)' : '#FFFFFF', padding: '5.5px', borderRadius: '50%', display: 'flex' }}>{box.icon}</div>
                           <h5 style={{ margin: 0, fontSize: box.title === 'Özünüqiymətləndirmə' ? '10px' : '11px', fontWeight: '700', color: theme.textPrimary, whiteSpace: 'nowrap' }}>{box.title}</h5>
                           <p style={{ margin: 0, fontSize: '9.5px', color: theme.textSecondary, lineHeight: '1.2', whiteSpace: 'nowrap' }}>{box.desc}</p>
-                          <span style={{ fontSize: '9.5px', color: box.color, fontWeight: '700', background: darkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)', padding: '2px 6px', borderRadius: '50px' }}>{box.time}</span>
+                          <span style={{ fontSize: '9.5px', color: box.color, fontWeight: '700', background: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)', padding: '2px 6px', borderRadius: '50px' }}>{box.time}</span>
                         </div>
                       ))}
                     </div>
@@ -1275,7 +1370,7 @@ export default function Dashboard() {
 
               {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <DailyScoreWidget isDarkMode={darkMode} />
+                <DailyScoreWidget isDarkMode={isDarkMode} />
 
                 <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -1288,7 +1383,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
-                      <div style={{ backgroundColor: darkMode ? '#064E3B' : '#ECFDF5', color: '#10B981', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
+                      <div style={{ backgroundColor: isDarkMode ? '#064E3B' : '#ECFDF5', color: '#10B981', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
                         <Stethoscope size={16} />
                       </div>
                       <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>Həkim qəbulu</span>
@@ -1298,7 +1393,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
-                      <div style={{ backgroundColor: darkMode ? '#3B0764' : '#F3E8FF', color: '#9333EA', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
+                      <div style={{ backgroundColor: isDarkMode ? '#3B0764' : '#F3E8FF', color: '#9333EA', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
                         <Brain size={16} />
                       </div>
                       <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>Psixoloq görüşü</span>
@@ -1308,7 +1403,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
-                      <div style={{ backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF', color: '#3B82F6', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
+                      <div style={{ backgroundColor: isDarkMode ? '#1E3A8A' : '#EFF6FF', color: '#3B82F6', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
                         <FileText size={16} />
                       </div>
                       <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>Tibbi məlumatlar</span>
@@ -1318,7 +1413,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab('services')}
                       style={{ backgroundColor: theme.bgInner, padding: '11px', borderRadius: '11px', border: `1px solid ${theme.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '7px' }}
                     >
-                      <div style={{ backgroundColor: darkMode ? '#451A1A' : '#FEF2F2', color: '#EF4444', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
+                      <div style={{ backgroundColor: isDarkMode ? '#451A1A' : '#FEF2F2', color: '#EF4444', padding: '5.5px', borderRadius: '7px', width: 'fit-content', display: 'flex' }}>
                         <PhoneCall size={16} />
                       </div>
                       <span style={{ fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary }}>Təcili yardım</span>
@@ -1330,21 +1425,21 @@ export default function Dashboard() {
             </div>
           )}
 
-          {activeTab === 'activity' && <ActivityPanel isDarkMode={darkMode} />}
-          {activeTab === 'mental' && <MentalPanel isDarkMode={darkMode} />}
-          {activeTab === 'services' && <ServicesPanel isDarkMode={darkMode} />}
-          {activeTab === 'challenges' && <ChallengesPanel isDarkMode={darkMode} />}
-          {activeTab === 'events' && <EventsPanel isDarkMode={darkMode} />}
-          {activeTab === 'nutrition' && <NutritionPanel isDarkMode={darkMode} />}
-          {activeTab === 'progress' && <ProgressPanel isDarkMode={darkMode} />}
-          {activeTab === 'stats' && <StatsPanel isDarkMode={darkMode} />}
+          {activeTab === 'activity' && <ActivityPanel isDarkMode={isDarkMode} />}
+          {activeTab === 'mental' && <MentalPanel isDarkMode={isDarkMode} />}
+          {activeTab === 'services' && <ServicesPanel isDarkMode={isDarkMode} />}
+          {activeTab === 'challenges' && <ChallengesPanel isDarkMode={isDarkMode} />}
+          {activeTab === 'events' && <EventsPanel isDarkMode={isDarkMode} />}
+          {activeTab === 'nutrition' && <NutritionPanel isDarkMode={isDarkMode} />}
+          {activeTab === 'progress' && <ProgressPanel isDarkMode={isDarkMode} />}
+          {activeTab === 'stats' && <StatsPanel isDarkMode={isDarkMode} />}
 
         </main>
       </div>
 
       {/* AI Asistent Floating Button */}
       <button
-        onClick={() => setIsChatOpen(!isChatOpen)}
+        onClick={() => setisChatOpen(!isChatOpen)}
         title="E-Motion AI Asistent"
         style={{
           position: 'fixed',
@@ -1373,7 +1468,7 @@ export default function Dashboard() {
       {/* AI Chat Modal */}
       <AIChatModal
         isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
+        onClose={() => setisChatOpen(false)}
         userStats={{
           addimlar: stepsCount,
           aktivlikDeq: activityMinutes,
@@ -1387,7 +1482,7 @@ export default function Dashboard() {
       {/* Profile Edit */}
       <EditProfileModal
         isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
+        onClose={() => setisProfileModalOpen(false)}
         currentUser={user}
         onUpdate={(updatedData) => {
           setUser(updatedData);
@@ -1395,8 +1490,170 @@ export default function Dashboard() {
             localStorage.setItem('user_step_goal', (updatedData.daily_step_goal || updatedData.dailyStepGoal)!.toString());
           }
         }}
-        isDarkMode={darkMode}
+        isDarkMode={isDarkMode}
       />
-    </div >
+      {/* Modern Sleep Input Modal */}
+      {isSleepModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+            borderRadius: '24px',
+            padding: '28px',
+            width: '100%',
+            maxWidth: '400px',
+            border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : '#E2E8F0'}`,
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+            color: isDarkMode ? '#FFFFFF' : '#0F172A'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#06B6D4', fontWeight: '700', fontSize: '15px' }}>
+                Gecə Yuxusu Balansı
+              </div>
+              <p style={{ margin: 0, fontSize: '12.5px', color: isDarkMode ? '#94A3B8' : '#64748B', lineHeight: '1.5' }}>
+                Optimal sağlamlıq, beyin funksiyaları və hüceyrə bərpası üçün hər gecə 7–9 saat keyfiyyətli yuxu tövsiyə olunur.
+              </p>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: isDarkMode ? '#CBD5E1' : '#475569' }}>
+                Yuxu Müddəti (Saat)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="14"
+                step="0.5"
+                value={sleepInputValue}
+                onChange={(e) => setSleepInputValue(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: `1px solid ${isDarkMode ? '#3F3F46' : '#CBD5E1'}`,
+                  backgroundColor: isDarkMode ? '#27272A' : '#F8FAFC',
+                  color: isDarkMode ? '#FFFFFF' : '#0F172A',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            {/* Quick Select Buttons */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {['6', '7', '8', '9'].map((hrs) => (
+                <button
+                  key={hrs}
+                  type="button"
+                  onClick={() => setSleepInputValue(hrs)}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '8px',
+                    border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
+                    backgroundColor: sleepInputValue === hrs ? 'rgba(6, 182, 212, 0.15)' : (isDarkMode ? '#27272A' : '#F8FAFC'),
+                    color: sleepInputValue === hrs ? '#06B6D4' : (isDarkMode ? '#FFFFFF' : '#0F172A'),
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {hrs} saat
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setIsSleepModalOpen(false)}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
+                  backgroundColor: 'transparent',
+                  color: isDarkMode ? '#CBD5E1' : '#64748B',
+                  fontSize: '13.5px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Ləğv et
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = Number(sleepInputValue);
+                  if (isNaN(val) || val <= 0) {
+                    toast.error('Zəhmət olmasa etibarlı saat daxil edin.', {
+                      style: {
+                        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                        color: isDarkMode ? '#FFFFFF' : '#0F172A',
+                        border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
+                      }
+                    });
+                    return;
+                  }
+                  if (val > 14) {
+                    toast.warning('Sağlam yuxu balansı üçün 1 gündə maksimum 14 saat qeyd edə bilərsiniz.', {
+                      style: {
+                        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                        color: isDarkMode ? '#FFFFFF' : '#0F172A',
+                        border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
+                      }
+                    });
+                    return;
+                  }
+                  setSleepHours(val);
+                  localStorage.setItem('user_sleep_hours', val.toString());
+                  window.dispatchEvent(new Event('storage'));
+                  setIsSleepModalOpen(false);
+                  toast.success('Yuxu balansınız uğurla yeniləndi!', {
+                    style: {
+                      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                      color: isDarkMode ? '#FFFFFF' : '#0F172A',
+                      border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
+                    }
+                  });
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  backgroundColor: '#06B6D4',
+                  color: '#FFFFFF',
+                  fontSize: '13.5px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)'
+                }}
+              >
+                Yadda saxla
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+
   );
 }

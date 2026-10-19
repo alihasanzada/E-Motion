@@ -1,5 +1,6 @@
 'use client';
 
+import { apiFetch } from '@/utils/api';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
@@ -17,10 +18,8 @@ export default function AuthPage() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
-
   useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('userToken')) {
+    if (typeof window !== 'undefined' && localStorage.getItem('user')) {
       router.push('/');
     }
   }, [router]);
@@ -44,10 +43,9 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/register`, {
+      const response = await apiFetch('/api/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: username, email: cleanEmail, password: cleanPassword }),
+        body: JSON.stringify({ name: username.trim(), email: cleanEmail, password: cleanPassword }),
       });
 
       const data = await response.json();
@@ -55,6 +53,7 @@ export default function AuthPage() {
       if (response.ok) {
         alert("Qeydiyyat uğurla tamamlandı! İndi daxil ola bilərsiniz.");
         setPassword('');
+        setUsername('');
         setView('login');
       } else {
         alert(`Xəta: ${data.error || data.message || 'Qeydiyyat baş tutmadı.'}`);
@@ -72,9 +71,8 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/login`, {
+      const response = await apiFetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password: password.trim() }),
       });
 
@@ -82,15 +80,13 @@ export default function AuthPage() {
 
       if (response.ok) {
         if (typeof window !== 'undefined') {
-          localStorage.setItem('userToken', data.token);
-
-          const fullNameFromBackend = data.user?.fullname || data.user?.name || data.name || email.split('@')[0];
+          const fullNameFromBackend = data.user?.fullname || data.user?.name || email.split('@')[0];
 
           const userData = {
             fullname: fullNameFromBackend,
             email: data.user?.email || email,
-            major: data.user?.major || "",
-            course: data.user?.course || null,
+            major: data.user?.major || "Kompüter Mühəndisliyi",
+            course: data.user?.course || "1-ci kurs",
             student_id: data.user?.student_id || "",
             blood_group: data.user?.blood_group || "",
             phone: data.user?.phone || "",
@@ -105,7 +101,7 @@ export default function AuthPage() {
 
         router.push('/');
       } else {
-        alert(`Xəta: ${data.message || 'Giriş uğursuz oldu.'}`);
+        alert(`Xəta: ${data.error || data.message || 'Giriş uğursuz oldu.'}`);
       }
     } catch (error) {
       console.error('Sorğu xətası:', error);

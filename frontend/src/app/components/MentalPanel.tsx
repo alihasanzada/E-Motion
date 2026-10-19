@@ -53,12 +53,12 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
   const [affirmationIndex, setAffirmationIndex] = useState<number>(0);
 
   const theme = {
-    cardBg: isDarkMode ? '#1E293B' : '#FFFFFF',
-    innerBg: isDarkMode ? '#0F172A' : '#F8FAFC',
-    inputBg: isDarkMode ? '#0F172A' : '#FFFFFF',
-    textPrimary: isDarkMode ? '#F8FAFC' : '#0F172A',
-    textSecondary: isDarkMode ? '#94A3B8' : '#475569',
-    borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+    cardBg: isDarkMode ? '#1A1D20' : '#FFFFFF',
+    innerBg: isDarkMode ? '#15181B' : '#F8FAFC',
+    inputBg: isDarkMode ? '#15181B' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#F1F5F9' : '#0F172A',
+    textSecondary: isDarkMode ? '#94A3B8' : '#64748B',
+    borderColor: isDarkMode ? '#2E353D' : '#E2E8F0',
     primary: '#44766C',
     accentGreen: '#10B981',
     purple: '#8B5CF6'
@@ -209,13 +209,12 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
         </div>
       </div>
 
-      {/* Main Grid: Mood Tracker & Ambient Audio Player */}
+      {/* Mood Tracker & Ambient Audio Player */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
 
         {/* Mood Tracker & Input Form */}
         <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '18px 20px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Smile size={18} color={theme.primary} />
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Bu gün özünü necə hiss edirsən?</h3>
           </div>
 
@@ -252,7 +251,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
               rows={2}
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Ağlınızdan nələr keçir? Qısaca qeyd edin və ya fikirlərinizi bölüşün..."
+              placeholder="Bu günün qeydlərini buraya yaz..."
               style={{
                 width: '100%',
                 padding: '8px 12px',

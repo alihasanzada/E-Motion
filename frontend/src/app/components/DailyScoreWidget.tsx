@@ -3,10 +3,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
     Activity,
-    Droplets,
-    Moon,
-    Footprints,
-    Smile,
     Zap
 } from "lucide-react";
 
@@ -18,97 +14,96 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
     const [mounted, setMounted] = useState(false);
     const [waterLitres, setWaterLitres] = useState<number>(1.5);
     const [sleepHours, setSleepHours] = useState<number>(7);
-    const [steps, setSteps] = useState<number>(6500);
-    const [moodScore, setMoodScore] = useState<number>(4);
-    const [targetWater, setTargetWater] = useState<number>(2.5);
-    const [targetSteps, setTargetSteps] = useState<number>(10000);
-    const targetSleep = 8;
+    const [steps, setSteps] = useState<number>(7000);
+    const [activeMinutes, setActiveMinutes] = useState<number>(0);
+    const [calories, setCalories] = useState<number>(0);
+
+    const loadDataFromStorage = () => {
+        const savedSteps = localStorage.getItem('user_steps');
+        const savedMins = localStorage.getItem('user_active_minutes');
+        const savedCals = localStorage.getItem('user_calories');
+        const savedSleep = localStorage.getItem('user_sleep_hours') || localStorage.getItem('user_sleep');
+        const savedWaterMl = localStorage.getItem('user_water_ml');
+        const savedGlasses = localStorage.getItem('user_water_glasses');
+
+        const stepNum = savedSteps ? Number(savedSteps) : 0;
+        const minNum = savedMins ? Number(savedMins) : 0;
+        setSteps(stepNum);
+        setActiveMinutes(minNum);
+
+        if (savedCals) {
+            setCalories(Number(savedCals));
+        } else {
+            setCalories(Math.round(stepNum * 0.04 + minNum * 5));
+        }
+
+        if (savedSleep) {
+            setSleepHours(Number(savedSleep));
+        }
+
+        if (savedWaterMl) {
+            setWaterLitres(Number(savedWaterMl) / 1000);
+        } else if (savedGlasses) {
+            setWaterLitres((Number(savedGlasses) * 250) / 1000);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
+        loadDataFromStorage();
 
-        const savedSteps = localStorage.getItem('user_steps');
-        if (savedSteps) setSteps(Number(savedSteps));
-
-        const savedSleep = localStorage.getItem('user_sleep');
-        if (savedSleep) setSleepHours(Number(savedSleep));
-
-        const savedMood = localStorage.getItem('user_mood');
-        if (savedMood) setMoodScore(Number(savedMood));
-
-        const savedWaterMl = localStorage.getItem('user_water_ml');
-        if (savedWaterMl) {
-            setWaterLitres(Number(savedWaterMl) / 1000);
-        } else {
-            const savedGlasses = localStorage.getItem('user_water_glasses');
-            if (savedGlasses) setWaterLitres((Number(savedGlasses) * 250) / 1000);
-        }
-
-        const savedGoal = localStorage.getItem('user_step_goal');
-        if (savedGoal) setTargetSteps(Number(savedGoal));
-
-        const savedWaterGoal = localStorage.getItem('daily_water_goal');
-        if (savedWaterGoal) setTargetWater(Number(savedWaterGoal) / 1000);
-
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            try {
-                const parsed = JSON.parse(storedUser);
-                if (parsed.daily_step_goal || parsed.dailyStepGoal) {
-                    setTargetSteps(Number(parsed.daily_step_goal || parsed.dailyStepGoal));
-                }
-                if (parsed.daily_water_goal || parsed.dailyWaterGoal) {
-                    setTargetWater(Number(parsed.daily_water_goal || parsed.dailyWaterGoal) / 1000);
-                }
-            } catch (e) {
-                console.error("Lokal istifadəçi datası oxunarkən xəta:", e);
+        const handleUpdate = (e: Event) => {
+            const customEvent = e as CustomEvent;
+            if (customEvent.detail) {
+                if (customEvent.detail.steps !== undefined) setSteps(Number(customEvent.detail.steps));
+                if (customEvent.detail.activeMinutes !== undefined) setActiveMinutes(Number(customEvent.detail.activeMinutes));
+                if (customEvent.detail.calories !== undefined) setCalories(Number(customEvent.detail.calories));
             }
-        }
+            loadDataFromStorage();
+        };
+
+        window.addEventListener('activity-updated', handleUpdate as EventListener);
+        window.addEventListener('storage', handleUpdate);
+
+        return () => {
+            window.removeEventListener('activity-updated', handleUpdate as EventListener);
+            window.removeEventListener('storage', handleUpdate);
+        };
     }, []);
 
-    const handleWaterChange = (val: number) => {
-        setWaterLitres(val);
-        localStorage.setItem('user_water_ml', (val * 1000).toString());
-    };
-
-    const handleSleepChange = (val: number) => {
-        setSleepHours(val);
-        localStorage.setItem('user_sleep', val.toString());
-    };
-
-    const handleStepsChange = (val: number) => {
-        setSteps(val);
-        localStorage.setItem('user_steps', val.toString());
-    };
-
-    const handleMoodChange = (val: number) => {
-        setMoodScore(val);
-        localStorage.setItem('user_mood', val.toString());
-    };
-
     const healthMetrics = useMemo(() => {
-        const waterPerc = Math.min((waterLitres / (targetWater || 2.5)) * 100, 100);
-        const sleepPerc = Math.min((sleepHours / targetSleep) * 100, 100);
-        const stepsPerc = Math.min((steps / (targetSteps || 10000)) * 100, 100);
-        const moodPerc = (moodScore / 5) * 100;
+        const stepScore = Math.min(20, (steps / 10000) * 20);
+        const activityScore = Math.min(20, (activeMinutes / 60) * 20);
+        const currentCalories = calories || Math.round(steps * 0.04 + activeMinutes * 5);
+        const calorieScore = Math.min(20, (currentCalories / 600) * 20);
+        const waterScore = Math.min(20, (waterLitres / 2.0) * 20);
 
-        const score = Math.round(
-            sleepPerc * 0.35 + stepsPerc * 0.25 + waterPerc * 0.2 + moodPerc * 0.2
-        );
+        let sleepScore = 0;
+        if (sleepHours >= 7 && sleepHours <= 9) {
+            sleepScore = 20;
+        } else if (sleepHours > 0) {
+            const diff = Math.abs(8 - sleepHours);
+            sleepScore = Math.max(0, 20 - diff * 4);
+        }
 
-        let status = "Əla";
-        let statusColor = "#10B981";
+        const score = Math.round(stepScore + activityScore + calorieScore + waterScore + sleepScore);
 
-        if (score < 50) {
-            status = "Kritik Diqqət";
-            statusColor = "#EF4444";
-        } else if (score < 75) {
-            status = "Kafidir";
+        let status = "Zəif";
+        let statusColor = "#EF4444";
+
+        if (score >= 80) {
+            status = "Mükəmməl";
+            statusColor = "#10B981";
+        } else if (score >= 60) {
+            status = "Yaxşı";
+            statusColor = "#3B82F6";
+        } else if (score >= 40) {
+            status = "Orta";
             statusColor = "#F59E0B";
         }
 
         return { score, status, statusColor };
-    }, [waterLitres, sleepHours, steps, moodScore, targetWater, targetSteps]);
+    }, [waterLitres, sleepHours, steps, activeMinutes, calories]);
 
     const radius = 50;
     const circumference = 2 * Math.PI * radius;
@@ -137,12 +132,10 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                 gap: "16px",
             }}
         >
-            {/* Üst Başlıq */}
+            {/* Top Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ padding: "6px", borderRadius: "10px", backgroundColor: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
-                        <Activity size={18} />
-                    </div>
+
                     <div>
                         <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700" }}>Daily Score</h4>
                         <span style={{ fontSize: "11px", color: theme.textSecondary }}>Gündəlik Balın</span>
@@ -154,7 +147,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                 </div>
             </div>
 
-            {/* Dairəvi Bal Göstəricisi */}
+            {/* Circular Indicator */}
             <div style={{ display: "flex", alignItems: "center", gap: "16px", backgroundColor: isDarkMode ? "#202023" : "#F8FAFC", padding: "12px", borderRadius: "12px", border: `1px solid ${theme.cardBorder}` }}>
                 <div style={{ position: "relative", width: "120px", height: "120px", flexShrink: 0 }}>
                     <svg width="120" height="120" style={{ transform: "rotate(-90deg)" }}>
