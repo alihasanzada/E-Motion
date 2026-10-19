@@ -12,11 +12,19 @@ from flask_limiter.util import get_remote_address
 load_dotenv()
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
-CORS(app, supports_credentials=True, origins=[
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000", 
-    "https://e-motion-7vds.onrender.com"
-])
+
+# Yalnız etibarlı frontend origin-lərinə giriş icazəsi verilir.
+# Render-də CORS_ORIGINS mühit dəyişəni ilə əlavə domenlər təyin edilə bilər.
+DEFAULT_CORS_ORIGINS = (
+    "http://localhost:3000,http://127.0.0.1:3000,"
+    "https://e-motion-iota.vercel.app,https://e-motion-7vds.onrender.com"
+)
+allowed_origins = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv("CORS_ORIGINS", DEFAULT_CORS_ORIGINS).split(",")
+    if origin.strip()
+]
+CORS(app, supports_credentials=True, origins=allowed_origins)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 
