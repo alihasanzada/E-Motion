@@ -12,9 +12,9 @@ interface DailyScoreWidgetProps {
 
 export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidgetProps) {
     const [mounted, setMounted] = useState(false);
-    const [waterLitres, setWaterLitres] = useState<number>(1.5);
-    const [sleepHours, setSleepHours] = useState<number>(7);
-    const [steps, setSteps] = useState<number>(7000);
+    const [waterLitres, setWaterLitres] = useState<number>(0);
+    const [sleepHours, setSleepHours] = useState<number>(0);
+    const [steps, setSteps] = useState<number>(0);
     const [activeMinutes, setActiveMinutes] = useState<number>(0);
     const [calories, setCalories] = useState<number>(0);
 
@@ -37,14 +37,14 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
             setCalories(Math.round(stepNum * 0.04 + minNum * 5));
         }
 
-        if (savedSleep) {
-            setSleepHours(Number(savedSleep));
-        }
+        setSleepHours(savedSleep !== null ? Number(savedSleep) : 0);
 
-        if (savedWaterMl) {
+        if (savedWaterMl !== null) {
             setWaterLitres(Number(savedWaterMl) / 1000);
-        } else if (savedGlasses) {
+        } else if (savedGlasses !== null) {
             setWaterLitres((Number(savedGlasses) * 250) / 1000);
+        } else {
+            setWaterLitres(0);
         }
     };
 
