@@ -55,6 +55,7 @@ export default function Dashboard() {
 
   const [stepsCount, setStepsCount] = useState(0);
   const [sleepHours, setSleepHours] = useState(0);
+  const [hasSleepRecord, setHasSleepRecord] = useState(false);
   const [caloriesCount, setCaloriesCount] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
   const [activityMinutes, setActivityMinutes] = useState(0);
@@ -148,7 +149,12 @@ export default function Dashboard() {
 
     // Sleep is currently locally stored only. Do not invent a server value.
     const localSleep = localStorage.getItem('user_sleep_hours');
-    if (localSleep !== null) setSleepHours(Number(localSleep));
+    if (localSleep !== null) {
+      setSleepHours(Number(localSleep));
+      setHasSleepRecord(true);
+    } else {
+      setHasSleepRecord(false);
+    }
 
     void loadMetrics();
     void loadMessages();
@@ -177,7 +183,10 @@ export default function Dashboard() {
       if (savedMins !== null) setActivityMinutes(Number(savedMins));
       if (savedCals !== null) setCaloriesCount(Number(savedCals));
       if (savedWater !== null) setWaterCount(Number(savedWater));
-      if (savedSleep !== null) setSleepHours(Number(savedSleep));
+      if (savedSleep !== null) {
+      setSleepHours(Number(savedSleep));
+      setHasSleepRecord(true);
+    }
     };
 
     window.addEventListener('activity-updated', handleActivityUpdate as EventListener);
@@ -1201,7 +1210,7 @@ export default function Dashboard() {
                     { id: 'activity', title: 'Aktivlik', value: hasLoadedMetrics && authStatus === 'ready' ? `${activityMinutes} dəq` : '—', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
                     { id: 'nutrition', title: 'Kalori', value: hasLoadedMetrics && authStatus === 'ready' ? `${caloriesCount} kkal` : '—', sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
                     { id: 'nutrition', title: 'Su qəbulu', value: hasLoadedMetrics && authStatus === 'ready' ? `${waterCount} stəkan` : '—', sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
-                    { id: 'mental', title: 'Yuxu', value: authStatus === 'ready' ? (localStorage.getItem('user_sleep_hours') !== null ? `${sleepHours} saat` : '—') : '—', sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
+                    { id: 'mental', title: 'Yuxu', value: authStatus === 'ready' && hasSleepRecord ? `${sleepHours} saat` : '—', sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
                   ].map((card, idx) => (
                     <div
                       key={idx}
@@ -1614,6 +1623,7 @@ export default function Dashboard() {
                     return;
                   }
                   setSleepHours(val);
+                  setHasSleepRecord(true);
                   localStorage.setItem('user_sleep_hours', val.toString());
                   window.dispatchEvent(new Event('storage'));
                   setIsSleepModalOpen(false);
