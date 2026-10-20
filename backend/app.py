@@ -357,7 +357,12 @@ def health_check():
       200:
         description: Server is running smoothly
     """
-    return jsonify({"status": "ok", "message": "Server is active"}), 200
+    return jsonify({
+        "status": "ok",
+        "message": "Server is active",
+        "service": os.getenv("RENDER_SERVICE_NAME", "local"),
+        "branch": os.getenv("RENDER_GIT_BRANCH", "local")
+    }), 200
 
 @app.route('/api/gemini', methods=['POST'])
 def ai_chat():
