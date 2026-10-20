@@ -26,7 +26,7 @@ class AccountDataTests(unittest.TestCase):
         unknown = app.test_client()
         for endpoint in [
             "/api/activity", "/api/moods", "/api/nutrition", "/api/water",
-            "/api/messages", "/api/notifications", "/api/challenges"
+            "/api/messages", "/api/notifications", "/api/challenges", "/api/sleep"
         ]:
             with self.subTest(endpoint=endpoint):
                 self.assertEqual(unknown.get(endpoint).status_code, 401)
@@ -93,6 +93,37 @@ class AccountDataTests(unittest.TestCase):
             }
         )
         self.assertEqual(accepted.status_code, 201)
+
+    def test_sleep_persists_per_user_and_after_new_login(self):
+        self.assertIsNone(self.a.get("/api/sleep").get_json()["hours"])
+        self.assertIsNone(self.b.get("/api/sleep").get_json()["hours"])
+
+        saved = self.a.post("/api/sleep", json={"hours": 7.5})
+        self.assertEqual(saved.status_code, 200, saved.get_json())
+        self.assertEqual(saved.get_json()["hours"], 7.5)
+        self.assertEqual(self.a.get("/api/sleep").get_json()["hours"], 7.5)
+        self.assertIsNone(self.b.get("/api/sleep").get_json()["hours"])
+
+        # An authenticated fresh session for the same account restores data.
+        fresh = app.test_client()
+        signed_in = fresh.post("/api/login", json={
+            "email": "st777781@qu.edu.az", "password": "Testing-1234"
+        })
+        self.assertEqual(signed_in.status_code, 200)
+        self.assertEqual(fresh.get("/api/sleep").get_json()["hours"], 7.5)
+
+        updated = fresh.post("/api/sleep", json={"hours": 8})
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(self.a.get("/api/sleep").get_json()["hours"], 8.0)
+        self.assertIsNone(self.b.get("/api/sleep").get_json()["hours"])
+
+    def test_sleep_rejects_invalid_hours_without_overwriting(self):
+        before = self.a.get("/api/sleep").get_json()["hours"]
+        for value in [0, 15, -1, 7.3, True, "7", "NaN", None]:
+            with self.subTest(value=value):
+                response = self.a.post("/api/sleep", json={"hours": value})
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(self.a.get("/api/sleep").get_json()["hours"], before)
 
     def test_z_logout_revokes_session(self):
         self.assertEqual(self.b.post("/api/logout").status_code, 200)
