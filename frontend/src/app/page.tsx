@@ -1131,6 +1131,29 @@ export default function Dashboard() {
         {/* Dashboard Grid View */}
         <main className="main-content flex-1" style={{ padding: '18px 22px', backgroundColor: theme.bgApp }}>
 
+          {activeTab === 'dashboard' && authStatus === 'checking' && (
+            <div role="status" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: `1px solid ${theme.border}`, color: theme.textSecondary, fontSize: '13px' }}>
+              Hesab yoxlanılır. Gündəlik göstəriciləriniz yüklənəcək...
+            </div>
+          )}
+          {activeTab === 'dashboard' && authStatus === 'error' && (
+            <div role="alert" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: `1px solid ${theme.border}`, color: theme.textPrimary, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <span>Hesabın serverlə əlaqəsi yoxlanmadı. Göstəriciləriniz hələ yüklənməyib.</span>
+              <button type="button" onClick={() => setAuthRetry(n => n + 1)} style={{ color: '#FFFFFF', background: '#44766C', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}>Yenidən yoxla</button>
+            </div>
+          )}
+          {activeTab === 'dashboard' && authStatus === 'ready' && isLoading && !hasLoadedMetrics && (
+            <div role="status" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: `1px solid ${theme.border}`, color: theme.textSecondary, fontSize: '13px' }}>
+              Addım, aktivlik və su məlumatlarınız serverdən yüklənir...
+            </div>
+          )}
+          {activeTab === 'dashboard' && authStatus === 'ready' && metricsLoadError && (
+            <div role="alert" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: '1px solid #F59E0B', color: theme.textPrimary, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <span>Göstəriciləri serverdən almaq mümkün olmadı. Bu, məlumatlarınızın silindiyi demək deyil.</span>
+              <button type="button" onClick={() => setMetricsRetry(n => n + 1)} style={{ color: '#FFFFFF', background: '#44766C', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}>Yenidən yüklə</button>
+            </div>
+          )}
+
           {activeTab === 'dashboard' && (
             <div className="dashboard-layout">
 
@@ -1162,7 +1185,7 @@ export default function Dashboard() {
                         onClick={() => setActiveTab('stats')}
                         style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)', padding: '8px 16px', borderRadius: '10px', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600' }}
                       >
-                        Göstəriciləri yenilə <ArrowRight size={14} />
+                        Statistikaya bax <ArrowRight size={14} />
                       </button>
                     </div>
                     <div className="banner-quote" style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: `1px solid ${theme.border}`, padding: '10px 14px', borderRadius: '12px' }}>
@@ -1174,11 +1197,11 @@ export default function Dashboard() {
                 {/* Summary Cards Grid */}
                 <div className="summary-grid">
                   {[
-                    { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: isDarkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
-                    { id: 'activity', title: 'Aktivlik', value: `${activityMinutes} dəq`, sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
-                    { id: 'nutrition', title: 'Kalori', value: `${caloriesCount} kkal`, sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
-                    { id: 'nutrition', title: 'Su qəbulu', value: `${waterCount} stəkan`, sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
-                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
+                    { id: 'activity', title: 'Addımlar', value: hasLoadedMetrics && authStatus === 'ready' ? `${stepsCount.toLocaleString()}` : '—', sub: '/ 10,000 hədəf', color: '#10B981', bg: isDarkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
+                    { id: 'activity', title: 'Aktivlik', value: hasLoadedMetrics && authStatus === 'ready' ? `${activityMinutes} dəq` : '—', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
+                    { id: 'nutrition', title: 'Kalori', value: hasLoadedMetrics && authStatus === 'ready' ? `${caloriesCount} kkal` : '—', sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
+                    { id: 'nutrition', title: 'Su qəbulu', value: hasLoadedMetrics && authStatus === 'ready' ? `${waterCount} stəkan` : '—', sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
+                    { id: 'mental', title: 'Yuxu', value: authStatus === 'ready' ? (localStorage.getItem('user_sleep_hours') !== null ? `${sleepHours} saat` : '—') : '—', sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
                   ].map((card, idx) => (
                     <div
                       key={idx}
@@ -1332,7 +1355,13 @@ export default function Dashboard() {
 
               {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <DailyScoreWidget isDarkMode={isDarkMode} />
+                {hasLoadedMetrics && authStatus === 'ready' ? (
+                  <DailyScoreWidget isDarkMode={isDarkMode} />
+                ) : (
+                  <div className="card" role="status" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.border}`, borderRadius: '14px', minHeight: '170px', color: theme.textSecondary, fontSize: '13px' }}>
+                    Gündəlik bal hesab məlumatları yükləndikdən sonra görünəcək.
+                  </div>
+                )}
 
                 <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
