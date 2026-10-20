@@ -56,70 +56,54 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
-  const [category, setCategory] = useState('Texnologiya');
+  const [formError, setFormError] = useState('');
   const [organizer, setOrganizer] = useState('');
   const [capacity, setCapacity] = useState<string>('');
   const [description, setDescription] = useState('');
 
+  // Nümunə tədbirlər — real elan deyil. Demo Day üçün sağlamlıq mövzuları.
   const [events, setEvents] = useState<EventItem[]>([
     {
       id: 1,
-      title: 'AI və Gələcək Seminarı',
-      date: '2026-08-15',
-      time: '14:00 - 16:00',
-      displayDate: { day: '15', month: 'AVQ' },
-      location: 'Əsas Bina, Zal A',
-      category: 'Texnologiya',
-      organizer: 'Kompüter Klubu',
-      capacity: 60,
-      attendees: 42,
-      description: 'Süni intellektin müasir cəmiyyətdəki rolu, LLM modelləri və gələcək karyera imkanları haqqında interaktiv seminar.',
-      isAttending: false,
-      isPast: false,
-      avatars: [
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
-      ]
+      title: 'Sağlam Qidalanma və Su Balansı — Demo',
+      date: '2026-10-24',
+      time: '14:00 – 15:00',
+      displayDate: { day: '24', month: 'OKT' },
+      location: 'Nümunə məkan (demo)',
+      category: 'Sağlamlıq',
+      organizer: 'E-Motion demo',
+      capacity: 30,
+      attendees: 0,
+      description: 'Balanslı qidalanma, gündəlik su qəbulu və sağlam vərdişlər haqqında nümunə maarifləndirici sessiya. Bu, real tədbir elanı deyil.',
+      isAttending: false
     },
     {
       id: 2,
-      title: 'Kampus daxili Şahmat Turniri',
-      date: '2026-08-18',
-      time: '11:00 - 15:00',
-      displayDate: { day: '18', month: 'AVQ' },
-      location: 'Tələbə Mərkəzi',
-      category: 'İdman',
-      organizer: 'İdman Şurası',
-      capacity: 30,
-      attendees: 18,
-      description: 'Universitet tələbələri arasında İsveçrə sistemi üzrə təşkil edilən sürətli şahmat (Blitz) çempionatı.',
-      isAttending: true,
-      isPast: false,
-      avatars: [
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&auto=format&fit=crop&q=80',
-      ]
+      title: 'Stressin İdarə Edilməsi və Mental Rifah — Demo',
+      date: '2026-10-27',
+      time: '16:00 – 17:00',
+      displayDate: { day: '27', month: 'OKT' },
+      location: 'Nümunə məkan (demo)',
+      category: 'Sağlamlıq',
+      organizer: 'E-Motion demo',
+      capacity: 40,
+      attendees: 0,
+      description: 'Stressin azaldılması, nəfəs məşqləri və tələbələr üçün mental sağlamlıq mövzusunda nümunə sessiya. Bu, real tədbir elanı deyil.',
+      isAttending: false
     },
     {
       id: 3,
-      title: 'Karyera və Təcrübə Proqramı Masterklassı',
-      date: '2026-08-22',
-      time: '15:30 - 17:30',
-      displayDate: { day: '22', month: 'AVQ' },
-      location: 'Böyük Akt Zalı',
-      category: 'Karyera',
-      organizer: 'Karyera Mərkəzi',
-      capacity: 100,
-      attendees: 85,
-      description: 'CV hazırlığı, müsahibə texnikaları və yerli/beynəlxalq şirkətlərdə təcrübə imkanları mövzusunda təlim.',
-      isAttending: false,
-      isPast: false,
-      avatars: [
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&auto=format&fit=crop&q=80',
-      ]
+      title: 'Fiziki Aktivlik və Sağlam Yuxu — Demo',
+      date: '2026-10-30',
+      time: '11:00 – 12:00',
+      displayDate: { day: '30', month: 'OKT' },
+      location: 'Nümunə məkan (demo)',
+      category: 'Sağlamlıq',
+      organizer: 'E-Motion demo',
+      capacity: 35,
+      attendees: 0,
+      description: 'Gündəlik addım sayı, hərəkətli həyat və keyfiyyətli yuxu vərdişləri haqqında nümunə seminar. Bu, real tədbir elanı deyil.',
+      isAttending: false
     }
   ]);
 
@@ -127,8 +111,22 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
     e.preventDefault();
     if (!title.trim() || !date || !location.trim()) return;
 
-    const eventDate = new Date(date);
-    const months = ['YAN', 'FEV', 'MAR', 'APR', 'MAY', 'İY N', 'İY L', 'AVQ', 'SEN', 'OKT', 'NOY', 'DEK'];
+    // Nümayişdə yalnız sağlamlıq mövzulu tədbir yaratmaq mümkün olsun.
+    const healthTerms = ['sağlam', 'qidalan', 'vitamin', 'kalori', 'su balans',
+      'fiziki', 'aktivlik', 'idman', 'fitness', 'fitnes', 'yoqa', 'yoga', 'pilates',
+      'psixol', 'mental', 'stress', 'stres', 'meditasiya', 'nəfəs', 'yuxu',
+      'tibbi', 'tibb', 'həkim', 'gigiyena', 'profilaktika', 'wellness', 'rifah',
+      'ürək', 'qan təzyiq', 'immunitet', 'psixi'];
+    const eventText = `${title} ${description}`.toLocaleLowerCase('az');
+    if (!healthTerms.some(term => eventText.includes(term))) {
+      setFormError('Yalnız sağlamlıq mövzusunda tədbirlər yaradıla bilər. Başlıqda və ya təsvirdə sağlamlıq mövzusunu qeyd edin.');
+      return;
+    }
+    setFormError('');
+
+    const [year, month, day] = date.split('-').map(Number);
+    const eventDate = new Date(year, month - 1, day);
+    const months = ['YAN', 'FEV', 'MAR', 'APR', 'MAY', 'İYN', 'İYL', 'AVQ', 'SEN', 'OKT', 'NOY', 'DEK'];
     const parsedCapacity = parseInt(capacity, 10);
 
     const newEvent: EventItem = {
@@ -141,7 +139,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
         month: months[eventDate.getMonth()] || 'AVQ'
       },
       location,
-      category,
+      category: 'Sağlamlıq',
       organizer: organizer.trim() || 'Tələbə Təşəbbüsü',
       capacity: !isNaN(parsedCapacity) && parsedCapacity > 0 ? parsedCapacity : 50,
       attendees: 1,
@@ -153,6 +151,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
 
     setEvents([newEvent, ...events]);
     setTitle('');
+    setFormError('');
     setDate('');
     setTime('');
     setLocation('');
@@ -199,6 +198,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
   };
 
   const filteredEvents = events.filter(ev => {
+    if (ev.category !== 'Sağlamlıq') return false;
     const isPast = isEventPast(ev);
     if (activeTab === 'Keçmiş Tədbirlər') {
       if (!isPast) return false;
@@ -228,10 +228,11 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: theme.textPrimary, letterSpacing: '-0.5px' }}>
-            Universitet Tədbirləri
+            Sağlamlıq Tədbirləri
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: theme.textSecondary }}>
-            Kampus daxilində baş tutan seminarlar, yarışlar və görüşlərdə iştirak edin və ya yenisini təşkil edin.
+            Fiziki aktivlik, sağlam qidalanma, yuxu və mental rifah mövzularında tədbirləri kəşf edin.
+             <span style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: theme.textSecondary }}>Hazırkı nümunə tədbirlər yalnız platformanın nümayişi üçündür.</span>
           </p>
         </div>
 
@@ -260,7 +261,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
       {/* Filtrlər və Axtarış */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {['Bütün Tədbirlər', 'Texnologiya', 'İdman', 'Karyera', 'Keçmiş Tədbirlər'].map(tab => {
+          {['Bütün Tədbirlər', 'Keçmiş Tədbirlər'].map(tab => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -318,7 +319,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
             color: theme.textSecondary
           }}>
             <Calendar size={36} style={{ marginBottom: '10px', opacity: 0.5 }} />
-            <p style={{ margin: 0, fontSize: '15px', fontWeight: '600' }}>Uyğun tədbir tapılmadı.</p>
+            <p style={{ margin: 0, fontSize: '15px', fontWeight: '600' }}>Uyğun sağlamlıq tədbiri tapılmadı.</p>
           </div>
         ) : (
           filteredEvents.map(ev => (
@@ -488,7 +489,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                   <input
                     type="text"
                     required
-                    placeholder="Məsələn: AI və Gələcək Seminarı"
+                    placeholder="Məsələn: Sağlam Qidalanma Seminarı"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     style={{
@@ -509,26 +510,18 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                   <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: theme.textMuted, marginBottom: '4px' }}>
                     Kateqoriya
                   </label>
-                  <select
-                    value={category}
-                    onChange={e => setCategory(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '8px 11px',
-                      borderRadius: '8px',
-                      border: '1px solid ' + theme.inputBorder,
-                      fontSize: '12.5px',
-                      outline: 'none',
-                      backgroundColor: theme.inputBg,
-                      color: theme.textPrimary,
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <option value="Texnologiya">Texnologiya</option>
-                    <option value="İdman">İdman</option>
-                    <option value="Karyera">Karyera</option>
-                    <option value="Əyləncə">Əyləncə</option>
-                  </select>
+                  <div style={{
+                    width: '100%',
+                    padding: '8px 11px',
+                    borderRadius: '8px',
+                    border: '1px solid ' + theme.inputBorder,
+                    fontSize: '12.5px',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textPrimary,
+                    boxSizing: 'border-box'
+                  }}>
+                    Sağlamlıq
+                  </div>
                 </div>
               </div>
 
@@ -636,7 +629,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                   </label>
                   <input
                     type="text"
-                    placeholder="Kompüter Klubu"
+                    placeholder="Sağlamlıq klubu"
                     value={organizer}
                     onChange={e => setOrganizer(e.target.value)}
                     style={{
@@ -680,6 +673,9 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                 />
               </div>
 
+              {formError && (
+                <p role="alert" style={{ margin: 0, color: '#EF4444', fontSize: '12px', lineHeight: 1.5 }}>{formError}</p>
+              )}
               {/* Düymə */}
               <button
                 type="submit"
