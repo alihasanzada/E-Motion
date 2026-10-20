@@ -1406,28 +1406,30 @@ export default function Dashboard() {
                     <button onClick={() => setActiveTab('events')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
                   </div>
 
-                  <div className="events-grid">
-                    {[
-                      { date: '22 MAY', title: 'Yoqa seansı', time: '17:00 - 18:00', location: 'Qarabağ idman zalı' },
-                      { date: '25 MAY', title: 'Sağlamlıq həftəsi', time: '09:00 - 17:00', location: 'Təbib meydançası' },
-                      { date: '28 MAY', title: 'Stress idarəetməsi', time: '14:00 - 15:30', location: 'Tələbə mərkəzi' }
-                    ].map((event, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => setActiveTab('events')}
-                        style={{ backgroundColor: theme.bgInner, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}
-                      >
-                        <div style={{ background: '#44766C', color: '#FFFFFF', padding: '6px 8px', borderRadius: '7px', textAlign: 'center', minWidth: '42px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: '700', display: 'block', lineHeight: '1' }}>{event.date.split(' ')[0]}</span>
-                          <span style={{ fontSize: '8.5px', opacity: 0.9 }}>{event.date.split(' ')[1]}</span>
-                        </div>
-                        <div style={{ overflow: 'hidden' }}>
-                          <h4 style={{ margin: 0, fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{event.title}</h4>
-                          <p style={{ margin: '2px 0 0 0', fontSize: '9.5px', color: theme.textSecondary }}>{event.time}</p>
-                          <span style={{ fontSize: '9px', color: '#44766C', fontWeight: '500' }}>{event.location}</span>
-                        </div>
-                      </div>
-                    ))}
+                  <div
+                    className="events-empty-state"
+                    style={{
+                      borderRadius: '12px',
+                      border: `1px dashed ${theme.border}`,
+                      backgroundColor: theme.bgInner,
+                      padding: '20px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '12px'
+                    }}
+                  >
+                    <div style={{ padding: '10px', borderRadius: '12px', color: '#44766C', backgroundColor: isDarkMode ? '#16423C' : '#E6F4EA', display: 'flex', flexShrink: 0 }}>
+                      <Calendar size={20} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
+                      <h4 style={{ margin: 0, color: theme.textPrimary, fontSize: '14px', fontWeight: 700 }}>Yeni tədbir elan edilməyib</h4>
+                      <p style={{ margin: 0, color: theme.textSecondary, fontSize: '12.5px', lineHeight: '1.6' }}>
+                        Hazırda təsdiqlənmiş gələcək tədbir məlumatımız yoxdur. Keçmiş tədbirlərə və tədbirlər bölməsinə baxa bilərsiniz.
+                      </p>
+                      <button type="button" onClick={() => setActiveTab('events')} style={{ alignSelf: 'flex-start', padding: '8px 0', color: isDarkMode ? '#6EE7B7' : '#2E5B4E', fontSize: '12.5px', fontWeight: 700, background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                        Tədbirlər bölməsinə keç <ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
