@@ -248,8 +248,8 @@ aside {
 
 .dashboard-layout {
     display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+    gap: 18px;
     width: 100%;
     max-width: 100%;
 }
@@ -259,6 +259,7 @@ aside {
     flex-direction: column;
     gap: 16px;
     width: 100%;
+    min-width: 0;
 }
 
 .right-sidebar {
@@ -266,6 +267,7 @@ aside {
     flex-direction: column;
     gap: 16px;
     width: 100%;
+    min-width: 0;
 }
 
 .welcome-banner {
@@ -293,19 +295,31 @@ aside {
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 11px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr));
+    gap: 12px;
 }
 
 .summary-card {
     background-color: var(--surface);
     padding: 14px;
     border-radius: 14px;
+    min-width: 0;
+    transition: transform 180ms ease, box-shadow 180ms ease;
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     gap: 8px;
     box-shadow: var(--shadow-sm);
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(24, 59, 48, .1);
+}
+
+.summary-card:focus-visible {
+    outline: 3px solid var(--ku-green);
+    outline-offset: 3px;
 }
 
 .challenge-mental-row {
@@ -438,8 +452,8 @@ svg circle {
     }
 
     .summary-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 12px !important;
     }
 
     .challenge-mental-row {
@@ -459,7 +473,8 @@ svg circle {
 
     .card,
     .summary-card,
-    .welcome-banner {
+    .welcome-banner,
+    .welcome-banner-card {
         height: auto !important;
         max-height: none !important;
         width: 100% !important;
@@ -472,7 +487,7 @@ svg circle {
     }
 
     .main-content {
-        padding: 6px !important;
+        padding: 12px !important;
     }
 
     .quick-add-modal {
@@ -514,9 +529,10 @@ svg circle {
     }
 
     .card,
-    .welcome-banner {
-        padding: 12px !important;
-        border-radius: 12px !important;
+    .welcome-banner,
+    .welcome-banner-card {
+        padding: 14px !important;
+        border-radius: 14px !important;
         width: 100% !important;
         box-sizing: border-box !important;
         min-height: auto !important;
@@ -529,8 +545,9 @@ svg circle {
         white-space: normal !important;
     }
 
-    .welcome-banner {
-        padding: 12px 14px !important;
+    .welcome-banner,
+    .welcome-banner-card {
+        padding: 20px 18px !important;
     }
 
     .banner-content {
@@ -541,55 +558,52 @@ svg circle {
 
     .banner-text h1,
     .banner-text h2 {
-        font-size: 15px !important;
+        font-size: 20px !important;
+        line-height: 1.25 !important;
         margin: 0 !important;
     }
 
     .banner-text p {
-        font-size: 11px !important;
-        margin-top: 2px !important;
-        line-height: 1.3 !important;
+        font-size: 12.5px !important;
+        margin-top: 8px !important;
+        line-height: 1.5 !important;
     }
 
-    .banner-quote,
-    .welcome-banner button {
+    .banner-quote {
         display: none !important;
     }
 
+    /* Keep all five metrics visible: no horizontal card carousel on phones. */
     .summary-grid {
-        display: flex !important;
-        overflow-x: auto !important;
-        scroll-snap-type: x mandatory !important;
-        gap: 8px !important;
-        padding-bottom: 4px !important;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .summary-grid::-webkit-scrollbar {
-        display: none;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        overflow: visible !important;
+        padding-bottom: 0 !important;
     }
 
     .summary-card {
-        flex: 0 0 calc(40% - 6px) !important;
-        scroll-snap-align: start !important;
-        padding: 8px 10px !important;
-        border-radius: 10px !important;
-        box-sizing: border-box !important;
+        min-width: 0 !important;
+        padding: 12px !important;
+        border-radius: 13px !important;
     }
 
-    .summary-card h4,
+    .summary-card h3 {
+        font-size: 19px !important;
+        line-height: 1.25 !important;
+        overflow-wrap: anywhere;
+    }
+
     .summary-card p {
-        font-size: 10px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        font-size: 11.5px !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
     }
 
-    .summary-card span,
-    .summary-card div[class*="value"] {
-        font-size: 14px !important;
-        font-weight: 700 !important;
+    .summary-card span {
+        font-size: 12px !important;
     }
+
 
     .mental-mini-grid {
         display: grid !important;
@@ -598,10 +612,20 @@ svg circle {
     }
 
     .mental-mini-grid>div {
-        padding: 8px !important;
-        border-radius: 8px !important;
-        font-size: 10px !important;
+        padding: 12px 7px !important;
+        border-radius: 11px !important;
+        min-width: 0 !important;
     }
+
+    .mental-mini-grid h5,
+    .mental-mini-grid p {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        line-height: 1.4 !important;
+    }
+
+    .mental-mini-grid h5 { font-size: 12px !important; }
+    .mental-mini-grid p { font-size: 11px !important; }
 
     .events-grid {
         display: flex !important;
@@ -616,5 +640,18 @@ svg circle {
 
     .water-glass {
         height: 22px !important;
+    }
+}
+/* Keep keyboard focus visible and honor reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+    .summary-card {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+@media (max-width: 359px) {
+    .summary-grid {
+        grid-template-columns: 1fr !important;
     }
 }
