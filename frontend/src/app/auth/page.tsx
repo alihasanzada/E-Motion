@@ -48,7 +48,11 @@ export default function AuthPage() {
         body: JSON.stringify({ name: username.trim(), email: cleanEmail, password: cleanPassword }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
+      if (!data) {
+        alert(`Serverdən düzgün cavab alınmadı (HTTP ${response.status}). Staging serverini yoxlayın və yenidən cəhd edin.`);
+        return;
+      }
 
       if (response.ok) {
         alert("Qeydiyyat uğurla tamamlandı! İndi daxil ola bilərsiniz.");
@@ -56,7 +60,7 @@ export default function AuthPage() {
         setUsername('');
         setView('login');
       } else {
-        alert(`Xəta: ${data.error || data.message || 'Qeydiyyat baş tutmadı.'}`);
+        alert(`Qeydiyyat baş tutmadı (HTTP ${response.status}): ${data.error || data.message || 'Server cavabı alınmadı.'}`);
       }
     } catch (error) {
       console.error('Sorğu xətası:', error);
@@ -76,7 +80,11 @@ export default function AuthPage() {
         body: JSON.stringify({ email: email.trim(), password: password.trim() }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
+      if (!data) {
+        alert(`Serverdən düzgün cavab alınmadı (HTTP ${response.status}). Staging serverini yoxlayın və yenidən cəhd edin.`);
+        return;
+      }
 
       if (response.ok) {
         if (typeof window !== 'undefined') {
@@ -101,7 +109,11 @@ export default function AuthPage() {
 
         router.push('/');
       } else {
-        alert(`Xəta: ${data.error || data.message || 'Giriş uğursuz oldu.'}`);
+        if (response.status === 429) {
+          alert('Çox sayda giriş cəhdi edildi (HTTP 429). Bir qədər gözləyib yenidən cəhd edin.');
+        } else {
+          alert(`Giriş uğursuz oldu (HTTP ${response.status}): ${data.error || data.message || 'Server cavabı alınmadı.'}`);
+        }
       }
     } catch (error) {
       console.error('Sorğu xətası:', error);
