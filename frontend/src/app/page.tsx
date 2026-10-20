@@ -56,6 +56,8 @@ export default function Dashboard() {
   const [stepsCount, setStepsCount] = useState(0);
   const [sleepHours, setSleepHours] = useState(0);
   const [hasSleepRecord, setHasSleepRecord] = useState(false);
+  const [sleepLoadError, setSleepLoadError] = useState(false);
+  const [isSavingSleep, setIsSavingSleep] = useState(false);
   const [caloriesCount, setCaloriesCount] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
   const [activityMinutes, setActivityMinutes] = useState(0);
@@ -147,16 +149,40 @@ export default function Dashboard() {
       }
     };
 
-    // Sleep is currently locally stored only. Do not invent a server value.
-    const localSleep = localStorage.getItem('user_sleep_hours');
-    if (localSleep !== null) {
-      setSleepHours(Number(localSleep));
-      setHasSleepRecord(true);
-    } else {
-      setHasSleepRecord(false);
-    }
+    const loadSleep = async () => {
+      setSleepLoadError(false);
+      try {
+        const response = await apiFetch('/api/sleep', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Yuxu məlumatları oxunmadı: HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        if (cancelled) return;
+        if (data.hours === null) {
+          setSleepHours(0);
+          setHasSleepRecord(false);
+          localStorage.removeItem('user_sleep_hours');
+          window.dispatchEvent(new Event('storage'));
+          return;
+        }
+        const savedHours = Number(data.hours);
+        if (!Number.isFinite(savedHours) || savedHours < 1 || savedHours > 14) {
+          throw new Error('Yuxu API düzgün göstərici qaytarmadı');
+        }
+        setSleepHours(savedHours);
+        setHasSleepRecord(true);
+        localStorage.setItem('user_sleep_hours', String(savedHours));
+        window.dispatchEvent(new Event('storage'));
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Yuxu məlumatı serverdən yüklənmədi:', error);
+          setSleepLoadError(true);
+        }
+      }
+    };
 
     void loadMetrics();
+    void loadSleep();
     void loadMessages();
 
     return () => { cancelled = true; };
@@ -245,6 +271,44 @@ export default function Dashboard() {
   const router = useRouter();
 
   const [user, setUser] = useState<UserProfileData | null>(null);
+
+  const handleSaveSleep = async () => {
+    const value = Number(sleepInputValue);
+    if (!Number.isFinite(value) || value < 1 || value > 14 || !Number.isInteger(value * 2)) {
+      toast.error('Yuxu müddətini 1–14 saat arasında, 0.5 saat addımla daxil edin.');
+      return;
+    }
+    if (authStatus !== 'ready' || isSavingSleep) return;
+
+    setIsSavingSleep(true);
+    try {
+      const response = await apiFetch('/api/sleep', {
+        method: 'POST',
+        body: JSON.stringify({ hours: value }),
+      });
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null);
+        throw new Error(`HTTP ${response.status}: ${detail?.error || 'Yuxu məlumatı saxlanmadı'}`);
+      }
+      const data = await response.json();
+      const savedHours = Number(data.hours);
+      if (!Number.isFinite(savedHours) || savedHours < 1 || savedHours > 14) {
+        throw new Error('Serverdən düzgün yuxu müddəti alınmadı');
+      }
+      setSleepHours(savedHours);
+      setHasSleepRecord(true);
+      setSleepLoadError(false);
+      localStorage.setItem('user_sleep_hours', String(savedHours));
+      window.dispatchEvent(new Event('storage'));
+      setIsSleepModalOpen(false);
+      toast.success('Yuxu müddəti hesabınızda saxlanıldı!');
+    } catch (error) {
+      console.error('Yuxu müddəti saxlanmadı:', error);
+      toast.error(error instanceof Error ? error.message : 'Yuxu müddəti saxlanmadı. Yenidən cəhd edin.');
+    } finally {
+      setIsSavingSleep(false);
+    }
+  };
 
   const handleWaterUpdate = async (newGlasses: number) => {
     const newWaterMl = newGlasses * 250;
@@ -1156,6 +1220,12 @@ export default function Dashboard() {
               Addım, aktivlik və su məlumatlarınız serverdən yüklənir...
             </div>
           )}
+          {activeTab === 'dashboard' && authStatus === 'ready' && sleepLoadError && (
+            <div role="alert" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: '1px solid #F59E0B', color: theme.textPrimary, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <span>Yuxu qeydinizi serverdən oxumaq mümkün olmadı. Məlumatınızın silindiyi demək deyil.</span>
+              <button type="button" onClick={() => setMetricsRetry(n => n + 1)} style={{ color: '#FFFFFF', background: '#44766C', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}>Yenidən yüklə</button>
+            </div>
+          )}
           {activeTab === 'dashboard' && authStatus === 'ready' && metricsLoadError && (
             <div role="alert" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: '1px solid #F59E0B', color: theme.textPrimary, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
               <span>Göstəriciləri serverdən almaq mümkün olmadı. Bu, məlumatlarınızın silindiyi demək deyil.</span>
@@ -1216,6 +1286,7 @@ export default function Dashboard() {
                       key={idx}
                       onClick={() => {
                         if (card.id === 'mental') {
+                          setSleepInputValue(hasSleepRecord ? String(sleepHours) : '8');
                           setIsSleepModalOpen(true);
                         } else {
                           setActiveTab(card.id);
@@ -1600,41 +1671,8 @@ export default function Dashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const val = Number(sleepInputValue);
-                  if (isNaN(val) || val <= 0) {
-                    toast.error('Zəhmət olmasa etibarlı saat daxil edin.', {
-                      style: {
-                        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-                        color: isDarkMode ? '#FFFFFF' : '#0F172A',
-                        border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
-                      }
-                    });
-                    return;
-                  }
-                  if (val > 14) {
-                    toast.warning('Sağlam yuxu balansı üçün 1 gündə maksimum 14 saat qeyd edə bilərsiniz.', {
-                      style: {
-                        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-                        color: isDarkMode ? '#FFFFFF' : '#0F172A',
-                        border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
-                      }
-                    });
-                    return;
-                  }
-                  setSleepHours(val);
-                  setHasSleepRecord(true);
-                  localStorage.setItem('user_sleep_hours', val.toString());
-                  window.dispatchEvent(new Event('storage'));
-                  setIsSleepModalOpen(false);
-                  toast.success('Yuxu balansınız uğurla yeniləndi!', {
-                    style: {
-                      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-                      color: isDarkMode ? '#FFFFFF' : '#0F172A',
-                      border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
-                    }
-                  });
-                }}
+                onClick={() => void handleSaveSleep()}
+                disabled={isSavingSleep || authStatus !== 'ready'}
                 style={{
                   flex: 1,
                   padding: '12px',
@@ -1648,7 +1686,7 @@ export default function Dashboard() {
                   boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)'
                 }}
               >
-                Yadda saxla
+                {isSavingSleep ? 'Saxlanılır...' : 'Yadda saxla'}
               </button>
             </div>
           </div>
