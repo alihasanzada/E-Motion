@@ -46,7 +46,9 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
         body: JSON.stringify({ steps: stepsToSave, active_minutes: minutesToSave }),
       });
       if (!response.ok) {
-        throw new Error(`Activity save failed (HTTP ${response.status})`);
+        const details = await response.json().catch(() => null);
+        const message = typeof details?.error === 'string' ? details.error : 'Server xətası';
+        throw new Error(`HTTP ${response.status}: ${message}`);
       }
       const saved = await response.json();
       if (typeof saved.steps !== 'number' || typeof saved.active_minutes !== 'number') {
@@ -66,7 +68,8 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       window.dispatchEvent(new Event('storage'));
     } catch (error) {
       console.error('Activity DB sync error:', error);
-      window.alert('Aktivlik məlumatları serverdə saxlanmadı. Yenidən cəhd edin.');
+      const message = error instanceof Error ? error.message : 'Naməlum xəta';
+      window.alert(`Aktivlik məlumatları serverdə saxlanmadı. ${message}`);
     }
   };
 
