@@ -41,6 +41,11 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState<'checking' | 'ready' | 'error'>('checking');
+  const [authRetry, setAuthRetry] = useState(0);
+  const [hasLoadedMetrics, setHasLoadedMetrics] = useState(false);
+  const [metricsLoadError, setMetricsLoadError] = useState(false);
+  const [metricsRetry, setMetricsRetry] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setisDarkMode] = useState(false);
   const [isChatOpen, setisChatOpen] = useState(false);
@@ -75,106 +80,81 @@ export default function Dashboard() {
   }[]>([]);
 
   useEffect(() => {
-    const localSteps = localStorage.getItem('user_steps');
-    const localWaterGlasses = localStorage.getItem('user_water_glasses');
-    const localWaterMl = localStorage.getItem('user_water_ml');
-    const localCalories = localStorage.getItem('user_calories');
-    const localMinutes = localStorage.getItem('user_active_minutes');
-    const localSleep = localStorage.getItem('user_sleep_hours');
+    // Never load private metrics until the account session is verified.
+    if (authStatus !== 'ready' || activeTab !== 'dashboard') return;
 
-    const mins = localMinutes ? Number(localMinutes) : 0;
-    setActivityMinutes(mins);
+    let cancelled = false;
 
-    if (localSteps) {
-      const stepsNum = Number(localSteps);
-      setStepsCount(stepsNum);
-
-      const calculatedCalories = localCalories ? Number(localCalories) : Math.round(stepsNum * 0.04 + mins * 5);
-      setCaloriesCount(calculatedCalories);
-    }
-
-    if (localWaterGlasses !== null) {
-      setWaterCount(Number(localWaterGlasses));
-    } else if (localWaterMl !== null) {
-      setWaterCount(Math.floor(Number(localWaterMl) / 250));
-    } else {
-      setWaterCount(0);
-    }
-
-    if (localSleep !== null) {
-      setSleepHours(Number(localSleep));
-    }
-
-    const loadDashboardData = async () => {
+    const loadMetrics = async () => {
       setIsLoading(true);
+      setMetricsLoadError(false);
       try {
-        // A slow or failing notifications endpoint must not prevent activity
-        // and water from being restored after the student signs in.
-        const [notificationResult, messageResult, activityResult] = await Promise.allSettled([
-          apiFetch('/api/notifications'),
-          apiFetch('/api/messages'),
-          apiFetch('/api/activity')
-        ]);
+        // Metrics must NOT wait for notifications/messages: their endpoints
+        // can be slow independently during Render Free cold starts.
+        const activityRes = await apiFetch('/api/activity', { cache: 'no-store' });
+        if (!activityRes.ok) {
+          throw new Error(`Activity fetch failed (HTTP ${activityRes.status})`);
+        }
+        const activityData = await activityRes.json();
+        const steps = Number(activityData.steps);
+        const minutes = Number(activityData.active_minutes);
+        const waterMl = Number(activityData.water_ml ?? activityData.water);
+        if (![steps, minutes, waterMl].every(Number.isFinite)) {
+          throw new Error('Activity API returned invalid measurements');
+        }
+        if (cancelled) return;
 
-        if (notificationResult.status === 'fulfilled' && notificationResult.value.ok) {
-          setNotifications(await notificationResult.value.json());
+        const calories = Math.round(steps * 0.04 + minutes * 5);
+        const glasses = Math.floor(waterMl / 250);
+        setStepsCount(steps);
+        setActivityMinutes(minutes);
+        setCaloriesCount(calories);
+        setWaterCount(glasses);
+        setHasLoadedMetrics(true);
+        localStorage.setItem('user_steps', String(steps));
+        localStorage.setItem('user_active_minutes', String(minutes));
+        localStorage.setItem('user_calories', String(calories));
+        localStorage.setItem('user_water_ml', String(waterMl));
+        localStorage.setItem('user_water_glasses', String(glasses));
+        window.dispatchEvent(new Event('storage'));
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Dashboard göstəriciləri yüklənmədi:', error);
+          setMetricsLoadError(true);
         }
-        if (messageResult.status === 'fulfilled' && messageResult.value.ok) {
-          setMessages(await messageResult.value.json());
-        }
-
-        if (activityResult.status === 'fulfilled' && activityResult.value.ok) {
-          const activityData = await activityResult.value.json();
-          const serverSteps = Number(activityData.steps ?? 0);
-          const serverMinutes = Number(activityData.active_minutes ?? 0);
-          const serverWaterMl = Number(activityData.water_ml ?? activityData.water ?? 0);
-          if ([serverSteps, serverMinutes, serverWaterMl].every(Number.isFinite)) {
-            // Always trust the authenticated server, including valid zero values.
-            const totalCalories = Math.round(serverSteps * 0.04 + serverMinutes * 5);
-            const glasses = Math.floor(serverWaterMl / 250);
-            setStepsCount(serverSteps);
-            setActivityMinutes(serverMinutes);
-            setCaloriesCount(totalCalories);
-            setWaterCount(glasses);
-            localStorage.setItem('user_steps', String(serverSteps));
-            localStorage.setItem('user_active_minutes', String(serverMinutes));
-            localStorage.setItem('user_calories', String(totalCalories));
-            localStorage.setItem('user_water_ml', String(serverWaterMl));
-            localStorage.setItem('user_water_glasses', String(glasses));
-          }
-        } else {
-          console.warn('Şəxsi aktivlik məlumatları serverdən alına bilmədi.');
-        }
-      } catch (err) {
-        console.warn('Dashboard məlumatları yenilənə bilmədi:', err);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    const handleStorageChange = () => {
-      const updatedSteps = localStorage.getItem('user_steps');
-      const updatedMins = localStorage.getItem('user_active_minutes');
-      const updatedWaterG = localStorage.getItem('user_water_glasses');
-      const updatedSleep = localStorage.getItem('user_sleep_hours');
-      const updatedCals = localStorage.getItem('user_calories');
-
-      if (updatedSteps !== null) setStepsCount(Number(updatedSteps));
-      if (updatedMins !== null) setActivityMinutes(Number(updatedMins));
-      if (updatedWaterG !== null) setWaterCount(Number(updatedWaterG));
-      if (updatedSleep !== null) setSleepHours(Number(updatedSleep));
-
-      const steps = updatedSteps ? Number(updatedSteps) : stepsCount;
-      const mins = updatedMins ? Number(updatedMins) : activityMinutes;
-      const cals = updatedCals ? Number(updatedCals) : Math.round(steps * 0.04 + mins * 5);
-      setCaloriesCount(cals);
+    const loadMessages = async () => {
+      // Additional data is intentionally non-blocking.
+      const [notif, msgs] = await Promise.allSettled([
+        apiFetch('/api/notifications', { cache: 'no-store' }),
+        apiFetch('/api/messages', { cache: 'no-store' }),
+      ]);
+      if (cancelled) return;
+      if (notif.status === 'fulfilled' && notif.value.ok) {
+        try { setNotifications(await notif.value.json()); } catch (e) {
+          console.warn('Bildirişlərin cavabı oxunmadı:', e);
+        }
+      }
+      if (msgs.status === 'fulfilled' && msgs.value.ok) {
+        try { setMessages(await msgs.value.json()); } catch (e) {
+          console.warn('Mesajların cavabı oxunmadı:', e);
+        }
+      }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    // Sleep is currently locally stored only. Do not invent a server value.
+    const localSleep = localStorage.getItem('user_sleep_hours');
+    if (localSleep !== null) setSleepHours(Number(localSleep));
 
-    loadDashboardData();
-  }, [activeTab]);
+    void loadMetrics();
+    void loadMessages();
+
+    return () => { cancelled = true; };
+  }, [activeTab, authStatus, metricsRetry]);
 
   useEffect(() => {
     const handleActivityUpdate = (e: Event) => {
@@ -257,22 +237,6 @@ export default function Dashboard() {
 
   const [user, setUser] = useState<UserProfileData | null>(null);
 
-  useEffect(() => {
-    const fetchWater = async () => {
-      const savedWater = localStorage.getItem('user_water') || localStorage.getItem('user_water_ml');
-
-      if (savedWater !== null) {
-        const ml = Number(savedWater);
-        const glasses = ml > 10 ? Math.round(ml / 250) : ml;
-        setWaterCount(glasses);
-      } else {
-        setWaterCount(0);
-      }
-    };
-
-    fetchWater();
-  }, []);
-
   const handleWaterUpdate = async (newGlasses: number) => {
     const newWaterMl = newGlasses * 250;
     try {
@@ -296,24 +260,27 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    let cancelled = false;
     const loadUserData = async () => {
+      setAuthStatus('checking');
       const storedUser = localStorage.getItem('user');
       if (!storedUser) {
         router.replace('/auth');
         return;
       }
       try {
-        const res = await apiFetch('/api/user/profile');
+        const res = await apiFetch('/api/user/profile', { cache: 'no-store' });
+        if (cancelled) return;
         if (res.status === 401) {
           clearPrivateLocalData();
           router.replace('/auth');
           return;
         }
         if (!res.ok) {
-          console.warn('Profil sorğusu uğursuz oldu:', res.status);
-          return;
+          throw new Error(`Profile fetch failed (HTTP ${res.status})`);
         }
         const profileData = await res.json();
+        if (cancelled) return;
         const cachedUser = JSON.parse(storedUser);
         if (profileData.email !== cachedUser.email) {
           clearPrivateLocalData();
@@ -323,12 +290,17 @@ export default function Dashboard() {
         const merged = { ...cachedUser, ...profileData };
         setUser(merged);
         localStorage.setItem('user', JSON.stringify(merged));
+        setAuthStatus('ready');
       } catch (err) {
-        console.warn('Backend profil məlumatı oxunmadı:', err);
+        if (!cancelled) {
+          console.warn('Backend profili yoxlanmadı:', err);
+          setAuthStatus('error');
+        }
       }
     };
-    loadUserData();
-  }, [router]);
+    void loadUserData();
+    return () => { cancelled = true; };
+  }, [router, authRetry]);
 
   const handleLogout = async () => {
     try {
