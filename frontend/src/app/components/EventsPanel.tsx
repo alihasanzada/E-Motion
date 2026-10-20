@@ -191,14 +191,22 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
     }
   };
 
+  // The demo event list contains historical dates. Use the actual date rather
+  // than the static isPast flag when deciding which tab an event belongs to.
+  const isEventPast = (event: EventItem) => {
+    const endOfDay = new Date(`${event.date}T23:59:59`).getTime();
+    return event.isPast === true || (Number.isFinite(endOfDay) && endOfDay < Date.now());
+  };
+
   const filteredEvents = events.filter(ev => {
+    const isPast = isEventPast(ev);
     if (activeTab === 'Keçmiş Tədbirlər') {
-      if (!ev.isPast) return false;
+      if (!isPast) return false;
     } else if (activeTab !== 'Bütün Tədbirlər') {
-      if (ev.isPast) return false;
+      if (isPast) return false;
       if (ev.category !== activeTab) return false;
     } else {
-      if (ev.isPast) return false;
+      if (isPast) return false;
     }
 
     if (searchQuery.trim()) {
@@ -328,23 +336,23 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                 justifyContent: 'space-between',
                 cursor: 'pointer',
                 transition: 'transform 0.15s ease',
-                opacity: ev.isPast ? 0.75 : 1
+                opacity: isEventPast(ev) ? 0.75 : 1
               }}
             >
               <div style={{ display: 'flex', gap: '18px', alignItems: 'center', flex: 1 }}>
                 <div style={{
-                  backgroundColor: ev.isPast ? (isDarkMode ? '#334155' : '#E2E8F0') : theme.dateBoxBg,
-                  border: '1px solid ' + (ev.isPast ? (isDarkMode ? '#475569' : '#CBD5E1') : theme.dateBoxBorder),
+                  backgroundColor: isEventPast(ev) ? (isDarkMode ? '#334155' : '#E2E8F0') : theme.dateBoxBg,
+                  border: '1px solid ' + (isEventPast(ev) ? (isDarkMode ? '#475569' : '#CBD5E1') : theme.dateBoxBorder),
                   borderRadius: '14px',
                   padding: '10px 14px',
                   textAlign: 'center',
                   minWidth: '54px',
                   flexShrink: 0
                 }}>
-                  <span style={{ display: 'block', fontSize: '20px', fontWeight: '800', color: ev.isPast ? theme.textSecondary : theme.dateBoxDayText, lineHeight: '1' }}>
+                  <span style={{ display: 'block', fontSize: '20px', fontWeight: '800', color: isEventPast(ev) ? theme.textSecondary : theme.dateBoxDayText, lineHeight: '1' }}>
                     {ev.displayDate.day}
                   </span>
-                  <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: ev.isPast ? theme.textMuted : theme.dateBoxMonthText, marginTop: '3px' }}>
+                  <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: isEventPast(ev) ? theme.textMuted : theme.dateBoxMonthText, marginTop: '3px' }}>
                     {ev.displayDate.month}
                   </span>
                 </div>
@@ -400,7 +408,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                   </span>
                 </div>
 
-                {!ev.isPast && (
+                {!isEventPast(ev) && (
                   <button
                     onClick={e => toggleAttend(e, ev.id)}
                     style={{
@@ -761,7 +769,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
               </p>
             </div>
 
-            {!selectedEvent.isPast && (
+            {!isEventPast(selectedEvent) && (
               <button
                 onClick={e => toggleAttend(e, selectedEvent.id)}
                 style={{
