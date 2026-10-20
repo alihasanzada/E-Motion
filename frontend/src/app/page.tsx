@@ -184,9 +184,9 @@ export default function Dashboard() {
       if (savedCals !== null) setCaloriesCount(Number(savedCals));
       if (savedWater !== null) setWaterCount(Number(savedWater));
       if (savedSleep !== null) {
-      setSleepHours(Number(savedSleep));
-      setHasSleepRecord(true);
-    }
+        setSleepHours(Number(savedSleep));
+        setHasSleepRecord(true);
+      }
     };
 
     window.addEventListener('activity-updated', handleActivityUpdate as EventListener);
