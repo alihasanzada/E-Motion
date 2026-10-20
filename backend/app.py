@@ -31,13 +31,41 @@ CORS(app, supports_credentials=True, origins=allowed_origins)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 
-# Rate Limiter konfiqurasiyası
+# Vercel-in proxy IP-si bir neçə istifadəçi üçün eyni ola bilər.
+# Autentifikasiya olunmuş sorğuları fərdi sessiya üzrə limitləyirik.
+# Login isə ayrıca hesab identifikatoru əsasında limitlənir.
+def rate_limit_identity():
+    token = request.cookies.get("token")
+    if token:
+        digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        return "session:" + digest
+    return "ip:" + get_remote_address()
+
+
+def login_limit_identity():
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get("email") or "").strip().lower() if isinstance(payload, dict) else ""
+    if email:
+        return "login-account:" + hashlib.sha256(email.encode("utf-8")).hexdigest()
+    return "login-ip:" + get_remote_address()
+
+
 limiter = Limiter(
-    get_remote_address,
+    rate_limit_identity,
     app=app,
-    default_limits=["200 per day", "50 per hour"],
+    # UI loads multiple endpoints; the former 50/hour shared-IP limit caused
+    # surprising lockouts during ordinary dashboard use.
+    default_limits=["240 per minute"],
     storage_uri="memory://"
 )
+
+
+@app.errorhandler(429)
+def rate_limit_json(error):
+    return jsonify({
+        "error": "Çox sayda sorğu göndərildi. Bir qədər gözləyib yenidən cəhd edin.",
+        "code": "rate_limited"
+    }), 429
 
 # Admin rol sistemi hazır olmadığı üçün idarəetmə API-lərinin
 # anonim oxunmasını və sərbəst yazılmasını dayandırırıq.
@@ -574,7 +602,7 @@ def register():
         conn.close()
 
 @app.route('/api/login', methods=['POST'])
-@limiter.limit("5 per 15 minutes")
+@limiter.limit("10 per 15 minutes", key_func=login_limit_identity)
 def login():
     """
     User login
