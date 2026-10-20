@@ -20,6 +20,10 @@ def register_user_data_routes(app, get_db_connection, get_authenticated_user):
                     active_minutes INTEGER NOT NULL DEFAULT 0,
                     water_ml INTEGER NOT NULL DEFAULT 0
                 );
+                CREATE TABLE IF NOT EXISTS account_sleep (
+                    user_id INTEGER PRIMARY KEY,
+                    hours REAL NOT NULL CHECK (hours >= 1 AND hours <= 14)
+                );
                 CREATE TABLE IF NOT EXISTS account_moods (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER NOT NULL,
@@ -142,6 +146,35 @@ def register_user_data_routes(app, get_db_connection, get_authenticated_user):
             return jsonify({"error": "Aktivlik göstəriciləri düzgün deyil."}), 400
         save_activity(conn, user_id, values)
         return jsonify({"message": "Aktivlik yeniləndi!", **activity_data(conn, user_id)}), 201
+
+    @app.route("/api/sleep", methods=["GET", "POST"])
+    @authenticated
+    def account_sleep(conn, user_id):
+        """Student-specific most recently recorded sleep duration, in hours."""
+        if request.method == "GET":
+            row = conn.execute(
+                "SELECT hours FROM account_sleep WHERE user_id = ?", (user_id,)
+            ).fetchone()
+            return jsonify({"hours": float(row["hours"]) if row else None}), 200
+
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"error": "JSON obyekti tələb olunur."}), 400
+        raw_hours = data.get("hours")
+        if isinstance(raw_hours, bool) or not isinstance(raw_hours, (int, float)):
+            return jsonify({"error": "Yuxu müddəti rəqəm olmalıdır."}), 400
+        hours = float(raw_hours)
+        # The UI accepts half-hour increments; avoid storing impossible values
+        # or NaN / Infinity in SQLite.
+        if not (1 <= hours <= 14) or not (hours * 2).is_integer():
+            return jsonify({"error": "Yuxu 1–14 saat arasında, 0.5 saat addımla olmalıdır."}), 400
+
+        conn.execute("""
+            INSERT INTO account_sleep (user_id, hours) VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET hours = excluded.hours
+        """, (user_id, hours))
+        conn.commit()
+        return jsonify({"message": "Yuxu qeydi saxlanıldı.", "hours": hours}), 200
 
     @app.route("/api/moods", methods=["GET", "POST"])
     @authenticated
