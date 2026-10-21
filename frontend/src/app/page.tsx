@@ -1353,18 +1353,10 @@ export default function Dashboard() {
                     { id: 'activity', title: 'Aktivlik', value: hasLoadedMetrics && authStatus === 'ready' ? `${activityMinutes} dəq` : '—', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
                     { id: 'nutrition', title: 'Kalori', value: hasLoadedMetrics && authStatus === 'ready' ? `${caloriesCount} kkal` : '—', sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
                     { id: 'nutrition', title: 'Su qəbulu', value: hasLoadedMetrics && authStatus === 'ready' ? `${waterCount} stəkan` : '—', sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
-                    { id: 'mental', title: 'Yuxu', value: authStatus === 'ready' && hasSleepRecord ? `${sleepHours} saat` : '—', sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
-                  ].map((card, idx) => (
+                                      ].map((card, idx) => (
                     <div
                       key={idx}
-                      onClick={() => {
-                        if (card.id === 'mental') {
-                          setSleepInputValue(hasSleepRecord ? String(sleepHours) : '8');
-                          setIsSleepModalOpen(true);
-                        } else {
-                          setActiveTab(card.id);
-                        }
-                      }}
+                      onClick={() => setActiveTab(card.id)}
                       className="summary-card"
                       style={{
                         backgroundColor: theme.bgCard,
@@ -1396,6 +1388,7 @@ export default function Dashboard() {
 
                   {/* Active Campus Challenge Card */}
                   <div
+                    className="em-dashboard-challenge"
                     onClick={() => setActiveTab('challenges')}
                     style={{
                       position: 'relative',
@@ -1437,13 +1430,26 @@ export default function Dashboard() {
                     </p>
                   </div>
 
-                  <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div className="card em-dashboard-mental" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '14px' }}></span>
                         <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Mental rifah</h3>
                       </div>
-                      <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSleepInputValue(hasSleepRecord ? String(sleepHours) : '8');
+                            setIsSleepModalOpen(true);
+                          }}
+                          style={{ background: theme.bgInner, border: `1px solid ${theme.border}`, borderRadius: '8px', padding: '6px 9px', fontSize: '11px', color: theme.textPrimary, cursor: 'pointer' }}
+                          title="Yuxu vaxtını əl ilə qeyd et"
+                        >
+                          Yuxu qeydi
+                        </button>
+                        <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
+                      </div>
                     </div>
 
                     <div className="mental-mini-grid">
@@ -1470,7 +1476,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Events Card */}
-                <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
+                <div className="card em-dashboard-events" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Calendar size={16} style={{ color: '#44766C' }} />
@@ -1511,14 +1517,14 @@ export default function Dashboard() {
               {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {hasLoadedMetrics && authStatus === 'ready' ? (
-                  <DailyScoreWidget isDarkMode={isDarkMode} />
+                  <div className="em-dashboard-score"><DailyScoreWidget isDarkMode={isDarkMode} /></div>
                 ) : (
-                  <div className="card" role="status" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.border}`, borderRadius: '14px', minHeight: '170px', color: theme.textSecondary, fontSize: '13px' }}>
+                  <div className="card em-dashboard-score" role="status" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.border}`, borderRadius: '14px', minHeight: '170px', color: theme.textSecondary, fontSize: '13px' }}>
                     Gündəlik bal hesab məlumatları yükləndikdən sonra görünəcək.
                   </div>
                 )}
 
-                <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
+                <div className="card em-dashboard-services" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Sağlamlıq xidmətləri</h3>
                     <button onClick={() => setActiveTab('services')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
