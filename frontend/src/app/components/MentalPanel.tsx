@@ -189,7 +189,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '30px', color: theme.textPrimary }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '30px', color: theme.textPrimary }}>
 
       {/* Top Banner */}
       <div style={{
@@ -228,7 +228,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
       </div>
 
       {/* Mood Tracker & Ambient Audio Player */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '16px' }}>
 
         {/* Mood Tracker & Input Form */}
         <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderColor}`, borderRadius: '16px', padding: '18px 20px', boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
@@ -236,7 +236,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Bu gün özünü necə hiss edirsən?</h3>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', marginBottom: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '6px', marginBottom: '12px' }}>
             {moods.map((m) => {
               const isSelected = selectedMood === m.name;
               return (
@@ -396,7 +396,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
           <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: '800' }}>Sürətli Rahatlama Məşqləri</h3>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '12px' }}>
 
           {/* Breathing */}
           <div style={{ backgroundColor: theme.innerBg, border: `1px solid ${theme.borderColor}`, borderRadius: '12px', padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
