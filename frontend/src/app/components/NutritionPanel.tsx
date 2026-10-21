@@ -284,7 +284,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
 
       {/* Header section */}
       <div>
@@ -304,7 +304,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         border: `1px solid ${theme.borderColor}`,
         boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
         gap: '24px',
         alignItems: 'center'
       }}>
@@ -434,7 +434,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       </div>
 
       {/* Meal Form and Scanner */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px', alignItems: 'start' }}>
 
         <div style={{
           backgroundColor: theme.cardBg,
@@ -479,7 +479,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 155px), 1fr))', gap: '10px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '4px' }}>
                   Kalori (kcal) *
@@ -531,7 +531,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '8px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', color: theme.textSecondary, marginBottom: '3px' }}>Zülal (g)</label>
                 <input
