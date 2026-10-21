@@ -38,6 +38,7 @@ const searchIndex = [
 
 export default function Dashboard() {
   const [isMobileMenuOpen, setisMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -626,7 +627,7 @@ export default function Dashboard() {
       >
 
         {/* Header */}
-        <header style={{
+        <header className="em-app-header" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -638,12 +639,14 @@ export default function Dashboard() {
           top: 0,
           zIndex: 50
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, maxWidth: '500px' }}>
+          <div className="em-header-left" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, maxWidth: '500px' }}>
 
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setisMobileMenuOpen(!isMobileMenuOpen)}
               className="mobile-menu-btn"
+              aria-label={isMobileMenuOpen ? 'Menyunu bağla' : 'Menyunu aç'}
+              aria-expanded={isMobileMenuOpen}
               style={{
                 background: 'none',
                 border: 'none',
@@ -654,6 +657,22 @@ export default function Dashboard() {
               }}
             >
               {isMobileMenuOpen ? '✕' : '☰'}
+            </button>
+
+            {/* Mobile brand and full-width expandable search. */}
+            <div className="em-header-brand" style={{ display: 'none' }}>
+              <span className="em-header-brand-mark"><Sprout size={17} /></span>
+              <span>E-Motion</span>
+            </div>
+            <button
+              type="button"
+              className="em-mobile-search-toggle"
+              style={{ display: 'none', background: 'transparent', border: 0, padding: '5px', color: theme.textSecondary, cursor: 'pointer' }}
+              onClick={() => { setIsMobileSearchOpen(value => !value); setSearchQuery(''); }}
+              aria-label={isMobileSearchOpen ? 'Axtarışı bağla' : 'Axtarışı aç'}
+              aria-expanded={isMobileSearchOpen}
+            >
+              {isMobileSearchOpen ? <X size={20} /> : <Search size={20} />}
             </button>
 
             {/* Search Wrapper */}
@@ -770,8 +789,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
+          <div className="header-right em-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="em-header-shortcuts" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
               <button
                 onClick={toggleDarkMode}
                 title={isDarkMode ? "Açıq rejimə keç" : "Qaranlıq rejimə keç"}
@@ -839,7 +858,7 @@ export default function Dashboard() {
                 </button>
 
                 {isNotificationsOpen && (
-                  <div style={{
+                  <div className="em-header-popover" style={{
                     position: 'absolute',
                     top: '42px',
                     right: '0px',
@@ -1035,7 +1054,7 @@ export default function Dashboard() {
                 </button>
 
                 {isMessagesOpen && (
-                  <div style={{
+                  <div className="em-header-popover" style={{
                     position: 'absolute',
                     top: '38px',
                     right: '0px',
@@ -1118,6 +1137,7 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <ChevronDown
+                  className="em-profile-chevron"
                   size={14}
                   style={{
                     color: theme.textSecondary,
@@ -1130,6 +1150,7 @@ export default function Dashboard() {
               {/* Profile Dropdown Menu */}
               {isProfileDropdownOpen && (
                 <div
+                  className="em-header-popover"
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
@@ -1215,6 +1236,43 @@ export default function Dashboard() {
             </div>
           </div>
         </header>
+
+        {isMobileSearchOpen && (
+          <div className="em-mobile-search-panel" style={{ backgroundColor: theme.bgCard, color: theme.textPrimary }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={17} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: theme.textSecondary }} />
+              <input
+                type="search"
+                aria-label="Platformada axtarış"
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Hansı bölməni axtarırsınız?"
+                style={{ padding: '12px 12px 12px 40px', borderRadius: '10px', border: `1px solid ${theme.border}`, backgroundColor: theme.bgInner, color: theme.textPrimary }}
+              />
+            </div>
+            {searchQuery.trim() && (
+              <div style={{ display: 'flex', flexDirection: 'column', paddingTop: '6px', maxHeight: '240px', overflowY: 'auto' }}>
+                {searchIndex.filter(item => item.title.toLocaleLowerCase('az').includes(searchQuery.toLocaleLowerCase('az')) ||
+                  item.keywords.some(keyword => keyword.toLocaleLowerCase('az').includes(searchQuery.toLocaleLowerCase('az'))))
+                  .map(item => (
+                    <button
+                      key={item.tabId}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(item.tabId);
+                        setSearchQuery('');
+                        setIsMobileSearchOpen(false);
+                      }}
+                      style={{ background: 'transparent', border: 'none', borderBottom: `1px solid ${theme.border}`, padding: '11px 8px', color: theme.textPrimary, textAlign: 'left', cursor: 'pointer' }}
+                    >
+                      {item.title}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Dashboard Grid View */}
         <main className="main-content flex-1" style={{ padding: '18px 22px', backgroundColor: theme.bgApp }}>
@@ -1527,6 +1585,8 @@ export default function Dashboard() {
 
       {/* AI Asistent Floating Button */}
       <button
+        className="em-chat-trigger"
+        aria-label="E-Motion AI asistentini aç"
         onClick={() => setisChatOpen(!isChatOpen)}
         title="E-Motion AI Asistent"
         style={{
@@ -1582,7 +1642,7 @@ export default function Dashboard() {
       />
       {/* Modern Sleep Input Modal */}
       {isSleepModalOpen && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -1596,7 +1656,7 @@ export default function Dashboard() {
           zIndex: 9999,
           padding: '16px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
             borderRadius: '24px',
             padding: '28px',
