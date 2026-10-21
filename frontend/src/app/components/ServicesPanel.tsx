@@ -101,7 +101,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
 
       {/* Header and New Request Button */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
@@ -140,7 +140,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
       </div>
 
       {/* Essential Service Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
 
         {/* Student Health Insurance */}
         <div style={{
@@ -254,7 +254,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
       </div>
 
       {/* Inquiries and Emergency Support Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
 
         {/* Application Status*/}
         <div style={{
