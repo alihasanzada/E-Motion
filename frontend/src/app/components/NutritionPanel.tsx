@@ -297,7 +297,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       </div>
 
       {/* Dashboard Overview */}
-      <div style={{
+      <div className="em-compact-section" style={{
         backgroundColor: theme.cardBg,
         borderRadius: '20px',
         padding: '24px',
@@ -311,7 +311,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '13px', fontWeight: '700', color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Flame size={16} color="#EF4444" /> Günlük Kalori Hədəfi
+              Günlük Kalori Hədəfi
             </span>
             <span style={{ fontSize: '13px', fontWeight: '800', color: theme.textPrimary }}>
               {totalCalories} / {goals.calories} kcal ({caloriePercent}%)
@@ -332,7 +332,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '13px', fontWeight: '700', color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Droplet size={16} color="#06B6D4" /> Su Balansı Hədəfi
+              Su Balansı Hədəfi
             </span>
             <span style={{ fontSize: '13px', fontWeight: '800', color: theme.textPrimary }}>
               {water} / {waterGoal} ml ({waterPercent}%)
@@ -376,7 +376,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       </div>
 
       {/* Water Tracker Controls */}
-      <div style={{
+      <div className="em-compact-section" style={{
         backgroundColor: theme.cardBg,
         padding: '20px 24px',
         borderRadius: '20px',
@@ -434,9 +434,9 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       </div>
 
       {/* Meal Form and Scanner */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px', alignItems: 'start' }}>
+      <div className="em-compact-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '14px', alignItems: 'start' }}>
 
-        <div style={{
+        <div className="em-compact-section" style={{
           backgroundColor: theme.cardBg,
           padding: '24px',
           borderRadius: '20px',
@@ -590,7 +590,7 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
 
           <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: `1px solid ${theme.borderColor}` }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', fontWeight: '700', color: theme.textSecondary, marginBottom: '8px' }}>
-              <Zap size={13} color="#F59E0B" /> Sürətli Şablonlar
+              Sürətli Şablonlar
             </span>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               <button
@@ -623,8 +623,8 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       </div>
 
       {/* Meals List */}
-      <div style={{
-        marginTop: '20px',
+      <div className="em-compact-section" style={{
+        marginTop: '8px',
         backgroundColor: theme.cardBg,
         padding: '24px',
         borderRadius: '20px',
