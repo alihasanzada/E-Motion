@@ -220,8 +220,8 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
 
         <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: '10px 16px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
            <div>
-            <span style={{ fontSize: '10.5px', display: 'block', opacity: 0.85 }}>Günün Ruh Halı</span>
-            <strong style={{ fontSize: '14px', fontWeight: '800', color: '#A7F3D0' }}>Sakit & Fokusda</strong>
+            <span style={{ fontSize: '10.5px', display: 'block', opacity: 0.85 }}>Seçilən ruh halı</span>
+            <strong style={{ fontSize: '14px', fontWeight: '800', color: '#A7F3D0' }}>{selectedMood}</strong>
           </div>
         </div>
       </div>
