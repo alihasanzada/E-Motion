@@ -520,7 +520,7 @@ export default function StatsPanel({ isDarkMode = false }: StatsPanelProps) {
 
       {/* Add quick entry modal */}
       {isModalOpen && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.6)',
@@ -530,7 +530,7 @@ export default function StatsPanel({ isDarkMode = false }: StatsPanelProps) {
           zIndex: 100,
           padding: '16px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: theme.cardBg,
             borderRadius: '16px',
             padding: '20px',
