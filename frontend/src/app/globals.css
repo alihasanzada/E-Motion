@@ -655,3 +655,356 @@ svg circle {
         grid-template-columns: 1fr !important;
     }
 }
+
+
+/* E-Motion mobile layout stabilization — Demo Day 2026-10-21.
+   The older rules above were optimized for desktop and used hard minimum
+   grid widths that exceeded the actual viewport on many phones. */
+@media (max-width: 1024px) {
+    html, body {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100% !important;
+        overflow-x: clip !important;
+        overflow-y: auto !important;
+    }
+
+    .wrapper {
+        min-width: 0 !important;
+        min-height: 100dvh !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .main-content {
+        min-width: 0 !important;
+        padding: 16px !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    .sidebar {
+        width: min(84vw, 296px) !important;
+        max-width: 296px !important;
+        height: 100dvh !important;
+        left: -110vw !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        padding-bottom: max(18px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .sidebar.mobile-open {
+        left: 0 !important;
+    }
+
+    .dashboard-layout,
+    .dashboard-layout > *,
+    .left-content,
+    .right-sidebar {
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .em-app-header {
+        min-height: 64px !important;
+        padding: 8px 16px !important;
+    }
+
+    .em-header-left {
+        min-width: 0 !important;
+    }
+
+    .em-header-actions {
+        flex-shrink: 0;
+    }
+
+    .em-header-popover {
+        max-width: min(360px, calc(100vw - 24px)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 12px 12px max(88px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .em-app-header {
+        min-height: 62px !important;
+        height: auto !important;
+        padding: 10px 12px !important;
+        gap: 6px !important;
+    }
+
+    .em-header-left {
+        flex: 1 1 auto !important;
+        gap: 7px !important;
+    }
+
+    .em-header-left .search-wrapper {
+        display: none !important;
+    }
+
+    .em-header-brand {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        white-space: nowrap;
+        color: inherit;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .em-header-brand-mark {
+        display: inline-flex;
+        width: 30px;
+        height: 30px;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 9px;
+        background: #44766c;
+        color: #fff;
+    }
+
+    .em-header-actions {
+        gap: 6px !important;
+    }
+
+    .em-header-shortcuts {
+        gap: 6px !important;
+    }
+
+    .em-header-actions button,
+    .mobile-menu-btn {
+        min-width: 34px;
+        min-height: 36px;
+        touch-action: manipulation;
+    }
+
+    .em-header-actions .profile-card {
+        padding: 2px !important;
+        gap: 0 !important;
+    }
+
+    .em-profile-chevron {
+        display: none !important;
+    }
+
+    .em-header-popover {
+        position: fixed !important;
+        top: 64px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: none !important;
+        max-height: min(72dvh, 540px) !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        z-index: 1500 !important;
+    }
+
+    .em-mobile-search-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        border: 0;
+        border-radius: 9px;
+        color: inherit;
+        background: transparent;
+    }
+
+    .em-mobile-search-panel {
+        display: block !important;
+        padding: 12px;
+        border-bottom: 1px solid var(--border-color);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .em-mobile-search-panel input {
+        width: 100%;
+        min-width: 0;
+        font-size: 16px !important;
+    }
+
+    .banner-text {
+        max-width: 100% !important;
+    }
+
+    .summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .summary-card {
+        min-width: 0 !important;
+        padding: 12px !important;
+        gap: 7px !important;
+        overflow-wrap: anywhere;
+    }
+
+    .summary-card h3 {
+        font-size: clamp(16px, 4.5vw, 21px) !important;
+        line-height: 1.25 !important;
+    }
+
+    .mental-mini-grid > div h5,
+    .mental-mini-grid > div p {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+
+    .em-mobile-panel,
+    .em-mobile-panel > div,
+    .em-mobile-panel input,
+    .em-mobile-panel select,
+    .em-mobile-panel textarea {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .em-mobile-panel {
+        overflow-wrap: anywhere;
+    }
+
+    .em-mobile-panel input,
+    .em-mobile-panel select,
+    .em-mobile-panel textarea {
+        font-size: 16px !important;
+    }
+
+    .em-mobile-panel button {
+        touch-action: manipulation;
+    }
+
+    .em-event-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 14px !important;
+        gap: 12px !important;
+    }
+
+    .em-event-card-main {
+        min-width: 0 !important;
+        gap: 10px !important;
+        align-items: flex-start !important;
+    }
+
+    .em-event-card-info {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+    }
+
+    .em-event-card-meta {
+        flex-wrap: wrap !important;
+        column-gap: 12px !important;
+        row-gap: 5px !important;
+    }
+
+    .em-event-card-actions {
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    .em-event-card-actions button {
+        min-height: 40px;
+        justify-content: center;
+    }
+
+    .em-dialog-backdrop {
+        align-items: flex-start !important;
+        justify-content: center !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .em-dialog-card {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: min(100%, 520px) !important;
+        max-height: calc(100dvh - 32px) !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        flex-shrink: 0 !important;
+        padding: 18px !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    .em-dialog-card input,
+    .em-dialog-card select,
+    .em-dialog-card textarea {
+        font-size: 16px !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .em-form-grid-two {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .em-form-grid-three {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .em-form-grid-three > :first-child {
+        grid-column: 1 / -1;
+    }
+
+    .em-event-detail-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .em-chat-window {
+        width: calc(100vw - 24px) !important;
+        max-width: 420px !important;
+        height: min(72dvh, 560px) !important;
+        max-height: calc(100dvh - 98px) !important;
+        right: 12px !important;
+        bottom: max(76px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .em-chat-trigger {
+        bottom: max(16px, env(safe-area-inset-bottom)) !important;
+        right: 16px !important;
+        width: 48px !important;
+        height: 48px !important;
+    }
+}
+
+@media (max-width: 359px) {
+    .em-header-brand-mark {
+        display: none;
+    }
+
+    .em-header-brand {
+        font-size: 13px;
+    }
+
+    .em-header-actions {
+        gap: 3px !important;
+    }
+
+    .em-app-header {
+        padding-inline: 8px !important;
+    }
+
+    .main-content {
+        padding-inline: 10px !important;
+    }
+
+    .em-form-grid-three {
+        grid-template-columns: 1fr !important;
+    }
+    .em-form-grid-three > :first-child {
+        grid-column: auto !important;
+    }
+}
