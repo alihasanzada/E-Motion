@@ -1022,6 +1022,188 @@ svg circle {
     }
 }
 
+/* Demo Day refined mobile density and dashboard information hierarchy */
+@media (max-width: 768px) {
+  /* Keep desktop two-column dashboard unchanged; only mobile is reordered. */
+  .dashboard-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+  .dashboard-layout > .left-content,
+  .dashboard-layout > .right-sidebar,
+  .dashboard-layout .challenge-mental-row {
+    display: contents !important;
+  }
+  .dashboard-layout .welcome-banner-card { order: 1; }
+  .dashboard-layout .em-dashboard-score { order: 2; min-height: 0 !important; }
+  .dashboard-layout .summary-grid { order: 3; }
+  .dashboard-layout .em-dashboard-challenge { order: 4; min-height: 132px !important; }
+  .dashboard-layout .em-dashboard-mental { order: 5; }
+  .dashboard-layout .em-dashboard-services { order: 6; }
+  .dashboard-layout .em-dashboard-events { order: 7; }
+  .dashboard-layout .summary-card { padding: 12px !important; }
+  .dashboard-layout .mental-mini-grid > div { min-height: 112px; }
+
+  /* Unified notification/message popovers: anchored to the top-right,
+     not stretched edge-to-edge across the phone. */
+  .em-header-popover {
+    position: fixed !important;
+    top: 72px !important;
+    left: auto !important;
+    right: 12px !important;
+    width: min(324px, calc(100vw - 24px)) !important;
+    max-width: none !important;
+    max-height: min(55dvh, 380px) !important;
+    border-radius: 14px !important;
+    overflow-y: auto !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .14) !important;
+  }
+
+  .em-chat-window {
+    width: min(350px, calc(100vw - 32px)) !important;
+    height: min(56dvh, 480px) !important;
+    max-height: calc(100dvh - 135px) !important;
+    right: 16px !important;
+    bottom: max(74px, env(safe-area-inset-bottom)) !important;
+  }
+  .em-chat-window input { min-width: 0; font-size: 16px !important; }
+
+  .em-mobile-panel {
+    gap: 12px !important;
+    padding-bottom: 20px !important;
+  }
+  .em-mobile-panel .em-compact-hero {
+    padding: 16px 17px !important;
+    border-radius: 15px !important;
+    gap: 8px !important;
+  }
+  .em-mobile-panel .em-compact-hero > div {
+    min-width: 0;
+  }
+  .em-mobile-panel .em-compact-stats {
+    gap: 9px !important;
+  }
+  .em-mobile-panel .em-compact-stats > div {
+    padding: 12px !important;
+    min-height: 0 !important;
+  }
+  .em-mobile-panel .em-compact-section {
+    padding: 15px !important;
+    border-radius: 14px !important;
+    gap: 10px !important;
+  }
+  .em-mobile-panel .em-compact-section > h3,
+  .em-mobile-panel .em-compact-section > h4 {
+    margin-bottom: 8px !important;
+  }
+  .em-mobile-panel .em-compact-list {
+    gap: 10px !important;
+  }
+  .em-mobile-panel .em-compact-list > div {
+    padding: 13px 14px !important;
+    min-width: 0;
+  }
+  .em-mobile-panel .em-event-card {
+    gap: 9px !important;
+    padding: 12px 14px !important;
+  }
+  .em-mobile-panel .em-event-card-main {
+    gap: 10px !important;
+  }
+  .em-mobile-panel .em-event-card-info {
+    gap: 4px !important;
+  }
+  .em-mobile-panel .em-event-card-actions {
+    padding-top: 0 !important;
+  }
+
+  /* Make leaderboards readable: stack secondary stats beneath the name. */
+  .em-leaderboard-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px 12px !important;
+    align-items: start !important;
+    padding: 13px 14px !important;
+  }
+  .em-leaderboard-identity {
+    min-width: 0 !important;
+    gap: 9px !important;
+  }
+  .em-leaderboard-name {
+    min-width: 0;
+  }
+  .em-leaderboard-name h4 {
+    overflow-wrap: anywhere;
+  }
+  .em-leaderboard-meta {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px 10px !important;
+    padding-left: 36px;
+  }
+  .em-leaderboard-meta > span,
+  .em-leaderboard-meta > strong {
+    white-space: nowrap;
+  }
+  .em-leaderboard-xp {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    font-size: 14px !important;
+    text-align: right;
+  }
+  .em-leaderboard-meta .em-leaderboard-xp {
+    display: none;
+  }
+  .em-leaderboard-rank {
+    width: 26px !important;
+    flex: 0 0 26px !important;
+  }
+  .em-leaderboard-scope {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .em-leaderboard-scope button {
+    min-width: 0 !important;
+    min-height: 43px !important;
+    padding: 8px 10px !important;
+    white-space: normal !important;
+    line-height: 1.35;
+  }
+
+  .em-profile-dialog {
+    width: min(100%, 540px) !important;
+    padding: 12px !important;
+  }
+  .em-profile-dialog .em-profile-header { padding: 12px !important; }
+  .em-profile-dialog .em-profile-summary { padding: 10px 12px !important; }
+  .em-profile-dialog .em-profile-summary > div { min-width: 0; }
+  .em-profile-dialog .em-profile-edit-fields {
+    padding: 10px 14px !important;
+    gap: 10px !important;
+  }
+  .em-profile-dialog .em-profile-edit-fields > div {
+    gap: 9px !important;
+  }
+  .em-profile-dialog .em-profile-footer {
+    padding: 10px 12px !important;
+  }
+  .em-profile-dialog .em-profile-tabs {
+    padding: 8px 10px 0 !important;
+    gap: 3px !important;
+  }
+  .em-profile-dialog .em-profile-tabs button {
+    flex: 1 1 0 !important;
+    text-align: center;
+    justify-content: center;
+    padding: 9px 7px !important;
+    font-size: 12px !important;
+  }
+}
+
 @media (max-width: 359px) {
     .em-header-brand-mark {
         display: none;
