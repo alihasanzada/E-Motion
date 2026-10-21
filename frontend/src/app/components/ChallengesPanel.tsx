@@ -191,7 +191,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px', color: theme.textPrimary }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px', color: theme.textPrimary }}>
 
       {/* Top Motivation Banner */}
       <div style={{
@@ -372,7 +372,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
 
       {/* Active Challenges */}
       {activeTab === 'challenges' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '18px' }}>
           {filteredChallenges.map((item) => {
             const progressPercent = item.completed ? 100 : Math.min(100, Math.round((item.current / item.target) * 100));
 
@@ -635,7 +635,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
 
       {/* Achievement Badges */}
       {activeTab === 'badges' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
           {badges.map((b) => (
             <div
               key={b.id}
