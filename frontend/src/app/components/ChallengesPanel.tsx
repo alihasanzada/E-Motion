@@ -682,7 +682,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
 
       {/* Modal Task Contents */}
       {activeModalTask && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.65)',
@@ -693,7 +693,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
           zIndex: 1000,
           padding: '20px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: theme.cardBg,
             border: `1px solid ${theme.borderColor}`,
             borderRadius: '24px',
