@@ -365,7 +365,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
 
       {/* New Request Creation Form */}
       {isModalOpen && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -379,7 +379,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
           zIndex: 999,
           padding: '16px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: theme.modalBg,
             borderRadius: '20px',
             padding: '24px',
@@ -484,8 +484,8 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
 
       {/* Insurance Details */}
       {activePopup === 'insurance' && (
-        <div style={popupStyles.overlay}>
-          <div style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}` }}>
+        <div className="em-dialog-backdrop" style={popupStyles.overlay}>
+          <div className="em-dialog-card" style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}` }}>
             <div style={popupStyles.header}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <ShieldCheck size={24} color="#10B981" />
@@ -506,8 +506,8 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
 
       {/* Medical Test Results */}
       {activePopup === 'lab' && (
-        <div style={popupStyles.overlay}>
-          <div style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}` }}>
+        <div className="em-dialog-backdrop" style={popupStyles.overlay}>
+          <div className="em-dialog-card" style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}` }}>
             <div style={popupStyles.header}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <FileText size={24} color="#EF4444" />
@@ -539,8 +539,8 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
 
       {/* Emergency Line & Live Chat */}
       {activePopup === 'emergency' && (
-        <div style={popupStyles.overlay}>
-          <div style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}`, maxWidth: '460px' }}>
+        <div className="em-dialog-backdrop" style={popupStyles.overlay}>
+          <div className="em-dialog-card" style={{ ...popupStyles.box, backgroundColor: theme.modalBg, color: theme.textPrimary, border: `1px solid ${theme.borderColor}`, maxWidth: '460px' }}>
             <div style={popupStyles.header}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <PhoneCall size={24} color="#EF4444" />
