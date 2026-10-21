@@ -101,7 +101,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
   };
 
   return (
-    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px' }}>
 
       {/* Header and New Request Button */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
@@ -313,7 +313,7 @@ export default function ServicesPanel({ isDarkMode = false }: ServicesPanelProps
         </div>
 
         {/* 7/24 Emergency Support Banner */}
-        <div style={{
+        <div className="em-compact-hero" style={{
           background: isDarkMode
             ? 'linear-gradient(135deg, #132A24 0%, #1E3E35 100%)'
             : 'linear-gradient(135deg, #1E3E35 0%, #2E5B4E 100%)',
