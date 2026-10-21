@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Sparkles, Upload, RefreshCw } from 'lucide-react';
+import { Upload, RefreshCw } from 'lucide-react';
 
 interface FoodScannerProps {
     isDarkMode?: boolean;
@@ -87,6 +87,7 @@ export default function FoodScanner({ isDarkMode = true }: FoodScannerProps) {
 
     return (
         <div
+            className="em-compact-section"
             style={{
                 backgroundColor: theme.cardBg,
                 border: theme.border,
@@ -102,21 +103,6 @@ export default function FoodScanner({ isDarkMode = true }: FoodScannerProps) {
         >
             {/* Başlıq */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                <div
-                    style={{
-                        width: '30px',
-                        height: '30px',
-                        borderRadius: '8px',
-                        backgroundColor: theme.accentLight,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: theme.accent,
-                        flexShrink: 0,
-                    }}
-                >
-                    <Sparkles size={16} />
-                </div>
                 <div>
                     <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>
                         AI Foto-Skaner
