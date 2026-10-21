@@ -239,10 +239,10 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   };
 
   return (
-    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingBottom: '0px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '13px', paddingBottom: '0px' }}>
 
       {/* Header Banner */}
-      <div style={{
+      <div className="em-compact-hero" style={{
         background: 'linear-gradient(135deg, #2E5B4E 0%, #44766C 100%)',
         borderRadius: '16px',
         padding: '19px 24px',
@@ -257,7 +257,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
             <span style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Sparkles size={12} /> Fiziki Aktivlik Hub-ı
+              Fiziki Aktivlik
             </span>
           </div>
           <h2 style={{ margin: 0, fontSize: '19px', fontWeight: '800', letterSpacing: '-0.3px' }}>
@@ -275,7 +275,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       </div>
 
       {/* Stats Summary Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '12px' }}>
+      <div className="em-compact-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '12px' }}>
 
         <div style={{ backgroundColor: theme.cardBg, padding: '13px 16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ backgroundColor: theme.iconFlameBg, padding: '8px', borderRadius: '10px', color: theme.iconFlameColor }}>
@@ -320,12 +320,12 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       </div>
 
       {/* Main Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '14px' }}>
+      <div className="em-compact-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '14px' }}>
 
         {/* Steps Card */}
         <div style={{
           backgroundColor: theme.cardBg,
-          padding: '19px 21px',
+          padding: '15px 17px',
           borderRadius: '15px',
           border: `1px solid ${theme.border}`,
           position: 'relative',
@@ -447,7 +447,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
         {/* Active Exercise Card */}
         <div style={{
           backgroundColor: theme.cardBg,
-          padding: '19px 21px',
+          padding: '15px 17px',
           borderRadius: '15px',
           border: `1px solid ${theme.border}`,
           position: 'relative',
