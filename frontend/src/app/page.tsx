@@ -22,9 +22,7 @@ import EditProfileModal, { UserProfileData } from './components/EditProfileModal
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import EmptyState from "./components/EmptyState";
-import { apiFetch } from '@/utils/api';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://e-motion-7vds.onrender.com';
+import { apiFetch, clearPrivateLocalData } from '@/utils/api';
 
 const searchIndex = [
   { keywords: ['idarə', 'panel', 'əsas', 'home', 'dashboard'], tabId: 'dashboard', title: 'İdarə paneli' },
@@ -43,6 +41,11 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState<'checking' | 'ready' | 'error'>('checking');
+  const [authRetry, setAuthRetry] = useState(0);
+  const [hasLoadedMetrics, setHasLoadedMetrics] = useState(false);
+  const [metricsLoadError, setMetricsLoadError] = useState(false);
+  const [metricsRetry, setMetricsRetry] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setisDarkMode] = useState(false);
   const [isChatOpen, setisChatOpen] = useState(false);
@@ -52,6 +55,9 @@ export default function Dashboard() {
 
   const [stepsCount, setStepsCount] = useState(0);
   const [sleepHours, setSleepHours] = useState(0);
+  const [hasSleepRecord, setHasSleepRecord] = useState(false);
+  const [sleepLoadError, setSleepLoadError] = useState(false);
+  const [isSavingSleep, setIsSavingSleep] = useState(false);
   const [caloriesCount, setCaloriesCount] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
   const [activityMinutes, setActivityMinutes] = useState(0);
@@ -67,118 +73,120 @@ export default function Dashboard() {
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Su hədəfi', desc: 'Gündəlik su qəbulunun 50%-nə çatdınız!', time: '10 dəq əvvəl', read: false },
-    { id: 2, title: 'Həkim qəbulu', desc: 'Sabah saat 14:00-da həkim müayinəniz var.', time: '1 saat əvvəl', read: false },
-    { id: 3, title: 'Tədbir xəbərdarlığı', desc: 'Yoqa seansı 22 May tarixində keçiriləcək.', time: '3 saat əvvəl', read: false }
-  ]);
+  // Bildiriş və həkim mesajları yalnız serverdən gələndə göstərilməlidir.
+  const [notifications, setNotifications] = useState<{
+    id: number; title: string; desc: string; time: string; read: boolean;
+  }[]>([]);
 
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'Dr. Əliyev (Tibb məntəqəsi)', text: 'Qan analizi nəticələriniz hazırdır.', time: '12:30', read: false },
-    { id: 2, sender: 'Psixoloq Leyla M.', text: 'Növbəti seans üçün vaxtı təsdiqləyin.', time: 'Dünən', read: false }
-  ]);
+  const [messages, setMessages] = useState<{
+    id: number; sender: string; text: string; time: string; read: boolean;
+  }[]>([]);
 
   useEffect(() => {
-    const localSteps = localStorage.getItem('user_steps');
-    const localWaterGlasses = localStorage.getItem('user_water_glasses');
-    const localWaterMl = localStorage.getItem('user_water_ml');
-    const localCalories = localStorage.getItem('user_calories');
-    const localMinutes = localStorage.getItem('user_active_minutes');
-    const localSleep = localStorage.getItem('user_sleep_hours');
+    // Never load private metrics until the account session is verified.
+    if (authStatus !== 'ready' || activeTab !== 'dashboard') return;
 
-    const mins = localMinutes ? Number(localMinutes) : 0;
-    setActivityMinutes(mins);
+    let cancelled = false;
 
-    if (localSteps) {
-      const stepsNum = Number(localSteps);
-      setStepsCount(stepsNum);
-
-      const calculatedCalories = localCalories ? Number(localCalories) : Math.round(stepsNum * 0.04 + mins * 5);
-      setCaloriesCount(calculatedCalories);
-    }
-
-    if (localWaterGlasses !== null) {
-      setWaterCount(Number(localWaterGlasses));
-    } else if (localWaterMl !== null) {
-      setWaterCount(Math.floor(Number(localWaterMl) / 250));
-    } else {
-      setWaterCount(0);
-    }
-
-    if (localSleep !== null) {
-      setSleepHours(Number(localSleep));
-    }
-
-    const loadDashboardData = async () => {
+    const loadMetrics = async () => {
       setIsLoading(true);
+      setMetricsLoadError(false);
       try {
-        const [notifRes, msgRes, activityRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/notifications`),
-          fetch(`${API_BASE_URL}/api/messages`),
-          fetch(`${API_BASE_URL}/api/activity`)
-        ]);
-
-        if (notifRes.ok) setNotifications(await notifRes.json());
-        if (msgRes.ok) setMessages(await msgRes.json());
-
-        if (activityRes.ok) {
-          const activityData = await activityRes.json();
-          if (activityData) {
-            if (activityData.steps !== undefined && activityData.steps !== null && activityData.steps > 0) {
-              setStepsCount(activityData.steps);
-              localStorage.setItem('user_steps', activityData.steps.toString());
-            }
-
-            if (activityData.active_minutes !== undefined && activityData.active_minutes !== null && activityData.active_minutes > 0) {
-              setActivityMinutes(activityData.active_minutes);
-              localStorage.setItem('user_active_minutes', activityData.active_minutes.toString());
-            }
-
-            const currentMins = activityData.active_minutes || mins;
-            const currentSteps = activityData.steps || (localSteps ? Number(localSteps) : 0);
-            const totalCal = Math.round(currentSteps * 0.04 + currentMins * 5);
-            setCaloriesCount(totalCal);
-            localStorage.setItem('user_calories', totalCal.toString());
-
-            const serverWaterMl = activityData.water ?? activityData.water_ml;
-            if (serverWaterMl !== undefined && serverWaterMl !== null && serverWaterMl > 0) {
-              const calculatedGlasses = Math.floor(serverWaterMl / 250);
-              setWaterCount(calculatedGlasses);
-              localStorage.setItem('user_water_ml', serverWaterMl.toString());
-              localStorage.setItem('user_water_glasses', calculatedGlasses.toString());
-            }
-          }
+        // Metrics must NOT wait for notifications/messages: their endpoints
+        // can be slow independently during Render Free cold starts.
+        const activityRes = await apiFetch('/api/activity', { cache: 'no-store' });
+        if (!activityRes.ok) {
+          throw new Error(`Activity fetch failed (HTTP ${activityRes.status})`);
         }
-      } catch (err) {
-        console.warn('Backend serveri ilə əlaqə yaradılmadı:', err);
+        const activityData = await activityRes.json();
+        const steps = Number(activityData.steps);
+        const minutes = Number(activityData.active_minutes);
+        const waterMl = Number(activityData.water_ml ?? activityData.water);
+        if (![steps, minutes, waterMl].every(Number.isFinite)) {
+          throw new Error('Activity API returned invalid measurements');
+        }
+        if (cancelled) return;
+
+        const calories = Math.round(steps * 0.04 + minutes * 5);
+        const glasses = Math.floor(waterMl / 250);
+        setStepsCount(steps);
+        setActivityMinutes(minutes);
+        setCaloriesCount(calories);
+        setWaterCount(glasses);
+        setHasLoadedMetrics(true);
+        localStorage.setItem('user_steps', String(steps));
+        localStorage.setItem('user_active_minutes', String(minutes));
+        localStorage.setItem('user_calories', String(calories));
+        localStorage.setItem('user_water_ml', String(waterMl));
+        localStorage.setItem('user_water_glasses', String(glasses));
+        window.dispatchEvent(new Event('storage'));
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Dashboard göstəriciləri yüklənmədi:', error);
+          setMetricsLoadError(true);
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    const handleStorageChange = () => {
-      const updatedSteps = localStorage.getItem('user_steps');
-      const updatedMins = localStorage.getItem('user_active_minutes');
-      const updatedWaterG = localStorage.getItem('user_water_glasses');
-      const updatedSleep = localStorage.getItem('user_sleep_hours');
-      const updatedCals = localStorage.getItem('user_calories');
-
-      if (updatedSteps !== null) setStepsCount(Number(updatedSteps));
-      if (updatedMins !== null) setActivityMinutes(Number(updatedMins));
-      if (updatedWaterG !== null) setWaterCount(Number(updatedWaterG));
-      if (updatedSleep !== null) setSleepHours(Number(updatedSleep));
-
-      const steps = updatedSteps ? Number(updatedSteps) : stepsCount;
-      const mins = updatedMins ? Number(updatedMins) : activityMinutes;
-      const cals = updatedCals ? Number(updatedCals) : Math.round(steps * 0.04 + mins * 5);
-      setCaloriesCount(cals);
+    const loadMessages = async () => {
+      // Additional data is intentionally non-blocking.
+      const [notif, msgs] = await Promise.allSettled([
+        apiFetch('/api/notifications', { cache: 'no-store' }),
+        apiFetch('/api/messages', { cache: 'no-store' }),
+      ]);
+      if (cancelled) return;
+      if (notif.status === 'fulfilled' && notif.value.ok) {
+        try { setNotifications(await notif.value.json()); } catch (e) {
+          console.warn('Bildirişlərin cavabı oxunmadı:', e);
+        }
+      }
+      if (msgs.status === 'fulfilled' && msgs.value.ok) {
+        try { setMessages(await msgs.value.json()); } catch (e) {
+          console.warn('Mesajların cavabı oxunmadı:', e);
+        }
+      }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    const loadSleep = async () => {
+      setSleepLoadError(false);
+      try {
+        const response = await apiFetch('/api/sleep', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Yuxu məlumatları oxunmadı: HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        if (cancelled) return;
+        if (data.hours === null) {
+          setSleepHours(0);
+          setHasSleepRecord(false);
+          localStorage.removeItem('user_sleep_hours');
+          window.dispatchEvent(new Event('storage'));
+          return;
+        }
+        const savedHours = Number(data.hours);
+        if (!Number.isFinite(savedHours) || savedHours < 1 || savedHours > 14) {
+          throw new Error('Yuxu API düzgün göstərici qaytarmadı');
+        }
+        setSleepHours(savedHours);
+        setHasSleepRecord(true);
+        localStorage.setItem('user_sleep_hours', String(savedHours));
+        window.dispatchEvent(new Event('storage'));
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Yuxu məlumatı serverdən yüklənmədi:', error);
+          setSleepLoadError(true);
+        }
+      }
+    };
 
-    loadDashboardData();
-  }, [activeTab]);
+    void loadMetrics();
+    void loadSleep();
+    void loadMessages();
+
+    return () => { cancelled = true; };
+  }, [activeTab, authStatus, metricsRetry]);
 
   useEffect(() => {
     const handleActivityUpdate = (e: Event) => {
@@ -201,7 +209,10 @@ export default function Dashboard() {
       if (savedMins !== null) setActivityMinutes(Number(savedMins));
       if (savedCals !== null) setCaloriesCount(Number(savedCals));
       if (savedWater !== null) setWaterCount(Number(savedWater));
-      if (savedSleep !== null) setSleepHours(Number(savedSleep));
+      if (savedSleep !== null) {
+        setSleepHours(Number(savedSleep));
+        setHasSleepRecord(true);
+      }
     };
 
     window.addEventListener('activity-updated', handleActivityUpdate as EventListener);
@@ -243,7 +254,7 @@ export default function Dashboard() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+      await apiFetch('/api/notifications/read-all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -261,92 +272,118 @@ export default function Dashboard() {
 
   const [user, setUser] = useState<UserProfileData | null>(null);
 
-  useEffect(() => {
-    const fetchWater = async () => {
-      const savedWater = localStorage.getItem('user_water') || localStorage.getItem('user_water_ml');
+  const handleSaveSleep = async () => {
+    const value = Number(sleepInputValue);
+    if (!Number.isFinite(value) || value < 1 || value > 14 || !Number.isInteger(value * 2)) {
+      toast.error('Yuxu müddətini 1–14 saat arasında, 0.5 saat addımla daxil edin.');
+      return;
+    }
+    if (authStatus !== 'ready' || isSavingSleep) return;
 
-      if (savedWater !== null) {
-        const ml = Number(savedWater);
-        const glasses = ml > 10 ? Math.round(ml / 250) : ml;
-        setWaterCount(glasses);
-      } else {
-        setWaterCount(0);
+    setIsSavingSleep(true);
+    try {
+      const response = await apiFetch('/api/sleep', {
+        method: 'POST',
+        body: JSON.stringify({ hours: value }),
+      });
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null);
+        throw new Error(`HTTP ${response.status}: ${detail?.error || 'Yuxu məlumatı saxlanmadı'}`);
       }
-    };
-
-    fetchWater();
-  }, []);
+      const data = await response.json();
+      const savedHours = Number(data.hours);
+      if (!Number.isFinite(savedHours) || savedHours < 1 || savedHours > 14) {
+        throw new Error('Serverdən düzgün yuxu müddəti alınmadı');
+      }
+      setSleepHours(savedHours);
+      setHasSleepRecord(true);
+      setSleepLoadError(false);
+      localStorage.setItem('user_sleep_hours', String(savedHours));
+      window.dispatchEvent(new Event('storage'));
+      setIsSleepModalOpen(false);
+      toast.success('Yuxu müddəti hesabınızda saxlanıldı!');
+    } catch (error) {
+      console.error('Yuxu müddəti saxlanmadı:', error);
+      toast.error(error instanceof Error ? error.message : 'Yuxu müddəti saxlanmadı. Yenidən cəhd edin.');
+    } finally {
+      setIsSavingSleep(false);
+    }
+  };
 
   const handleWaterUpdate = async (newGlasses: number) => {
-    setWaterCount(newGlasses);
-
     const newWaterMl = newGlasses * 250;
-
-    localStorage.setItem('user_water_glasses', newGlasses.toString());
-    localStorage.setItem('user_water_ml', newWaterMl.toString());
-
     try {
-      await fetch(`${API_BASE_URL}/api/activity`, {
+      // Do not send stepsCount here: it may still be zero while dashboard loads,
+      // and would otherwise overwrite the saved steps on the server.
+      const response = await apiFetch('/api/activity', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps: stepsCount, water_ml: newWaterMl }),
+        body: JSON.stringify({ water_ml: newWaterMl }),
       });
+      if (!response.ok) throw new Error(`Su qəbulu yazılmadı: HTTP ${response.status}`);
+      const data = await response.json();
+      const savedGlasses = Math.floor(Number(data.water_ml ?? newWaterMl) / 250);
+      setWaterCount(savedGlasses);
+      localStorage.setItem('user_water_glasses', String(savedGlasses));
+      localStorage.setItem('user_water_ml', String(data.water_ml ?? newWaterMl));
+      window.dispatchEvent(new Event('storage'));
     } catch (err) {
-      console.warn("Su miqdarı yenilənə bilmədi:", err);
+      console.error('Su miqdarı saxlanılmadı:', err);
+      toast.error('Su qəbulu serverdə saxlanmadı. Yenidən cəhd edin.');
     }
   };
 
   useEffect(() => {
+    let cancelled = false;
     const loadUserData = async () => {
+      setAuthStatus('checking');
       const storedUser = localStorage.getItem('user');
-      const token = localStorage.getItem('userToken');
-
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (e) {
-          console.error("İstifadəçi məlumatları oxunarkən xəta baş verdi:", e);
-        }
-      } else {
-        router.push('/auth');
+      if (!storedUser) {
+        router.replace('/auth');
         return;
       }
-
-      if (token) {
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/user/profile`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          if (res.ok) {
-            const profileData = await res.json();
-            if (profileData && profileData.email) {
-              const currentStored = JSON.parse(localStorage.getItem('user') || '{}');
-              if (currentStored.email === profileData.email) {
-                const merged = { ...currentStored, ...profileData };
-                setUser(merged);
-                localStorage.setItem('user', JSON.stringify(merged));
-              }
-            }
-          }
-        } catch (err) {
-          console.warn('Backend profil məlumatı alına bilmədi, lokal istifadəçi saxlanılır:', err);
+      try {
+        const res = await apiFetch('/api/user/profile', { cache: 'no-store' });
+        if (cancelled) return;
+        if (res.status === 401) {
+          clearPrivateLocalData();
+          router.replace('/auth');
+          return;
+        }
+        if (!res.ok) {
+          throw new Error(`Profile fetch failed (HTTP ${res.status})`);
+        }
+        const profileData = await res.json();
+        if (cancelled) return;
+        const cachedUser = JSON.parse(storedUser);
+        if (profileData.email !== cachedUser.email) {
+          clearPrivateLocalData();
+          router.replace('/auth');
+          return;
+        }
+        const merged = { ...cachedUser, ...profileData };
+        setUser(merged);
+        localStorage.setItem('user', JSON.stringify(merged));
+        setAuthStatus('ready');
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('Backend profili yoxlanmadı:', err);
+          setAuthStatus('error');
         }
       }
     };
+    void loadUserData();
+    return () => { cancelled = true; };
+  }, [router, authRetry]);
 
-    loadUserData();
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('user_steps');
-    localStorage.removeItem('user_water_ml');
-    localStorage.removeItem('user_water_glasses');
-    localStorage.removeItem('waterCount');
-    router.push('/auth');
+  const handleLogout = async () => {
+    try {
+      await apiFetch('/api/logout', { method: 'POST' });
+    } catch (err) {
+      console.warn('Server sessiyasını bağlamaq mümkün olmadı:', err);
+    } finally {
+      clearPrivateLocalData();
+      router.replace('/auth');
+    }
   };
 
   const theme = isDarkMode ? {
@@ -370,7 +407,7 @@ export default function Dashboard() {
   const handleMarkAllNotificationsAsRead = async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/read-all`, { method: 'POST' });
+      await apiFetch('/api/notifications/read-all', { method: 'POST' });
     } catch (err) {
       console.error('Bildiriş sıfırlama xətası:', err);
     }
@@ -385,7 +422,7 @@ export default function Dashboard() {
       setMessages(prev => prev.map(m => ({ ...m, read: true })));
 
       try {
-        await fetch(`${API_BASE_URL}/api/messages/read-all`, {
+        await apiFetch('/api/messages/read-all', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -1134,9 +1171,7 @@ export default function Dashboard() {
                   <button
                     onClick={() => {
                       setisProfileDropdownOpen(false);
-                      localStorage.clear();
-                      sessionStorage.clear();
-                      router.push('/auth');
+                      void handleLogout();
                     }}
                     style={{
                       display: 'flex',
@@ -1169,6 +1204,35 @@ export default function Dashboard() {
         {/* Dashboard Grid View */}
         <main className="main-content flex-1" style={{ padding: '18px 22px', backgroundColor: theme.bgApp }}>
 
+          {activeTab === 'dashboard' && authStatus === 'checking' && (
+            <div role="status" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: `1px solid ${theme.border}`, color: theme.textSecondary, fontSize: '13px' }}>
+              Hesab yoxlanılır. Gündəlik göstəriciləriniz yüklənəcək...
+            </div>
+          )}
+          {activeTab === 'dashboard' && authStatus === 'error' && (
+            <div role="alert" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: `1px solid ${theme.border}`, color: theme.textPrimary, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <span>Hesabın serverlə əlaqəsi yoxlanmadı. Göstəriciləriniz hələ yüklənməyib.</span>
+              <button type="button" onClick={() => setAuthRetry(n => n + 1)} style={{ color: '#FFFFFF', background: '#44766C', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}>Yenidən yoxla</button>
+            </div>
+          )}
+          {activeTab === 'dashboard' && authStatus === 'ready' && isLoading && !hasLoadedMetrics && (
+            <div role="status" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: `1px solid ${theme.border}`, color: theme.textSecondary, fontSize: '13px' }}>
+              Addım, aktivlik və su məlumatlarınız serverdən yüklənir...
+            </div>
+          )}
+          {activeTab === 'dashboard' && authStatus === 'ready' && sleepLoadError && (
+            <div role="alert" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: '1px solid #F59E0B', color: theme.textPrimary, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <span>Yuxu qeydinizi serverdən oxumaq mümkün olmadı. Məlumatınızın silindiyi demək deyil.</span>
+              <button type="button" onClick={() => setMetricsRetry(n => n + 1)} style={{ color: '#FFFFFF', background: '#44766C', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}>Yenidən yüklə</button>
+            </div>
+          )}
+          {activeTab === 'dashboard' && authStatus === 'ready' && metricsLoadError && (
+            <div role="alert" style={{ marginBottom: '12px', padding: '12px 16px', borderRadius: '12px', background: theme.bgCard, border: '1px solid #F59E0B', color: theme.textPrimary, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <span>Göstəriciləri serverdən almaq mümkün olmadı. Bu, məlumatlarınızın silindiyi demək deyil.</span>
+              <button type="button" onClick={() => setMetricsRetry(n => n + 1)} style={{ color: '#FFFFFF', background: '#44766C', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer' }}>Yenidən yüklə</button>
+            </div>
+          )}
+
           {activeTab === 'dashboard' && (
             <div className="dashboard-layout">
 
@@ -1200,7 +1264,7 @@ export default function Dashboard() {
                         onClick={() => setActiveTab('stats')}
                         style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)', padding: '8px 16px', borderRadius: '10px', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600' }}
                       >
-                        Göstəriciləri yenilə <ArrowRight size={14} />
+                        Statistikaya bax <ArrowRight size={14} />
                       </button>
                     </div>
                     <div className="banner-quote" style={{ textAlign: 'right', fontSize: '11.5px', background: 'rgba(10, 35, 25, 0.65)', backdropFilter: 'blur(8px)', border: `1px solid ${theme.border}`, padding: '10px 14px', borderRadius: '12px' }}>
@@ -1212,16 +1276,17 @@ export default function Dashboard() {
                 {/* Summary Cards Grid */}
                 <div className="summary-grid">
                   {[
-                    { id: 'activity', title: 'Addımlar', value: `${stepsCount.toLocaleString()}`, sub: '/ 10,000 hədəf', color: '#10B981', bg: isDarkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
-                    { id: 'activity', title: 'Aktivlik', value: `${activityMinutes} dəq`, sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
-                    { id: 'nutrition', title: 'Kalori', value: `${caloriesCount} kkal`, sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
-                    { id: 'nutrition', title: 'Su qəbulu', value: `${waterCount} stəkan`, sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
-                    { id: 'mental', title: 'Yuxu', value: `${sleepHours} saat`, sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
+                    { id: 'activity', title: 'Addımlar', value: hasLoadedMetrics && authStatus === 'ready' ? `${stepsCount.toLocaleString()}` : '—', sub: '/ 10,000 hədəf', color: '#10B981', bg: isDarkMode ? '#064E3B' : '#E6F4EA', icon: <Footprints size={15} />, percent: Math.min(100, (stepsCount / 10000) * 100) },
+                    { id: 'activity', title: 'Aktivlik', value: hasLoadedMetrics && authStatus === 'ready' ? `${activityMinutes} dəq` : '—', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
+                    { id: 'nutrition', title: 'Kalori', value: hasLoadedMetrics && authStatus === 'ready' ? `${caloriesCount} kkal` : '—', sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
+                    { id: 'nutrition', title: 'Su qəbulu', value: hasLoadedMetrics && authStatus === 'ready' ? `${waterCount} stəkan` : '—', sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
+                    { id: 'mental', title: 'Yuxu', value: authStatus === 'ready' && hasSleepRecord ? `${sleepHours} saat` : '—', sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
                   ].map((card, idx) => (
                     <div
                       key={idx}
                       onClick={() => {
                         if (card.id === 'mental') {
+                          setSleepInputValue(hasSleepRecord ? String(sleepHours) : '8');
                           setIsSleepModalOpen(true);
                         } else {
                           setActiveTab(card.id);
@@ -1341,28 +1406,30 @@ export default function Dashboard() {
                     <button onClick={() => setActiveTab('events')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
                   </div>
 
-                  <div className="events-grid">
-                    {[
-                      { date: '22 MAY', title: 'Yoqa seansı', time: '17:00 - 18:00', location: 'Qarabağ idman zalı' },
-                      { date: '25 MAY', title: 'Sağlamlıq həftəsi', time: '09:00 - 17:00', location: 'Təbib meydançası' },
-                      { date: '28 MAY', title: 'Stress idarəetməsi', time: '14:00 - 15:30', location: 'Tələbə mərkəzi' }
-                    ].map((event, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => setActiveTab('events')}
-                        style={{ backgroundColor: theme.bgInner, padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}
-                      >
-                        <div style={{ background: '#44766C', color: '#FFFFFF', padding: '6px 8px', borderRadius: '7px', textAlign: 'center', minWidth: '42px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: '700', display: 'block', lineHeight: '1' }}>{event.date.split(' ')[0]}</span>
-                          <span style={{ fontSize: '8.5px', opacity: 0.9 }}>{event.date.split(' ')[1]}</span>
-                        </div>
-                        <div style={{ overflow: 'hidden' }}>
-                          <h4 style={{ margin: 0, fontSize: '11.5px', fontWeight: '600', color: theme.textPrimary, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{event.title}</h4>
-                          <p style={{ margin: '2px 0 0 0', fontSize: '9.5px', color: theme.textSecondary }}>{event.time}</p>
-                          <span style={{ fontSize: '9px', color: '#44766C', fontWeight: '500' }}>{event.location}</span>
-                        </div>
-                      </div>
-                    ))}
+                  <div
+                    className="events-empty-state"
+                    style={{
+                      borderRadius: '12px',
+                      border: `1px dashed ${theme.border}`,
+                      backgroundColor: theme.bgInner,
+                      padding: '20px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '12px'
+                    }}
+                  >
+                    <div style={{ padding: '10px', borderRadius: '12px', color: '#44766C', backgroundColor: isDarkMode ? '#16423C' : '#E6F4EA', display: 'flex', flexShrink: 0 }}>
+                      <Calendar size={20} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
+                      <h4 style={{ margin: 0, color: theme.textPrimary, fontSize: '14px', fontWeight: 700 }}>Yeni tədbir elan edilməyib</h4>
+                      <p style={{ margin: 0, color: theme.textSecondary, fontSize: '12.5px', lineHeight: '1.6' }}>
+                        Hazırda təsdiqlənmiş gələcək tədbir məlumatımız yoxdur. Keçmiş tədbirlərə və tədbirlər bölməsinə baxa bilərsiniz.
+                      </p>
+                      <button type="button" onClick={() => setActiveTab('events')} style={{ alignSelf: 'flex-start', padding: '8px 0', color: isDarkMode ? '#6EE7B7' : '#2E5B4E', fontSize: '12.5px', fontWeight: 700, background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                        Tədbirlər bölməsinə keç <ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1370,7 +1437,13 @@ export default function Dashboard() {
 
               {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <DailyScoreWidget isDarkMode={isDarkMode} />
+                {hasLoadedMetrics && authStatus === 'ready' ? (
+                  <DailyScoreWidget isDarkMode={isDarkMode} />
+                ) : (
+                  <div className="card" role="status" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.border}`, borderRadius: '14px', minHeight: '170px', color: theme.textSecondary, fontSize: '13px' }}>
+                    Gündəlik bal hesab məlumatları yükləndikdən sonra görünəcək.
+                  </div>
+                )}
 
                 <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -1600,40 +1673,8 @@ export default function Dashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const val = Number(sleepInputValue);
-                  if (isNaN(val) || val <= 0) {
-                    toast.error('Zəhmət olmasa etibarlı saat daxil edin.', {
-                      style: {
-                        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-                        color: isDarkMode ? '#FFFFFF' : '#0F172A',
-                        border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
-                      }
-                    });
-                    return;
-                  }
-                  if (val > 14) {
-                    toast.warning('Sağlam yuxu balansı üçün 1 gündə maksimum 14 saat qeyd edə bilərsiniz.', {
-                      style: {
-                        backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-                        color: isDarkMode ? '#FFFFFF' : '#0F172A',
-                        border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
-                      }
-                    });
-                    return;
-                  }
-                  setSleepHours(val);
-                  localStorage.setItem('user_sleep_hours', val.toString());
-                  window.dispatchEvent(new Event('storage'));
-                  setIsSleepModalOpen(false);
-                  toast.success('Yuxu balansınız uğurla yeniləndi!', {
-                    style: {
-                      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-                      color: isDarkMode ? '#FFFFFF' : '#0F172A',
-                      border: `1px solid ${isDarkMode ? '#3F3F46' : '#E2E8F0'}`,
-                    }
-                  });
-                }}
+                onClick={() => void handleSaveSleep()}
+                disabled={isSavingSleep || authStatus !== 'ready'}
                 style={{
                   flex: 1,
                   padding: '12px',
@@ -1647,7 +1688,7 @@ export default function Dashboard() {
                   boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)'
                 }}
               >
-                Yadda saxla
+                {isSavingSleep ? 'Saxlanılır...' : 'Yadda saxla'}
               </button>
             </div>
           </div>

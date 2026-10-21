@@ -104,10 +104,23 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
       ]);
     }
 
-    const savedWater = localStorage.getItem('user_water') || localStorage.getItem('user_water_ml');
-    if (savedWater !== null) {
-      setWater(Math.min(waterGoal, Math.max(0, Number(savedWater))));
-    }
+    // Restored values must come from the signed-in account, not old browser state.
+    const loadWater = async () => {
+      try {
+        const response = await apiFetch('/api/activity');
+        if (!response.ok) throw new Error(`Water load failed: HTTP ${response.status}`);
+        const data = await response.json();
+        const savedMl = Number(data.water_ml ?? data.water ?? 0);
+        setWater(Math.max(0, savedMl));
+        localStorage.setItem('user_water', String(savedMl));
+        localStorage.setItem('user_water_ml', String(savedMl));
+        localStorage.setItem('user_water_glasses', String(Math.floor(savedMl / 250)));
+        window.dispatchEvent(new Event('storage'));
+      } catch (error) {
+        console.error('Su balansı serverdən yüklənmədi:', error);
+      }
+    };
+    void loadWater();
   }, []);
 
   const saveMeals = (newMeals: Meal[]) => {
@@ -116,22 +129,23 @@ export default function NutritionPanel({ isDarkMode = false }: NutritionPanelPro
   };
 
   const saveWater = async (newWater: number) => {
-    const cappedWater = Math.min(waterGoal, Math.max(0, newWater));
-    setWater(cappedWater);
-    const glassCount = Math.round(cappedWater / 250);
-
-    localStorage.setItem('user_water', cappedWater.toString());
-    localStorage.setItem('user_water_ml', cappedWater.toString());
-    localStorage.setItem('user_water_glasses', glassCount.toString());
-    window.dispatchEvent(new Event('storage'));
-
+    const waterToSave = Math.max(0, Math.round(newWater));
     try {
-      await apiFetch('/api/nutrition', {
+      const response = await apiFetch('/api/nutrition', {
         method: 'POST',
-        body: JSON.stringify({ water_ml: cappedWater }),
+        body: JSON.stringify({ water_ml: waterToSave }),
       });
+      if (!response.ok) throw new Error(`Water save failed: HTTP ${response.status}`);
+      const data = await response.json();
+      const savedMl = Number(data.water_ml ?? waterToSave);
+      setWater(savedMl);
+      localStorage.setItem('user_water', String(savedMl));
+      localStorage.setItem('user_water_ml', String(savedMl));
+      localStorage.setItem('user_water_glasses', String(Math.floor(savedMl / 250)));
+      window.dispatchEvent(new Event('storage'));
     } catch (error) {
       console.error('Water sync error:', error);
+      window.alert('Su qəbulu serverdə saxlanmadı. Yenidən cəhd edin.');
     }
   };
 

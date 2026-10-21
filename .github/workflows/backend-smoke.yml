@@ -1,0 +1,33 @@
+name: Backend smoke tests
+
+on:
+  push:
+    branches:
+      - demo-day-review-2026-10-19
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-smoke.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONPATH: backend
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,https://e-motion-iota.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install backend dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Run backend smoke checks
+        run: python -m unittest discover -s backend/tests -p "test_*.py" -v

@@ -5,6 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import re
 import os
+import hashlib
+import secrets
+import time
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -12,21 +15,78 @@ from flask_limiter.util import get_remote_address
 load_dotenv()
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
-CORS(app, supports_credentials=True, origins=[
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000", 
-    "https://e-motion-7vds.onrender.com"
-])
+
+# Yalnız etibarlı frontend origin-lərinə giriş icazəsi verilir.
+# Render-də CORS_ORIGINS mühit dəyişəni ilə əlavə domenlər təyin edilə bilər.
+DEFAULT_CORS_ORIGINS = (
+    "http://localhost:3000,http://127.0.0.1:3000,"
+    "https://e-motion-iota.vercel.app,https://e-motion-7vds.onrender.com"
+)
+allowed_origins = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv("CORS_ORIGINS", DEFAULT_CORS_ORIGINS).split(",")
+    if origin.strip()
+]
+CORS(app, supports_credentials=True, origins=allowed_origins)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 
-# Rate Limiter konfiqurasiyası
+# Vercel-in proxy IP-si bir neçə istifadəçi üçün eyni ola bilər.
+# Autentifikasiya olunmuş sorğuları fərdi sessiya üzrə limitləyirik.
+# Login isə ayrıca hesab identifikatoru əsasında limitlənir.
+def rate_limit_identity():
+    token = request.cookies.get("token")
+    if token:
+        digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        return "session:" + digest
+    return "ip:" + get_remote_address()
+
+
+def login_limit_identity():
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get("email") or "").strip().lower() if isinstance(payload, dict) else ""
+    if email:
+        return "login-account:" + hashlib.sha256(email.encode("utf-8")).hexdigest()
+    return "login-ip:" + get_remote_address()
+
+
 limiter = Limiter(
-    get_remote_address,
+    rate_limit_identity,
     app=app,
-    default_limits=["200 per day", "50 per hour"],
+    # UI loads multiple endpoints; the former 50/hour shared-IP limit caused
+    # surprising lockouts during ordinary dashboard use.
+    default_limits=["240 per minute"],
     storage_uri="memory://"
 )
+
+
+@app.errorhandler(429)
+def rate_limit_json(error):
+    return jsonify({
+        "error": "Çox sayda sorğu göndərildi. Bir qədər gözləyib yenidən cəhd edin.",
+        "code": "rate_limited"
+    }), 429
+
+# Admin rol sistemi hazır olmadığı üçün idarəetmə API-lərinin
+# anonim oxunmasını və sərbəst yazılmasını dayandırırıq.
+@app.before_request
+def guard_legacy_admin_api():
+    path = request.path
+    if path == "/api/students" or path.startswith("/api/students/"):
+        return jsonify({"error": "Tələbə məlumatları üçün administrator icazəsi tələb olunur."}), 403
+    if path in {"/api/courses", "/api/events", "/api/resources"} and request.method not in {"GET", "HEAD", "OPTIONS"}:
+        return jsonify({"error": "Bu əməliyyat yalnız administrator üçün nəzərdə tutulub."}), 403
+
+
+# Brauzerdə cross-site cookie sorğularının profil və sağlamlıq
+# məlumatlarını səssiz dəyişməsinin qarşısını alırıq.
+@app.before_request
+def protect_cookie_mutations():
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"} and request.cookies.get("token"):
+        origin = request.headers.get("Origin")
+        if origin and request.headers.get("X-E-Motion-Request") != "1":
+            return jsonify({"error": "Təhlükəsizlik yoxlaması uğursuz oldu."}), 403
+
 
 # Təhlükəsizlik Başlıqları
 @app.after_request
@@ -218,6 +278,34 @@ def init_db():
         )
     ''')
 
+    # Login sessiyaları və hər tələbəyə məxsus profil məlumatları.
+    # Köhnə singleton user_profile cədvəli məlumat qarışıqlığına səbəb ola bilər:
+    # yeni istifadəçi məlumatlarını user_profiles cədvəlində saxlayırıq.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_sessions (
+            token_hash TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            expires_at INTEGER NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            user_id INTEGER PRIMARY KEY,
+            fullname TEXT NOT NULL DEFAULT '',
+            major TEXT NOT NULL DEFAULT '',
+            course INTEGER NOT NULL DEFAULT 1,
+            student_id TEXT NOT NULL DEFAULT '',
+            phone TEXT NOT NULL DEFAULT '',
+            blood_group TEXT NOT NULL DEFAULT '',
+            emergency_contact TEXT NOT NULL DEFAULT '',
+            bio TEXT NOT NULL DEFAULT '',
+            daily_step_goal INTEGER NOT NULL DEFAULT 10000,
+            daily_water_goal INTEGER NOT NULL DEFAULT 2000,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+
     conn.commit()
 
     # Seed initial test data if empty
@@ -269,7 +357,12 @@ def health_check():
       200:
         description: Server is running smoothly
     """
-    return jsonify({"status": "ok", "message": "Server is active"}), 200
+    return jsonify({
+        "status": "ok",
+        "message": "Server is active",
+        "service": os.getenv("RENDER_SERVICE_NAME", "local"),
+        "branch": os.getenv("RENDER_GIT_BRANCH", "local")
+    }), 200
 
 @app.route('/api/gemini', methods=['POST'])
 def ai_chat():
@@ -308,597 +401,140 @@ def ai_chat():
         'result': 'AI cavabı inteqrasiya olunub.'
     }), 200
 
-@app.route('/api/activity', methods=['GET'])
-def get_activity():
-    """
-    Get physical activity logs
-    ---
-    tags:
-      - Health & Activity
-    responses:
-      200:
-        description: Physical activity data
-    """
-    conn = get_db_connection()
-    try:
-        activity = conn.execute('SELECT * FROM physical_activity ORDER BY id DESC LIMIT 1').fetchone()
-        if activity:
-            act_dict = dict(activity)
-            steps = act_dict.get('steps', 0)
-            water = act_dict.get('water_ml', act_dict.get('water', 0))
-            calories = int(steps * 0.04)
-            return jsonify({
-                'steps': steps,
-                'water': water,
-                'water_ml': water,
-                'calories': calories
-            }), 200
+# Student health endpoints are registered below from user_data.py.
 
-        return jsonify({'steps': 0, 'water': 0, 'water_ml': 0, 'calories': 0}), 200
-    finally:
-        conn.close()
+def get_authenticated_user(conn):
+    """Return the account associated with a valid, unexpired session cookie."""
+    auth_header = request.headers.get("Authorization", "")
+    token = (
+        auth_header[len("Bearer "):].strip()
+        if auth_header.startswith("Bearer ")
+        else request.cookies.get("token", "")
+    )
+    if not token:
+        return None
+
+    digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    return conn.execute("""
+        SELECT users.id, users.name, users.email
+        FROM user_sessions
+        JOIN users ON users.id = user_sessions.user_id
+        WHERE user_sessions.token_hash = ?
+          AND user_sessions.expires_at > ?
+    """, (digest, int(time.time()))).fetchone()
 
 
-@app.route('/api/activity', methods=['POST'])
-def update_activity():
-    """
-    Update physical activity and water intake
-    ---
-    tags:
-      - Health & Activity
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            steps:
-              type: integer
-            water_ml:
-              type: integer
-    responses:
-      201:
-        description: Activity updated successfully
-    """
-    data = request.get_json(silent=True) or {}
-    steps = data.get('steps')
-    water_ml = data.get('water_ml') if data.get('water_ml') is not None else data.get('water')
+def build_user_profile(conn, user):
+    """Merge account identity with the authenticated student's saved settings."""
+    student_id = user["email"].split("@")[0]
+    student = conn.execute(
+        "SELECT major, semester FROM students WHERE UPPER(student_id) = UPPER(?)",
+        (student_id,)
+    ).fetchone()
+    profile = conn.execute(
+        "SELECT * FROM user_profiles WHERE user_id = ?", (user["id"],)
+    ).fetchone()
+    values = dict(profile) if profile else {}
+    return {
+        "fullname": values.get("fullname") or user["name"],
+        "email": user["email"],
+        "major": values.get("major") or (student["major"] if student else ""),
+        "course": values.get("course") or ((student["semester"] + 1) // 2 if student else 1),
+        "student_id": values.get("student_id") or student_id.upper(),
+        "phone": values.get("phone") or "",
+        "blood_group": values.get("blood_group") or "",
+        "emergency_contact": values.get("emergency_contact") or "",
+        "bio": values.get("bio") or "",
+        "daily_step_goal": values.get("daily_step_goal") or 10000,
+        "daily_water_goal": values.get("daily_water_goal") or 2000
+    }
 
-    conn = get_db_connection()
-    try:
-        if steps is None or water_ml is None:
-            last_act = conn.execute('SELECT * FROM physical_activity ORDER BY id DESC LIMIT 1').fetchone()
-            if steps is None:
-                steps = last_act['steps'] if last_act else 0
-            if water_ml is None:
-                water_ml = last_act['water_ml'] if last_act else 0
 
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO physical_activity (steps, water_ml) VALUES (?, ?)', (steps, water_ml))
-        conn.commit()
-        
-        calories_burned = int(steps * 0.04)
-        return jsonify({
-            'message': 'Aktivlik uğurla yeniləndi!',
-            'steps': steps,
-            'water': water_ml,
-            'water_ml': water_ml,
-            'calories': calories_burned
-        }), 201
-    except Exception as e:
-        app.logger.error(f"Activity update error: {e}")
-        return jsonify({'error': 'Aktivlik yenilənərkən xəta baş verdi'}), 500
-    finally:
-        conn.close()
-
-@app.route('/api/moods', methods=['GET'])
-def get_moods():
-    """
-    Get last 5 mood logs
-    ---
-    tags:
-      - Health & Activity
-    responses:
-      200:
-        description: Emotion list successfully retrieved
-    """
-    conn = get_db_connection()
-    try:
-        moods = conn.execute('SELECT * FROM mood_logs ORDER BY id DESC LIMIT 5').fetchall()
-        return jsonify([dict(row) for row in moods]), 200
-    finally:
-        conn.close()
-
-@app.route('/api/moods', methods=['POST'])
-def add_mood():
-    """
-    Log a new mood entry
-    ---
-    tags:
-      - Health & Activity
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            mood:
-              type: string
-            note:
-              type: string
-    responses:
-      201:
-        description: Mood entry successfully logged
-    """
-    data = request.get_json(silent=True) or {}
-    mood = data.get('mood')
-    note = data.get('note')
-
-    if not mood:
-        return jsonify({'error': 'Zəhmət olmasa bir emosiya seçin!'}), 400
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute('INSERT INTO mood_logs (mood, note) VALUES (?, ?)', (mood, note))
-        conn.commit()
-        return jsonify({'message': 'Mental vəziyyətiniz uğurla qeyd olundu!'}), 201
-    except Exception as e:
-        app.logger.error(f"Database error in add_mood: {e}")
-        return jsonify({'error': 'Məlumat saxlanılarkən daxili xəta baş verdi.'}), 500
-    finally:
-        conn.close()
-
-@app.route('/api/nutrition', methods=['GET'])
-def get_nutrition():
-    """
-    Get last 5 nutrition logs
-    ---
-    tags:
-      - Health & Activity
-    responses:
-      200:
-        description: Nutrition logs successfully retrieved
-    """
-    conn = get_db_connection()
-    try:
-        logs = conn.execute('SELECT * FROM nutrition ORDER BY id DESC LIMIT 5').fetchall()
-        return jsonify([dict(row) for row in logs]), 200
-    finally:
-        conn.close()
-
-@app.route('/api/nutrition', methods=['POST'])
-def add_nutrition():
-    """
-    Add nutrition/calorie record or update water balance
-    ---
-    tags:
-      - Health & Activity
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            meal:
-              type: string
-            calories:
-              type: integer
-            water_ml:
-              type: integer
-    responses:
-      201:
-        description: Record processed successfully
-    """
-    data = request.get_json(silent=True) or {}
-    
-    water_ml = data.get('water_ml')
-    if water_ml is not None:
-        return jsonify({'success': True, 'water_ml': water_ml}), 200
-
-    meal = data.get('meal')
-    calories = data.get('calories')
-
-    if not meal or not calories:
-        return jsonify({'error': 'Bütün xanaları doldurun!'}), 400
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute('INSERT INTO nutrition (meal, calories) VALUES (?, ?)', (meal, int(calories)))
-        conn.commit()
-        return jsonify({'message': 'Qidalanma qeydi uğurla əlavə edildi!'}), 201
-    except Exception as e:
-        app.logger.error(f"Nutrition log error: {e}")
-        return jsonify({'error': 'Qidalanma qeydi əlavə edilərkən xəta baş verdi.'}), 500
-    finally:
-        conn.close()
-
-@app.route('/api/challenges/<int:challenge_id>/toggle', methods=['POST'])
-def toggle_challenge(challenge_id):
-    """
-    Toggle challenge status
-    ---
-    tags:
-      - Health & Activity
-    parameters:
-      - name: challenge_id
-        in: path
-        type: integer
-        required: true
-    responses:
-      200:
-        description: Challenge status updated successfully
-    """
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute('UPDATE challenges SET completed = 1 - completed WHERE id = ?', (challenge_id,))
-        conn.commit()
-        return jsonify({'message': 'Status yeniləndi!'}), 200
-    except Exception as e:
-        app.logger.error(f"Challenge toggle error: {e}")
-        return jsonify({'error': 'Status yenilənərkən xəta baş verdi'}), 500
-    finally:
-        conn.close()
-
-# --- NOTIFICATIONS ENDPOINTS ---
-@app.route('/api/notifications', methods=['GET'])
-def get_notifications():
-    """
-    Get all notifications
-    ---
-    tags:
-      - Notifications
-    responses:
-      200:
-        description: List of notifications
-    """
-    conn = get_db_connection()
-    try:
-        notifications = conn.execute('SELECT * FROM notifications').fetchall()
-        result = [
-            {
-                "id": n["id"],
-                "title": n["title"],
-                "desc": n["desc"],
-                "time": n["time"],
-                "read": bool(n["read"])
-            }
-            for n in notifications
-        ]
-        return jsonify(result), 200
-    finally:
-        conn.close()
-
-@app.route('/api/notifications/read-all', methods=['POST', 'OPTIONS'])
-def read_all_notifications():
-    """
-    Mark all notifications as read
-    ---
-    tags:
-      - Notifications
-    responses:
-      200:
-        description: Success status
-    """
-    if request.method == 'OPTIONS':
-        return '', 200
-
-    conn = get_db_connection()
-    try:
-        conn.execute('UPDATE notifications SET read = 1')
-        conn.commit()
-        
-        notifications = conn.execute('SELECT * FROM notifications').fetchall()
-        result = [
-            {
-                "id": n["id"],
-                "title": n["title"],
-                "desc": n["desc"],
-                "time": n["time"],
-                "read": True
-            }
-            for n in notifications
-        ]
-        return jsonify({"success": True, "notifications": result}), 200
-    finally:
-        conn.close()
-
-@app.route('/api/notifications/reset', methods=['GET'])
-def reset_notifications():
-    """
-    Reset notifications
-    ---
-    tags:
-      - Notifications
-    responses:
-      200:
-        description: Notifications reset
-    """
-    conn = get_db_connection()
-    try:
-        conn.execute('''
-            INSERT OR IGNORE INTO notifications (id, title, desc, time, read)
-            VALUES 
-            (1, 'Sistem yenilənməsi', 'Platformada yeni funksiyalar aktivləşdirildi.', '10 dəq əvvəl', 0),
-            (2, 'Yeni tapşırıq', 'Aktivlik panelinə yeni məqsəd əlavə olundu.', '1 saat əvvəl', 0)
-        ''')
-        conn.execute('UPDATE notifications SET read = 0')
-        conn.commit()
-        return jsonify({"message": "Bildirişlər bərpa olundu!"}), 200
-    finally:
-        conn.close()
-
-# --- MESSAGES ENDPOINTS ---
-@app.route('/api/messages', methods=['GET'])
-def get_messages():
-    """
-    Get all messages
-    ---
-    tags:
-      - Notifications
-    responses:
-      200:
-        description: List of messages
-    """
-    conn = get_db_connection()
-    try:
-        messages = conn.execute('SELECT * FROM messages').fetchall()
-        if not messages:
-            conn.execute('''
-                INSERT OR IGNORE INTO messages (id, sender, text, time, read)
-                VALUES 
-                (1, 'Aysel Məmmədova', 'Layihənin backend inteqrasiyası hazırdır?', '12:45', 0),
-                (2, 'Dəstək Komandası', 'Sistemlə bağlı hər hansı sualınız var?', 'Dünən', 0)
-            ''')
-            conn.commit()
-            messages = conn.execute('SELECT * FROM messages').fetchall()
-
-        result = [
-            {
-                "id": m["id"],
-                "sender": m["sender"],
-                "text": m["text"],
-                "time": m["time"],
-                "read": bool(m["read"]) if "read" in m.keys() else False
-            }
-            for m in messages
-        ]
-        return jsonify(result), 200
-    finally:
-        conn.close()
-
-@app.route('/api/messages/reset', methods=['GET'])
-def reset_messages():
-    """
-    Reset messages
-    ---
-    tags:
-      - Notifications
-    responses:
-      200:
-        description: Messages reset
-    """
-    conn = get_db_connection()
-    try:
-        conn.execute('''
-            INSERT OR IGNORE INTO messages (id, sender, text, time, read)
-            VALUES 
-            (1, 'Aysel Məmmədova', 'Layihənin backend inteqrasiyası hazırdır?', '12:45', 0),
-            (2, 'Dəstək Komandası', 'Sistemlə bağlı hər hansı sualınız var?', 'Dünən', 0)
-        ''')
-        conn.execute('UPDATE messages SET read = 0')
-        conn.commit()
-        return jsonify({"message": "Mesajlar bərpa olundu!"}), 200
-    finally:
-        conn.close()
-
-@app.route('/api/messages/read-all', methods=['POST', 'OPTIONS'])
-def mark_all_messages_read():
-    """
-    Mark all messages as read
-    ---
-    tags:
-      - Notifications
-    responses:
-      200:
-        description: Success status
-    """
-    if request.method == 'OPTIONS':
-        return '', 200
-
-    conn = get_db_connection()
-    try:
-        conn.execute('UPDATE messages SET read = 1')
-        conn.commit()
-        return jsonify({"success": True}), 200
-    finally:
-        conn.close()
-
-@app.route('/api/water', methods=['GET'])
-def get_water():
-    """
-    Get water intake count
-    ---
-    tags:
-      - Health & Activity
-    responses:
-      200:
-        description: Water count retrieved
-    """
-    conn = get_db_connection()
-    try:
-        water = conn.execute('SELECT * FROM water WHERE id = 1').fetchone()
-        count = water["count"] if water else 0
-        return jsonify({"count": count}), 200
-    finally:
-        conn.close()
-
-@app.route('/api/water', methods=['POST', 'OPTIONS'])
-def update_water():
-    """
-    Update water intake count
-    ---
-    tags:
-      - Health & Activity
-    responses:
-      200:
-        description: Water count updated
-    """
-    if request.method == 'OPTIONS':
-        return '', 200
-
-    data = request.get_json(silent=True) or {}
-    if 'count' in data:
-        new_count = data['count']
-        conn = get_db_connection()
-        try:
-            conn.execute('INSERT OR REPLACE INTO water (id, count) VALUES (1, ?)', (new_count,))
-            conn.commit()
-            return jsonify({"success": True, "count": new_count}), 200
-        finally:
-            conn.close()
-        
-    return jsonify({"error": "Səhv məlumat formatı"}), 400
+from user_data import register_user_data_routes
+register_user_data_routes(app, get_db_connection, get_authenticated_user)
 
 @app.route('/api/user/profile', methods=['GET', 'POST', 'PUT', 'OPTIONS'])
 def user_profile_endpoint():
-    """
-    Get or update active user profile details
-    ---
-    tags:
-      - User
-    parameters:
-      - name: body
-        in: body
-        required: false
-        schema:
-          type: object
-          properties:
-            fullname:
-              type: string
-            major:
-              type: string
-            course:
-              type: integer
-            student_id:
-              type: string
-            email:
-              type: string
-            phone:
-              type: string
-            blood_group:
-              type: string
-            emergency_contact:
-              type: string
-            bio:
-              type: string
-            daily_step_goal:
-              type: integer
-            daily_water_goal:
-              type: integer
-    responses:
-      200:
-        description: User profile retrieved or updated successfully
-    """
+    """Read/update only the profile belonging to the authenticated account."""
     if request.method == 'OPTIONS':
         return '', 200
 
-    auth_header = request.headers.get('Authorization')
-    token = None
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-
     conn = get_db_connection()
     try:
+        user = get_authenticated_user(conn)
+        if user is None:
+            return jsonify({"error": "Giriş tələb olunur."}), 401
+
         if request.method == 'GET':
-            user = None
-            if token:
-                user = conn.execute('SELECT * FROM users WHERE token = ?', (token,)).fetchone()
-                if not user:
-                    user = conn.execute('SELECT * FROM user_profile WHERE token = ?', (token,)).fetchone()
+            return jsonify(build_user_profile(conn, user)), 200
 
-            if not user:
-                user = conn.execute('SELECT * FROM users ORDER BY id DESC LIMIT 1').fetchone()
-            if not user:
-                user = conn.execute('SELECT * FROM user_profile ORDER BY id DESC LIMIT 1').fetchone()
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"error": "Profil üçün JSON obyekt göndərin."}), 400
 
-            if user:
-                u_dict = dict(user)
-                return jsonify({
-                    'fullname': u_dict.get('fullname') or u_dict.get('name') or '',
-                    'email': u_dict.get('email') or '',
-                    'major': u_dict.get('major') or '',
-                    'course': u_dict.get('course') or 1,
-                    'student_id': u_dict.get('student_id') or u_dict.get('studentId') or '',
-                    'phone': u_dict.get('phone') or '',
-                    'blood_group': u_dict.get('blood_group') or u_dict.get('bloodGroup') or '',
-                    'emergency_contact': u_dict.get('emergency_contact') or u_dict.get('emergencyContact') or '',
-                    'bio': u_dict.get('bio') or '',
-                    'daily_step_goal': u_dict.get('daily_step_goal') or u_dict.get('dailyStepGoal') or 10000,
-                    'daily_water_goal': u_dict.get('daily_water_goal') or u_dict.get('dailyWaterGoal') or 2000
-                }), 200
+        existing = build_user_profile(conn, user)
+        supplied_email = str(data.get("email") or "").strip()
+        if supplied_email and supplied_email.lower() != user["email"].lower():
+            return jsonify({"error": "Başqa hesabın e-poçtu ilə profil dəyişdirilə bilməz."}), 403
 
-            return jsonify({'error': 'İstifadəçi tapılmadı'}), 404
+        def get_text(key, alias=None):
+            value = data.get(key)
+            if value is None and alias:
+                value = data.get(alias)
+            if value is None:
+                value = existing[key]
+            return str(value).strip() if value is not None else ""
 
-        data = request.get_json(silent=True) or {}
+        try:
+            course = int(data.get("course", existing["course"]))
+            step_goal = int(data.get("daily_step_goal", data.get("dailyStepGoal", existing["daily_step_goal"])))
+            water_goal = int(data.get("daily_water_goal", data.get("dailyWaterGoal", existing["daily_water_goal"])))
+        except (ValueError, TypeError):
+            return jsonify({"error": "Hədəflər və kurs rəqəm olmalıdır."}), 400
 
-        fullname = data.get('fullname') or data.get('name') or ''
-        major = data.get('major') or ''
-        course = int(data.get('course') or 1)
-        student_id = data.get('student_id') or data.get('studentId') or ''
-        email = data.get('email') or ''
-        phone = data.get('phone') or ''
-        blood_group = data.get('blood_group') or data.get('bloodGroup') or ''
-        emergency_contact = data.get('emergency_contact') or data.get('emergencyContact') or ''
-        bio = data.get('bio') or ''
-        daily_step_goal = int(data.get('daily_step_goal') or data.get('dailyStepGoal') or 10000)
-        daily_water_goal = int(data.get('daily_water_goal') or data.get('dailyWaterGoal') or 2000)
+        if not 1 <= course <= 8 or not 1 <= step_goal <= 100000 or not 1 <= water_goal <= 10000:
+            return jsonify({"error": "Kurs və gündəlik hədəflər uyğun aralıqda olmalıdır."}), 400
 
-        cursor = conn.cursor()
+        fullname = get_text("fullname", "name") or user["name"]
+        if len(fullname) > 150:
+            return jsonify({"error": "Ad və soyad çox uzundur."}), 400
 
-        if token:
-            cursor.execute("""
-                UPDATE users 
-                SET fullname = ?, major = ?, course = ?, student_id = ?, email = ?, 
-                    phone = ?, blood_group = ?, emergency_contact = ?, bio = ?, 
-                    daily_step_goal = ?, daily_water_goal = ?
-                WHERE token = ?
-            """, (
-                fullname, major, course, student_id, email,
-                phone, blood_group, emergency_contact, bio,
-                daily_step_goal, daily_water_goal, token
-            ))
-            conn.commit()
-
-        if email:
-            cursor.execute("""
-                UPDATE users 
-                SET fullname = ?, major = ?, course = ?, student_id = ?, 
-                    phone = ?, blood_group = ?, emergency_contact = ?, bio = ?, 
-                    daily_step_goal = ?, daily_water_goal = ?
-                WHERE email = ?
-            """, (
-                fullname, major, course, student_id,
-                phone, blood_group, emergency_contact, bio,
-                daily_step_goal, daily_water_goal, email
-            ))
-            conn.commit()
+        profile_values = (
+            user["id"], fullname, get_text("major"), course,
+            get_text("student_id", "studentId"), get_text("phone"),
+            get_text("blood_group", "bloodGroup"),
+            get_text("emergency_contact", "emergencyContact"),
+            get_text("bio"), step_goal, water_goal
+        )
+        conn.execute("""
+            INSERT INTO user_profiles (
+                user_id, fullname, major, course, student_id, phone,
+                blood_group, emergency_contact, bio, daily_step_goal, daily_water_goal
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                fullname=excluded.fullname,
+                major=excluded.major,
+                course=excluded.course,
+                student_id=excluded.student_id,
+                phone=excluded.phone,
+                blood_group=excluded.blood_group,
+                emergency_contact=excluded.emergency_contact,
+                bio=excluded.bio,
+                daily_step_goal=excluded.daily_step_goal,
+                daily_water_goal=excluded.daily_water_goal
+        """, profile_values)
+        conn.commit()
 
         return jsonify({
             "message": "Profil məlumatları uğurla yeniləndi!",
-            "user": data
+            "user": build_user_profile(conn, user)
         }), 200
-
-    except Exception as e:
-        app.logger.error(f"Profile error: {e}")
-        return jsonify({"error": f"Profil yenilənərkən xəta baş verdi: {str(e)}"}), 500
+    except Exception:
+        app.logger.exception("Profile endpoint failed")
+        return jsonify({"error": "Profil yenilənərkən xəta baş verdi."}), 500
     finally:
         conn.close()
+
 
 # --- AUTHENTICATION ENDPOINTS ---
 
@@ -971,7 +607,7 @@ def register():
         conn.close()
 
 @app.route('/api/login', methods=['POST'])
-@limiter.limit("5 per 15 minutes")
+@limiter.limit("10 per 15 minutes", key_func=login_limit_identity)
 def login():
     """
     User login
@@ -1022,39 +658,34 @@ def login():
                 course = 1
                 student_name = user['name']
 
-            token = 'auth-token-xyz-12345'
+            # Hər giriş üçün kriptoqrafik təsadüfi sessiya; bazada yalnız hash saxlanılır.
+            token = secrets.token_urlsafe(32)
+            token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+            lifetime = 7 * 24 * 60 * 60
+            conn.execute(
+                "INSERT INTO user_sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)",
+                (token_hash, user["id"], int(time.time()) + lifetime)
+            )
+            conn.commit()
 
             response = make_response(jsonify({
-                'message': 'Giriş uğurludur!',
-                'user': {
-                    'id': user['id'],
-                    'name': student_name,
-                    'email': user['email'],
-                    'major': major,
-                    'course': f'{course}-ci kurs'
+                "message": "Giriş uğurludur!",
+                "user": {
+                    "id": user["id"],
+                    "name": student_name,
+                    "email": user["email"],
+                    "major": major,
+                    "course": course
                 }
             }), 200)
-
-            is_production = os.getenv('RENDER') is not None or os.getenv('FLASK_ENV') == 'production'
-
-            response = make_response(jsonify({
-                'message': 'Giriş uğurludur!',
-                'user': {
-                    'id': user['id'],
-                    'name': student_name,
-                    'email': user['email'],
-                    'major': major,
-                    'course': f'{course}-ci kurs'
-                }
-            }), 200)
-            
+            is_production = (
+                os.getenv("RENDER") is not None
+                or os.getenv("FLASK_ENV") == "production"
+            )
             response.set_cookie(
-                'token',
-                token,
-                httponly=True,
-                secure=is_production,
-                samesite='None' if is_production else 'Lax',
-                max_age=7 * 24 * 60 * 60
+                "token", token, httponly=True, secure=is_production,
+                samesite="None" if is_production else "Lax",
+                max_age=lifetime, path="/"
             )
 
             return response
@@ -1370,24 +1001,6 @@ def add_resource():
     except Exception as e:
         app.logger.error(f"Resource add error: {e}")
         return jsonify({'error': 'Resurs əlavə edilərkən daxili xəta baş verdi.'}), 500
-    finally:
-        conn.close()
-
-@app.route('/api/challenges', methods=['GET'])
-def get_challenges():
-    """
-    Get list of all active wellness challenges
-    ---
-    tags:
-      - Health & Activity
-    responses:
-      200:
-        description: List of challenges successfully retrieved
-    """
-    conn = get_db_connection()
-    try:
-        challenges = conn.execute('SELECT * FROM challenges').fetchall()
-        return jsonify([dict(row) for row in challenges]), 200
     finally:
         conn.close()
 

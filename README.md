@@ -19,15 +19,17 @@ E-Motion is a web-based health and wellness management platform designed for uni
 * Activity Streak System: Calculates and presents consecutive days of user activity.
 * Mental Health Module: Provides access to breathing exercises, meditation resources, and self-assessment tools.
 * Campus Events and Challenges: Displays current university wellness programs and activity schedules.
-* User Authentication: Handles registration, login, and authorization using JSON Web Tokens (JWT).
+* User Authentication: Handles registration, sign-in, server-side login sessions, and HttpOnly cookies.
 * System Health Monitoring: Features a dedicated `/health` endpoint for uptime tracking and service keep-alive integrations.
+* Account Data Isolation: Health logs and profile changes are scoped to each authenticated account; legacy demo rows remain untouched and are not used by the new personal endpoints.
+
 
 ---
 
 ## Tech Stack
 
 ### Frontend
-* Framework: Next.js 14 (React, TypeScript)
+* Framework: Next.js 16 (React, TypeScript)
 * Styling: CSS3 (Custom Responsive Styles)
 * Icons: Lucide React
 * Hosting: Vercel
@@ -43,7 +45,7 @@ E-Motion is a web-based health and wellness management platform designed for uni
 ## Repository Structure
 
 ```text
-Holberton-Final Project/
+E-Motion/
 ├── backend/
 │   ├── app.py                 # Application entry point and REST routes
 │   ├── kuds_database.db       # SQLite database file
@@ -76,10 +78,10 @@ PORT=5050
 DATABASE_URL=sqlite:///kuds_database.db
 ```
 
-For the frontend application, set the backend API endpoint:
+For Next.js, configure the optional server-side backend origin (requests are proxied through `/backend-api/*`):
 
 ```env
-NEXT_PUBLIC_API_URL=https://e-motion-7vds.onrender.com
+BACKEND_API_ORIGIN=https://e-motion-7vds.onrender.com
 ```
 
 ---
@@ -94,7 +96,7 @@ NEXT_PUBLIC_API_URL=https://e-motion-7vds.onrender.com
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/alihasanzada/E-Motion.git
-cd "Holberton-Final Project"
+cd E-Motion
 ```
 
 ### 2. Backend Installation
@@ -123,7 +125,7 @@ The Next.js client will run on `http://localhost:3000`.
 | :--- | :--- | :--- |
 | GET | `/health` | Returns server health status and uptime |
 | GET | `/apidocs` | Renders interactive Swagger UI |
-| POST | `/api/login` | Authenticates user credentials and returns JWT |
+| POST | `/api/login` | Authenticates a user and sets an HttpOnly session cookie |
 | GET | `/api/notifications` | Fetches notification list for authenticated user |
 | POST | `/api/notifications/read-all` | Marks all active notifications as read |
 

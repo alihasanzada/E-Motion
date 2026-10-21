@@ -1,6 +1,6 @@
 'use client';
 
-import { apiFetch } from '@/utils/api';
+import { apiFetch, clearPrivateLocalData } from '@/utils/api';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
@@ -48,7 +48,11 @@ export default function AuthPage() {
         body: JSON.stringify({ name: username.trim(), email: cleanEmail, password: cleanPassword }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
+      if (!data) {
+        alert(`Serverdən düzgün cavab alınmadı (HTTP ${response.status}). Staging serverini yoxlayın və yenidən cəhd edin.`);
+        return;
+      }
 
       if (response.ok) {
         alert("Qeydiyyat uğurla tamamlandı! İndi daxil ola bilərsiniz.");
@@ -56,7 +60,7 @@ export default function AuthPage() {
         setUsername('');
         setView('login');
       } else {
-        alert(`Xəta: ${data.error || data.message || 'Qeydiyyat baş tutmadı.'}`);
+        alert(`Qeydiyyat baş tutmadı (HTTP ${response.status}): ${data.error || data.message || 'Server cavabı alınmadı.'}`);
       }
     } catch (error) {
       console.error('Sorğu xətası:', error);
@@ -76,7 +80,11 @@ export default function AuthPage() {
         body: JSON.stringify({ email: email.trim(), password: password.trim() }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
+      if (!data) {
+        alert(`Serverdən düzgün cavab alınmadı (HTTP ${response.status}). Staging serverini yoxlayın və yenidən cəhd edin.`);
+        return;
+      }
 
       if (response.ok) {
         if (typeof window !== 'undefined') {
@@ -92,16 +100,20 @@ export default function AuthPage() {
             phone: data.user?.phone || "",
             emergency_contact: data.user?.emergency_contact || ""
           };
+          clearPrivateLocalData();
           localStorage.setItem('user', JSON.stringify(userData));
 
-          if (!localStorage.getItem('user_steps')) localStorage.setItem('user_steps', '0');
-          if (!localStorage.getItem('user_water_ml')) localStorage.setItem('user_water_ml', '0');
-          if (!localStorage.getItem('user_water_glasses')) localStorage.setItem('user_water_glasses', '0');
+          // Profilin şəxsi göstəricilərini lokal olaraq sıfırlamayın.
+          // Dashboard və Aktivlik paneli bunları girişdən sonra serverdən oxuyacaq.
         }
 
         router.push('/');
       } else {
-        alert(`Xəta: ${data.error || data.message || 'Giriş uğursuz oldu.'}`);
+        if (response.status === 429) {
+          alert('Çox sayda giriş cəhdi edildi (HTTP 429). Bir qədər gözləyib yenidən cəhd edin.');
+        } else {
+          alert(`Giriş uğursuz oldu (HTTP ${response.status}): ${data.error || data.message || 'Server cavabı alınmadı.'}`);
+        }
       }
     } catch (error) {
       console.error('Sorğu xətası:', error);

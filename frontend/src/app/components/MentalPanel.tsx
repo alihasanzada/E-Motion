@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { apiFetch } from '@/utils/api';
 import {
   Brain,
   Wind,
@@ -39,6 +40,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
   const [selectedMood, setSelectedMood] = useState<string>('Əla');
   const [noteText, setNoteText] = useState<string>('');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [isSavingEntry, setIsSavingEntry] = useState(false);
 
   const [activeModal, setActiveModal] = useState<'breath' | 'meditation' | 'affirmation' | null>(null);
 
@@ -80,22 +82,30 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
     "Bədənimə və ruhuma ehtiyacı olan dincəlməni verməyə dəyərəm."
   ];
 
+  // Journal data belongs to the signed-in student and is loaded from Flask.
+  const mapJournalRows = (rows: Array<{ id: number; date: string; mood: string; note: string | null }>): JournalEntry[] =>
+    rows.map((entry) => ({
+      id: String(entry.id),
+      date: entry.date?.split(' ')[0] || '',
+      mood: entry.mood,
+      moodColor: moods.find((m) => m.name === entry.mood)?.color || '#44766C',
+      note: entry.note || '',
+    }));
+
   useEffect(() => {
-    const savedEntries = localStorage.getItem('mental_journal_entries');
-    if (savedEntries) {
+    let cancelled = false;
+    const loadEntries = async () => {
       try {
-        setEntries(JSON.parse(savedEntries));
-      } catch (e) {
-        console.error(e);
+        const response = await apiFetch('/api/moods');
+        if (!response.ok) throw new Error(`Journal load failed: HTTP ${response.status}`);
+        const rows = await response.json();
+        if (!cancelled) setEntries(mapJournalRows(rows));
+      } catch (error) {
+        console.error('Şəxsi gündəlik qeydləri yüklənmədi:', error);
       }
-    } else {
-      const defaults: JournalEntry[] = [
-        { id: '1', date: new Date().toLocaleDateString('az-AZ'), mood: 'Əla', moodColor: '#10B981', note: 'Özümü çox gümrah hiss edirəm. İmtahan hazırlıqları yaxşı gedir!' },
-        { id: '2', date: '2026-10-08', mood: 'Sakit', moodColor: '#0EA5E9', note: 'Dərslər bir az sıx idi, amma axşam gəzintisi ruhuma çox yaxşı gəldi.' }
-      ];
-      setEntries(defaults);
-      localStorage.setItem('mental_journal_entries', JSON.stringify(defaults));
-    }
+    };
+    void loadEntries();
+    return () => { cancelled = true; };
   }, []);
 
   const toggleAudio = (soundUrl?: string) => {
@@ -151,23 +161,31 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
     return () => clearInterval(interval);
   }, [activeModal, isMeditationRunning, meditationSeconds]);
 
-  const handleAddEntry = (e: React.FormEvent) => {
+  const handleAddEntry = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!noteText.trim()) return;
+    if (!noteText.trim() || isSavingEntry) return;
 
-    const moodObj = moods.find(m => m.name === selectedMood);
-    const newEntry: JournalEntry = {
-      id: Date.now().toString(),
-      date: new Date().toLocaleDateString('az-AZ'),
-      mood: selectedMood,
-      moodColor: moodObj?.color || '#10B981',
-      note: noteText.trim()
-    };
+    setIsSavingEntry(true);
+    try {
+      const response = await apiFetch('/api/moods', {
+        method: 'POST',
+        body: JSON.stringify({ mood: selectedMood, note: noteText.trim() })
+      });
+      if (!response.ok) throw new Error(`Journal save failed: HTTP ${response.status}`);
 
-    const updated = [newEntry, ...entries];
-    setEntries(updated);
-    localStorage.setItem('mental_journal_entries', JSON.stringify(updated));
-    setNoteText('');
+      setNoteText('');
+      const refreshed = await apiFetch('/api/moods');
+      if (refreshed.ok) {
+        setEntries(mapJournalRows(await refreshed.json()));
+      } else {
+        window.alert('Qeyd saxlanıldı, amma siyahını yeniləmək mümkün olmadı. Bölməni yenidən açın.');
+      }
+    } catch (error) {
+      console.error('Gündəlik qeydi serverdə saxlanmadı:', error);
+      window.alert('Gündəlik qeydi saxlanmadı. Yenidən cəhd edin.');
+    } finally {
+      setIsSavingEntry(false);
+    }
   };
 
   return (
@@ -267,6 +285,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
             />
             <button
               type="submit"
+              disabled={isSavingEntry}
               style={{
                 backgroundColor: theme.primary,
                 color: '#FFFFFF',
@@ -283,7 +302,7 @@ export default function MentalPanel({ isDarkMode = false }: MentalPanelProps) {
                 transition: 'all 0.2s ease'
               }}
             >
-              <Plus size={15} /> Gündəliyə Əlavə Et
+              <Plus size={15} /> {isSavingEntry ? 'Saxlanılır...' : 'Gündəliyə Əlavə Et'}
             </button>
           </form>
         </div>

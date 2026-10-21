@@ -1,22 +1,31 @@
+// Use a same-origin Next.js rewrite instead of cross-site cookies.
 export const apiFetch = async (endpoint, options = {}) => {
-    let API_BASE_URL = 'https://e-motion-7vds.onrender.com';
-
-    if (typeof window !== 'undefined') {
-        const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            API_BASE_URL = 'http://localhost:5050';
-        }
+    if (!endpoint.startsWith('/api/')) {
+        throw new Error('Only backend /api routes are supported.');
     }
-
-    const defaultOptions = {
-        ...options,
+    return fetch(`/backend-api${endpoint}`, {
         credentials: 'include',
+        ...options,
         headers: {
             'Content-Type': 'application/json',
+            'X-E-Motion-Request': '1',
             ...(options.headers || {})
         }
-    };
+    });
+};
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, defaultOptions);
-    return response;
+// Health data in localStorage is a browser cache, not an authentication session.
+// Clear it on account switches and sign-out to avoid sharing it on one device.
+export const clearPrivateLocalData = () => {
+    if (typeof window === 'undefined') return;
+    const exactKeys = new Set([
+        'user', 'userToken', 'waterCount', 'daily_step_goal',
+        'daily_water_goal', 'mental_journal_entries', 'emotion_chat_history',
+        'e_motion_goals', 'google_access_token'
+    ]);
+    Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('user_') || exactKeys.has(key)) {
+            localStorage.removeItem(key);
+        }
+    });
 };
