@@ -87,27 +87,25 @@ export default function AuthPage() {
       }
 
       if (response.ok) {
-        if (typeof window !== 'undefined') {
-          const fullNameFromBackend = data.user?.fullname || data.user?.name || email.split('@')[0];
-
-          const userData = {
-            fullname: fullNameFromBackend,
-            email: data.user?.email || email,
-            major: data.user?.major || "Kompüter Mühəndisliyi",
-            course: data.user?.course || "1-ci kurs",
-            student_id: data.user?.student_id || "",
-            blood_group: data.user?.blood_group || "",
-            phone: data.user?.phone || "",
-            emergency_contact: data.user?.emergency_contact || ""
-          };
-          clearPrivateLocalData();
-          localStorage.setItem('user', JSON.stringify(userData));
-
-          // Profilin şəxsi göstəricilərini lokal olaraq sıfırlamayın.
-          // Dashboard və Aktivlik paneli bunları girişdən sonra serverdən oxuyacaq.
+        // A successful password check does not guarantee the browser kept the
+        // session cookie. Verify it BEFORE redirecting to the dashboard.
+        const profileRes = await apiFetch('/api/user/profile', { cache: 'no-store' });
+        if (!profileRes.ok) {
+          throw new Error(`Giriş təsdiqləndi, amma sessiya yoxlanmadı (HTTP ${profileRes.status}). Saytı yeniləyib yenidən daxil olun.`);
+        }
+        const profile = await profileRes.json();
+        const loggedInEmail = String(data.user?.email || '').trim().toLowerCase();
+        const verifiedEmail = String(profile?.email || '').trim().toLowerCase();
+        if (!verifiedEmail || verifiedEmail !== loggedInEmail) {
+          throw new Error('Serverdə aktiv olan hesab yeni girişlə uyğun gəlmir. Saytı yeniləyib yenidən daxil olun.');
         }
 
-        router.push('/');
+        clearPrivateLocalData();
+        localStorage.setItem('user', JSON.stringify({
+          ...data.user,
+          ...profile,
+        }));
+        router.replace('/');
       } else {
         if (response.status === 429) {
           alert('Çox sayda giriş cəhdi edildi (HTTP 429). Bir qədər gözləyib yenidən cəhd edin.');
@@ -116,8 +114,8 @@ export default function AuthPage() {
         }
       }
     } catch (error) {
-      console.error('Sorğu xətası:', error);
-      alert('Backend serverinə qoşulmaq mümkün olmadı.');
+      console.error('Login sorğusu xətası:', error);
+      alert(error instanceof Error ? error.message : 'Backend serverinə qoşulmaq mümkün olmadı.');
     } finally {
       setLoading(false);
     }

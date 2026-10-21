@@ -336,11 +336,9 @@ export default function Dashboard() {
     let cancelled = false;
     const loadUserData = async () => {
       setAuthStatus('checking');
+      // The cookie is the authentication source of truth. A browser cache
+      // can be missing, stale or belong to a previously signed-in demo account.
       const storedUser = localStorage.getItem('user');
-      if (!storedUser) {
-        router.replace('/auth');
-        return;
-      }
       try {
         const res = await apiFetch('/api/user/profile', { cache: 'no-store' });
         if (cancelled) return;
@@ -354,13 +352,30 @@ export default function Dashboard() {
         }
         const profileData = await res.json();
         if (cancelled) return;
-        const cachedUser = JSON.parse(storedUser);
-        if (profileData.email !== cachedUser.email) {
-          clearPrivateLocalData();
-          router.replace('/auth');
-          return;
+
+        const serverEmail = typeof profileData?.email === 'string'
+          ? profileData.email.trim().toLowerCase() : '';
+        if (!serverEmail) {
+          throw new Error('Verified profile has no email');
         }
-        const merged = { ...cachedUser, ...profileData };
+
+        let cachedUser: Record<string, unknown> | null = null;
+        try {
+          cachedUser = storedUser ? JSON.parse(storedUser) : null;
+        } catch {
+          // Invalid local JSON should not revoke a valid server session.
+          clearPrivateLocalData();
+        }
+        const cachedEmail = typeof cachedUser?.email === 'string'
+          ? cachedUser.email.trim().toLowerCase() : '';
+        if (cachedEmail !== serverEmail) {
+          // Switch to the actual authenticated account without retaining
+          // private cache from another user. Never redirect a verified session.
+          clearPrivateLocalData();
+          cachedUser = null;
+        }
+
+        const merged = { ...(cachedUser || {}), ...profileData };
         setUser(merged);
         localStorage.setItem('user', JSON.stringify(merged));
         setAuthStatus('ready');
