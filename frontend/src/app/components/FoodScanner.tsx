@@ -58,9 +58,26 @@ export default function FoodScanner({ isDarkMode = true }: FoodScannerProps) {
                 body: JSON.stringify({ imageBase64: selectedImage }),
             });
 
-            if (!res.ok) throw new Error('Analiz xətası');
-            const data = await res.json();
-            setResult(data);
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                throw new Error(data?.error || `Analiz xətası (HTTP ${res.status})`);
+            }
+            if (!data || typeof data.foodName !== 'string' || !Number.isFinite(Number(data.calories))) {
+                throw new Error('AI gözlənilən formatda cavab vermədi.');
+            }
+            // The API returns e.g. "25g" and "advice"; convert for our result UI.
+            const grams = (value: unknown): number => {
+                const parsed = Number.parseFloat(String(value ?? 0).replace(',', '.'));
+                return Number.isFinite(parsed) ? parsed : 0;
+            };
+            setResult({
+                foodName: data.foodName,
+                calories: Math.round(Number(data.calories)),
+                protein: grams(data.protein),
+                carbs: grams(data.carbs),
+                fat: grams(data.fat),
+                recommendation: String(data.recommendation ?? data.advice ?? ''),
+            });
         } catch (err: any) {
             setError(err.message || 'Xəta baş verdi.');
         } finally {
