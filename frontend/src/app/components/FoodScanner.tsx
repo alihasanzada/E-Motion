@@ -52,10 +52,10 @@ export default function FoodScanner({ isDarkMode = true }: FoodScannerProps) {
         setError(null);
 
         try {
-            const res = await fetch('/api/food-scan', {
+            const res = await fetch('/api/scan-food', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: selectedImage }),
+                body: JSON.stringify({ imageBase64: selectedImage }),
             });
 
             if (!res.ok) throw new Error('Analiz xətası');
