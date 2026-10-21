@@ -1609,7 +1609,7 @@ export default function Dashboard() {
           color: '#FFFFFF',
           border: 'none',
           boxShadow: '0 8px 20px rgba(68, 118, 108, 0.4)',
-          display: 'flex',
+          display: isChatOpen ? 'none' : 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
