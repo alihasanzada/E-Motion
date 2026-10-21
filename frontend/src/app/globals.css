@@ -1062,7 +1062,7 @@ svg circle {
 
   .em-chat-window {
     width: min(350px, calc(100vw - 32px)) !important;
-    height: min(56dvh, 480px) !important;
+    height: min(49dvh, 430px) !important;
     max-height: calc(100dvh - 135px) !important;
     right: 16px !important;
     bottom: max(74px, env(safe-area-inset-bottom)) !important;
