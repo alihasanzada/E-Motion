@@ -594,7 +594,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
 
       {/* iOS Modal */}
       {showIosModal && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -607,7 +607,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           alignItems: 'center',
           padding: '20px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: theme.cardBg,
             borderRadius: '16px',
             padding: '20px',
