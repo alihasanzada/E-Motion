@@ -1054,22 +1054,22 @@ export default function Dashboard() {
                 </button>
 
                 {isMessagesOpen && (
-                  <div className="em-header-popover" style={{
+                  <div className="em-header-popover" role="region" aria-label="Mesajlar" style={{
                     position: 'absolute',
-                    top: '38px',
+                    top: '42px',
                     right: '0px',
-                    width: '290px',
+                    width: '320px',
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
-                    borderRadius: '12px',
+                    borderRadius: '16px',
                     boxShadow: isDarkMode ? '0 10px 25px rgba(0, 0, 0, 0.6)' : '0 10px 25px rgba(0, 0, 0, 0.1)',
                     zIndex: 100,
                     overflow: 'hidden'
                   }}>
-                    <div style={{ padding: '12px 14px', borderBottom: `1px solid ${theme.border}` }}>
-                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: theme.textPrimary }}>Mesajlar</h4>
+                    <div style={{ padding: '12px 16px', borderBottom: `1px solid ${theme.border}` }}>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: theme.textPrimary }}>Mesajlar</h4>
                     </div>
-                    <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                       {messages && messages.length > 0 ? (
                         messages.map((m) => (
                           <div key={m.id} style={{ padding: '10px 14px', borderBottom: `1px solid ${theme.border}`, cursor: 'pointer' }}>
@@ -1081,10 +1081,13 @@ export default function Dashboard() {
                           </div>
                         ))
                       ) : (
-                        <EmptyState
-                          title="Mesaj yoxdur"
-                          description="Yeni mesajınız mövcud deyil."
-                        />
+                        <div role="status" style={{ padding: '18px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '7px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '11px', background: isDarkMode ? 'rgba(16,185,129,.12)' : '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <MessageSquare size={17} />
+                          </div>
+                          <strong style={{ fontSize: '13px', color: theme.textPrimary }}>Mesaj yoxdur</strong>
+                          <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hazırda yeni mesajınız yoxdur.</span>
+                        </div>
                       )}
                     </div>
                   </div>
