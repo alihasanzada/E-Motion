@@ -1121,7 +1121,7 @@ svg circle {
   /* Make leaderboards readable: stack secondary stats beneath the name. */
   .em-leaderboard-row {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 8px 12px !important;
     align-items: start !important;
     padding: 13px 14px !important;
@@ -1149,13 +1149,13 @@ svg circle {
     white-space: nowrap;
   }
   .em-leaderboard-xp {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
     font-size: 14px !important;
     text-align: right;
+    white-space: nowrap;
   }
   .em-leaderboard-meta .em-leaderboard-xp {
-    display: none;
+    display: inline-block !important;
+    margin-left: auto;
   }
   .em-leaderboard-rank {
     width: 26px !important;
