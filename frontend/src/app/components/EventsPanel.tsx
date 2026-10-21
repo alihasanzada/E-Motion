@@ -308,7 +308,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
       </div>
 
       {/* Tədbirlər Siyahısı */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div className="em-compact-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {filteredEvents.length === 0 ? (
           <div style={{
             backgroundColor: theme.cardBg,
