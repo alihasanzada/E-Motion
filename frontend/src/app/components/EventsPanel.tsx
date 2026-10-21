@@ -324,6 +324,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
         ) : (
           filteredEvents.map(ev => (
             <div
+              className="em-event-card"
               key={ev.id}
               onClick={() => setSelectedEvent(ev)}
               style={{
@@ -340,7 +341,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                 opacity: isEventPast(ev) ? 0.75 : 1
               }}
             >
-              <div style={{ display: 'flex', gap: '18px', alignItems: 'center', flex: 1 }}>
+              <div className="em-event-card-main" style={{ display: 'flex', gap: '18px', alignItems: 'center', flex: 1 }}>
                 <div style={{
                   backgroundColor: isEventPast(ev) ? (isDarkMode ? '#334155' : '#E2E8F0') : theme.dateBoxBg,
                   border: '1px solid ' + (isEventPast(ev) ? (isDarkMode ? '#475569' : '#CBD5E1') : theme.dateBoxBorder),
@@ -358,7 +359,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <div className="em-event-card-info" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ backgroundColor: theme.badgeCategoryBg, color: theme.textMuted, fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px' }}>
                       {ev.category}
@@ -370,7 +371,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                     {ev.title}
                   </h4>
 
-                  <div style={{ display: 'flex', gap: '16px', fontSize: '12.5px', color: theme.textSecondary }}>
+                  <div className="em-event-card-meta" style={{ display: 'flex', gap: '16px', fontSize: '12.5px', color: theme.textSecondary }}>
                     {ev.time && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <Clock size={13} color={theme.textSecondary} /> {ev.time}
@@ -383,7 +384,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexShrink: 0 }}>
+              <div className="em-event-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '18px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {ev.avatars && ev.avatars.length > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -444,7 +445,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
 
       {/* Yeni Tədbir Yarat */}
       {isCreateModalOpen && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -457,7 +458,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
           zIndex: 1000,
           padding: '16px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: theme.cardBg,
             borderRadius: '20px',
             padding: '22px 26px',
@@ -481,7 +482,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
 
             <form onSubmit={handleCreateEvent} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {/* Adı vı Kateqoriya */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+              <div className="em-form-grid-two" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: theme.textMuted, marginBottom: '4px' }}>
                     Tədbirin Adı *
@@ -526,7 +527,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
               </div>
 
               {/* Tarix + Saat + Tutum */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              <div className="em-form-grid-three" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: theme.textMuted, marginBottom: '4px' }}>
                     Tarix *
@@ -598,7 +599,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
               </div>
 
               {/* Məkan + Təşkilatçı */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="em-form-grid-two" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: theme.textMuted, marginBottom: '4px' }}>
                     Məkan *
@@ -704,7 +705,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
 
       {/* Tədbir Detalları */}
       {selectedEvent && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -717,7 +718,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
           zIndex: 1000,
           padding: '16px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: theme.cardBg,
             borderRadius: '20px',
             padding: '24px',
@@ -740,7 +741,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
               </button>
             </div>
 
-            <div style={{
+            <div className="em-event-detail-grid" style={{
               backgroundColor: theme.inputBg,
               borderRadius: '12px',
               padding: '12px 14px',
