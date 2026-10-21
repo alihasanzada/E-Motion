@@ -239,7 +239,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingBottom: '0px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingBottom: '0px' }}>
 
       {/* Header Banner */}
       <div style={{
@@ -275,7 +275,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       </div>
 
       {/* Stats Summary Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '12px' }}>
 
         <div style={{ backgroundColor: theme.cardBg, padding: '13px 16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ backgroundColor: theme.iconFlameBg, padding: '8px', borderRadius: '10px', color: theme.iconFlameColor }}>
@@ -320,7 +320,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
       </div>
 
       {/* Main Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '14px' }}>
 
         {/* Steps Card */}
         <div style={{
@@ -521,7 +521,7 @@ export default function ActivityPanel({ isDarkMode = false }: ActivityPanelProps
           </div>
         </div>
 
-        <form onSubmit={handleUpdate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', alignItems: 'end' }}>
+        <form onSubmit={handleUpdate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '12px', alignItems: 'end' }}>
           <div>
             <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: theme.textSecondary, marginBottom: '5px' }}>
               Addım Əlavə Et
