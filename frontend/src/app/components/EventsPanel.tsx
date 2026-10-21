@@ -222,7 +222,7 @@ export default function EventsPanel({ isDarkMode = false }: EventsPanelProps) {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '20px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '20px' }}>
 
       {/* Başlıq və Düymə */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
