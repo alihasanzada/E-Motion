@@ -173,7 +173,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
   };
 
   return (
-    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '20px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '13px', paddingBottom: '20px' }}>
 
       {/* Header */}
       <div>
@@ -253,7 +253,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '16px 18px',
+          padding: '14px 16px',
           border: `1px solid ${theme.borderColor}`,
           display: 'flex',
           flexDirection: 'column',
@@ -302,7 +302,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '16px 18px',
+          padding: '14px 16px',
           border: `1px solid ${theme.borderColor}`,
           display: 'flex',
           flexDirection: 'column',
@@ -341,7 +341,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '18px 20px',
+          padding: '15px 17px',
           border: `1px solid ${theme.borderColor}`,
           boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)',
           display: 'flex',
@@ -502,7 +502,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '18px 20px',
+          padding: '15px 17px',
           border: `1px solid ${theme.borderColor}`,
           boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)',
           display: 'flex',
