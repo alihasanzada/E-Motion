@@ -224,6 +224,7 @@ export default function EditProfileModal({
 
   return (
     <div
+      className="em-dialog-backdrop"
       onClick={onClose}
       style={{
         position: 'fixed',
@@ -239,6 +240,7 @@ export default function EditProfileModal({
       }}
     >
       <div
+        className="em-dialog-card em-profile-dialog"
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: theme.cardBg,
@@ -407,6 +409,7 @@ export default function EditProfileModal({
 
         {/* Tab Menyu */}
         <div
+          className="em-profile-tabs"
           style={{
             display: 'flex',
             padding: '12px 24px 0',
@@ -518,7 +521,7 @@ export default function EditProfileModal({
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
                       E-poçt Ünvanı
@@ -577,7 +580,7 @@ export default function EditProfileModal({
             {/* Təhsil & Əlaqə */}
             {activeTab === 'academic' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
                       İxtisas / Fakültə *
@@ -739,7 +742,7 @@ export default function EditProfileModal({
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
                       Gündəlik Addım Hədəfi
