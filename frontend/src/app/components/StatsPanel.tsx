@@ -248,7 +248,7 @@ export default function StatsPanel({ isDarkMode = false }: StatsPanelProps) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '20px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '20px' }}>
 
       {/* Title, Add Button, and Filter */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -309,7 +309,7 @@ export default function StatsPanel({ isDarkMode = false }: StatsPanelProps) {
       </div>
 
       {/* Main KPI Metric Cards*/}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 210px), 1fr))', gap: '14px' }}>
 
         {/* Average Steps */}
         <div style={{ backgroundColor: theme.cardBg, padding: '16px 18px', borderRadius: '15px', border: `1px solid ${theme.borderColor}`, boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)' }}>
@@ -366,7 +366,7 @@ export default function StatsPanel({ isDarkMode = false }: StatsPanelProps) {
       </div>
 
       {/* Weekly/Monthly/Yearly Chart & Category Distribution */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px', alignItems: 'start' }}>
 
         {/* Step Chart */}
         <div style={{
