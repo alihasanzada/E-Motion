@@ -40,6 +40,10 @@ def _postgres_sql(query):
     )
     # All backend "read" flags are stored as integer 0/1, not PG booleans.
     query = re.sub(r"\bBOOLEAN\b", "INTEGER", query, flags=re.IGNORECASE)
+    # `desc` is a reserved SQL sorting keyword in PostgreSQL; in E-Motion
+    # it is also an existing SQLite notification column.
+    query = re.sub(r"\bdesc(?=\s+TEXT\b)", '"desc"', query, flags=re.IGNORECASE)
+    query = re.sub(r"([,(]\s*)desc(?=\s*,)", r'\1"desc"', query, flags=re.IGNORECASE)
     query = re.sub(
         r"\bDATE\('now',\s*'localtime'\)",
         "(CURRENT_DATE::text)", query, flags=re.IGNORECASE,
