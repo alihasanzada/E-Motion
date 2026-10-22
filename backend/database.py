@@ -65,7 +65,13 @@ class PostgresCursorAdapter:
         import psycopg
 
         try:
-            self._cursor.execute(_postgres_sql(statement), params)
+            query = _postgres_sql(statement)
+            # PostgreSQL syntax may contain literal '%' characters in seeded
+            # strings. Psycopg interprets them only when params are supplied.
+            if params:
+                self._cursor.execute(query, params)
+            else:
+                self._cursor.execute(query)
         except psycopg.IntegrityError as exc:
             # Existing Flask endpoints handle sqlite3.IntegrityError.
             self._connection._conn.rollback()
