@@ -173,7 +173,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '20px' }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '13px', paddingBottom: '20px' }}>
 
       {/* Header */}
       <div>
@@ -193,7 +193,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         border: `1px solid ${theme.borderColor}`,
         boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
         gap: '20px',
         alignItems: 'center'
       }}>
@@ -247,13 +247,13 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
       </div>
 
       {/* Habit Chain and Earned Badges Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
 
         {/* Habit Chain */}
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '16px 18px',
+          padding: '14px 16px',
           border: `1px solid ${theme.borderColor}`,
           display: 'flex',
           flexDirection: 'column',
@@ -302,7 +302,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '16px 18px',
+          padding: '14px 16px',
           border: `1px solid ${theme.borderColor}`,
           display: 'flex',
           flexDirection: 'column',
@@ -335,13 +335,13 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
       </div>
 
       {/* Current Weekly Goals & Badges Showcase */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px', alignItems: 'start' }}>
 
         {/* Target List */}
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '18px 20px',
+          padding: '15px 17px',
           border: `1px solid ${theme.borderColor}`,
           boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)',
           display: 'flex',
@@ -502,7 +502,7 @@ export default function ProgressPanel({ isDarkMode = false }: ProgressPanelProps
         <div style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
-          padding: '18px 20px',
+          padding: '15px 17px',
           border: `1px solid ${theme.borderColor}`,
           boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.02)',
           display: 'flex',

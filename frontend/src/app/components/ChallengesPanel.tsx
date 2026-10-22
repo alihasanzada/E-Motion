@@ -166,12 +166,12 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
   };
 
   const sortedStudents = [
-    { id: 1, name: 'Elvin Məmmədov', rank: 1, level: 12, faculty: 'Kompüter Mühəndisliyi', badge: '👑 Çempion', xp: 2450, isUser: false },
-    { id: 2, name: 'Aysel Qasımova', rank: 2, level: 10, faculty: 'İqtisadiyyat', badge: '🔥 Aktiv', xp: 2100, isUser: false },
-    { id: 3, name: 'Kamran Əliyev', rank: 3, level: 9, faculty: 'Pedaqoji', badge: '🎯 Hədəfçi', xp: 1850, isUser: false },
-    { id: 4, name: 'Nigar Sultanova', rank: 4, level: 8, faculty: 'Kompüter Mühəndisliyi', badge: '🌱 Yeni', xp: 1620, isUser: false },
-    { id: 5, name: 'Leyla Həsənova', rank: 5, level: 5, faculty: 'Təbiət Elmləri', badge: '⚡ İrəliləyən', xp: 850, isUser: false },
-    { id: 6, name: 'Əli Həsənzadə', rank: 6, level: userLevel, faculty: 'Kompüter Mühəndisliyi', badge: '🎓 Sənin Mövqeyin', xp: userXP, isUser: true }
+    { id: 1, name: 'Elvin Məmmədov', rank: 1, level: 12, faculty: 'Kompüter Mühəndisliyi', badge: 'Çempion', xp: 2450, isUser: false },
+    { id: 2, name: 'Aysel Qasımova', rank: 2, level: 10, faculty: 'İqtisadiyyat', badge: 'Aktiv', xp: 2100, isUser: false },
+    { id: 3, name: 'Kamran Əliyev', rank: 3, level: 9, faculty: 'Pedaqoji', badge: 'Hədəfçi', xp: 1850, isUser: false },
+    { id: 4, name: 'Nigar Sultanova', rank: 4, level: 8, faculty: 'Kompüter Mühəndisliyi', badge: 'Yeni', xp: 1620, isUser: false },
+    { id: 5, name: 'Leyla Həsənova', rank: 5, level: 5, faculty: 'Təbiət Elmləri', badge: 'İrəliləyən', xp: 850, isUser: false },
+    { id: 6, name: 'Əli Həsənzadə', rank: 6, level: userLevel, faculty: 'Kompüter Mühəndisliyi', badge: 'Sənin mövqeyin', xp: userXP, isUser: true }
   ];
 
   const faculties = [
@@ -182,16 +182,16 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
   ];
 
   const badges = [
-    { id: 1, title: 'Su Çempionu', desc: '5 gün ard-arda günlük su hədəfini tamamla', unlocked: true, icon: '💧', status: '✓ Qazanıldı' },
-    { id: 2, title: 'Kampus Lideri', desc: 'Fakültənə ümumilikdə 300+ XP qazandır', unlocked: true, icon: '🏆', status: '✓ Qazanıldı' },
-    { id: 3, title: 'Yorulmaz Addımlayan', desc: 'Bir gündə 10,000 addım məsafə qət et', unlocked: false, icon: '👟', status: '7,000 / 10,000' },
-    { id: 4, title: 'Erkən Yatan', desc: '7 gün ard-arda saat 23:00-dan əvvəl yat', unlocked: false, icon: '🌙', status: '2 / 7 Gün' },
-    { id: 5, title: 'Masaüstü Atlet', desc: '5 dəfə canlı masaüstü stretching məşqini bitir', unlocked: false, icon: '🧘', status: '0 / 5 Məşq' },
-    { id: 6, title: 'Liderlər Sırası', desc: 'Fərdi tələbə sıralamasında İlk 3-lüyə daxil ol', unlocked: false, icon: '🥇', status: 'Sıralamada yüksəl' }
+    { id: 1, title: 'Su Çempionu', desc: '5 gün ard-arda günlük su hədəfini tamamla', unlocked: true, icon: <Droplet size={22} color={theme.gold} />, status: '✓ Qazanıldı' },
+    { id: 2, title: 'Kampus Lideri', desc: 'Fakültənə ümumilikdə 300+ XP qazandır', unlocked: true, icon: <Trophy size={22} color={theme.gold} />, status: '✓ Qazanıldı' },
+    { id: 3, title: 'Yorulmaz Addımlayan', desc: 'Bir gündə 10,000 addım məsafə qət et', unlocked: false, icon: <Activity size={22} color={theme.textMuted} />, status: '7,000 / 10,000' },
+    { id: 4, title: 'Erkən Yatan', desc: '7 gün ard-arda saat 23:00-dan əvvəl yat', unlocked: false, icon: <Moon size={22} color={theme.textMuted} />, status: '2 / 7 Gün' },
+    { id: 5, title: 'Masaüstü Atlet', desc: '5 dəfə canlı masaüstü stretching məşqini bitir', unlocked: false, icon: <Dumbbell size={22} color={theme.textMuted} />, status: '0 / 5 Məşq' },
+    { id: 6, title: 'Liderlər Sırası', desc: 'Fərdi tələbə sıralamasında İlk 3-lüyə daxil ol', unlocked: false, icon: <Award size={22} color={theme.textMuted} />, status: 'Sıralamada yüksəl' }
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px', color: theme.textPrimary }}>
+    <div className="em-mobile-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px', color: theme.textPrimary }}>
 
       {/* Top Motivation Banner */}
       <div style={{
@@ -372,7 +372,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
 
       {/* Active Challenges */}
       {activeTab === 'challenges' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '18px' }}>
           {filteredChallenges.map((item) => {
             const progressPercent = item.completed ? 100 : Math.min(100, Math.round((item.current / item.target) * 100));
 
@@ -492,7 +492,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Transition Buttons */}
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="em-leaderboard-scope" style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => setLeaderboardScope('students')}
               style={{
@@ -538,6 +538,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                 {sortedStudents.map((st) => (
                   <div
                     key={st.id}
+                    className="em-leaderboard-row"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -548,7 +549,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                       transition: 'background-color 0.2s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div className="em-leaderboard-identity" style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
                       <span style={{
                         fontSize: '16px',
                         fontWeight: '800',
@@ -557,8 +558,8 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                       }}>
                         #{st.rank}
                       </span>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className="em-leaderboard-name" style={{ minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: '700', color: st.isUser ? '#059669' : theme.textPrimary }}>
                             {st.name}
                           </h4>
@@ -570,11 +571,11 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div className="em-leaderboard-meta" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '11.5px', backgroundColor: theme.innerBg, border: `1px solid ${theme.borderColor}`, padding: '4px 10px', borderRadius: '8px', color: theme.textSecondary, fontWeight: '600' }}>
                         {st.badge}
                       </span>
-                      <strong style={{ fontSize: '15px', fontWeight: '800', color: theme.gold }}>
+                      <strong className="em-leaderboard-xp" style={{ fontSize: '15px', fontWeight: '800', color: theme.gold }}>
                         {st.xp.toLocaleString()} XP
                       </strong>
                     </div>
@@ -586,6 +587,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                 {faculties.map((fac) => (
                   <div
                     key={fac.rank}
+                    className="em-leaderboard-row"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -595,7 +597,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                       backgroundColor: fac.isUserFaculty ? (isDarkMode ? 'rgba(16, 185, 129, 0.12)' : '#ECFDF5') : 'transparent'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div className="em-leaderboard-identity" style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
                       <span style={{
                         fontSize: '16px',
                         fontWeight: '800',
@@ -604,8 +606,8 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                       }}>
                         #{fac.rank}
                       </span>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className="em-leaderboard-name" style={{ minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: '700', color: theme.textPrimary }}>{fac.name}</h4>
                           {fac.isUserFaculty && (
                             <span style={{ backgroundColor: (isDarkMode ? 'rgba(16, 185, 129, 0.2)' : '#DCFCE7'), color: '#059669', fontSize: '10px', fontWeight: '800', padding: '2px 6px', borderRadius: '6px' }}>
@@ -617,11 +619,11 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div className="em-leaderboard-meta" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '11px', backgroundColor: (isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEE2E2'), color: '#DC2626', padding: '4px 8px', borderRadius: '6px', fontWeight: '700' }}>
                         {fac.bonus}
                       </span>
-                      <strong style={{ fontSize: '15px', fontWeight: '800', color: theme.gold }}>
+                      <strong className="em-leaderboard-xp" style={{ fontSize: '15px', fontWeight: '800', color: theme.gold }}>
                         {fac.xp.toLocaleString()} XP
                       </strong>
                     </div>
@@ -635,7 +637,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
 
       {/* Achievement Badges */}
       {activeTab === 'badges' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
           {badges.map((b) => (
             <div
               key={b.id}
@@ -643,7 +645,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
                 backgroundColor: b.unlocked ? theme.cardBg : theme.lockedCardBg,
                 border: b.unlocked ? `2px solid ${theme.gold}` : `1px solid ${theme.lockedCardBorder}`,
                 borderRadius: '18px',
-                padding: '20px',
+                padding: '14px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '16px',
@@ -682,7 +684,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
 
       {/* Modal Task Contents */}
       {activeModalTask && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.65)',
@@ -693,7 +695,7 @@ export default function ChallengesPanel({ isDarkMode = false }: ChallengesPanelP
           zIndex: 1000,
           padding: '20px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: theme.cardBg,
             border: `1px solid ${theme.borderColor}`,
             borderRadius: '24px',

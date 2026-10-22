@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import {
-    Activity,
-    Zap
+    Activity
 } from "lucide-react";
 
 interface DailyScoreWidgetProps {
@@ -88,7 +87,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
 
         const score = Math.round(stepScore + activityScore + calorieScore + waterScore + sleepScore);
 
-        let status = "Zəif";
+        let status = score === 0 ? "Məlumat əlavə edin" : "Başlanğıc";
         let statusColor = "#EF4444";
 
         if (score >= 80) {
@@ -120,6 +119,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
 
     return (
         <div
+            className="em-score-card"
             style={{
                 backgroundColor: theme.cardBg,
                 borderRadius: "16px",
@@ -129,7 +129,7 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
                 fontFamily: "sans-serif",
                 display: "flex",
                 flexDirection: "column",
-                gap: "16px",
+                gap: "10px",
             }}
         >
             {/* Top Header */}
@@ -138,30 +138,27 @@ export default function DailyScoreWidget({ isDarkMode = true }: DailyScoreWidget
 
                     <div>
                         <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700" }}>Daily Score</h4>
-                        <span style={{ fontSize: "11px", color: theme.textSecondary }}>Gündəlik Balın</span>
+                        <span style={{ fontSize: "11px", color: theme.textSecondary }}>Qeyd etdiyiniz göstəricilərə əsasən</span>
                     </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#F59E0B", padding: "4px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: "700" }}>
-                    <Zap size={12} fill="#F59E0B" /> 5 Gün
-                </div>
             </div>
 
             {/* Circular Indicator */}
-            <div style={{ display: "flex", alignItems: "center", gap: "16px", backgroundColor: isDarkMode ? "#202023" : "#F8FAFC", padding: "12px", borderRadius: "12px", border: `1px solid ${theme.cardBorder}` }}>
-                <div style={{ position: "relative", width: "120px", height: "120px", flexShrink: 0 }}>
-                    <svg width="120" height="120" style={{ transform: "rotate(-90deg)" }}>
+            <div className="em-score-body" style={{ display: "flex", alignItems: "center", gap: "12px", backgroundColor: isDarkMode ? "#202023" : "#F8FAFC", padding: "10px 12px", borderRadius: "12px", border: `1px solid ${theme.cardBorder}` }}>
+                <div className="em-score-indicator" style={{ position: "relative", width: "86px", height: "86px", flexShrink: 0 }}>
+                    <svg width="86" height="86" viewBox="0 0 120 120" style={{ transform: "rotate(-90deg)" }}>
                         <circle cx="60" cy="60" r={radius} stroke={isDarkMode ? "#2D2D32" : "#E2E8F0"} strokeWidth="10" fill="transparent" />
                         <circle cx="60" cy="60" r={radius} stroke={healthMetrics.statusColor} strokeWidth="10" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" fill="transparent" style={{ transition: "stroke-dashoffset 0.8s ease" }} />
                     </svg>
                     <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ fontSize: "28px", fontWeight: "800", lineHeight: "1" }}>{healthMetrics.score}</span>
+                        <span style={{ fontSize: "23px", fontWeight: "800", lineHeight: "1" }}>{healthMetrics.score}</span>
                         <span style={{ fontSize: "10px", color: theme.textSecondary, marginTop: "2px" }}>/ 100</span>
                     </div>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <span style={{ fontSize: "11px", color: theme.textSecondary }}>Ümumi Vəziyyət</span>
+                    <span style={{ fontSize: "11px", color: theme.textSecondary }}>Aktivlik göstəricisi</span>
                     <span style={{ display: "inline-block", backgroundColor: `${healthMetrics.statusColor}20`, color: healthMetrics.statusColor, padding: "2px 8px", borderRadius: "8px", fontSize: "12px", fontWeight: "700" }}>
                         {healthMetrics.status}
                     </span>

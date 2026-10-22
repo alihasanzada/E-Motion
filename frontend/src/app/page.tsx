@@ -38,6 +38,7 @@ const searchIndex = [
 
 export default function Dashboard() {
   const [isMobileMenuOpen, setisMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -626,7 +627,7 @@ export default function Dashboard() {
       >
 
         {/* Header */}
-        <header style={{
+        <header className="em-app-header" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -638,12 +639,14 @@ export default function Dashboard() {
           top: 0,
           zIndex: 50
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, maxWidth: '500px' }}>
+          <div className="em-header-left" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, maxWidth: '500px' }}>
 
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setisMobileMenuOpen(!isMobileMenuOpen)}
               className="mobile-menu-btn"
+              aria-label={isMobileMenuOpen ? 'Menyunu bağla' : 'Menyunu aç'}
+              aria-expanded={isMobileMenuOpen}
               style={{
                 background: 'none',
                 border: 'none',
@@ -654,6 +657,22 @@ export default function Dashboard() {
               }}
             >
               {isMobileMenuOpen ? '✕' : '☰'}
+            </button>
+
+            {/* Mobile brand and full-width expandable search. */}
+            <div className="em-header-brand" style={{ display: 'none' }}>
+              <span className="em-header-brand-mark"><Sprout size={17} /></span>
+              <span>E-Motion</span>
+            </div>
+            <button
+              type="button"
+              className="em-mobile-search-toggle"
+              style={{ display: 'none', background: 'transparent', border: 0, padding: '5px', color: theme.textSecondary, cursor: 'pointer' }}
+              onClick={() => { setIsMobileSearchOpen(value => !value); setSearchQuery(''); }}
+              aria-label={isMobileSearchOpen ? 'Axtarışı bağla' : 'Axtarışı aç'}
+              aria-expanded={isMobileSearchOpen}
+            >
+              {isMobileSearchOpen ? <X size={20} /> : <Search size={20} />}
             </button>
 
             {/* Search Wrapper */}
@@ -770,8 +789,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
+          <div className="header-right em-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="em-header-shortcuts" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: theme.textSecondary }}>
               <button
                 onClick={toggleDarkMode}
                 title={isDarkMode ? "Açıq rejimə keç" : "Qaranlıq rejimə keç"}
@@ -839,7 +858,7 @@ export default function Dashboard() {
                 </button>
 
                 {isNotificationsOpen && (
-                  <div style={{
+                  <div className="em-header-popover" style={{
                     position: 'absolute',
                     top: '42px',
                     right: '0px',
@@ -1035,22 +1054,22 @@ export default function Dashboard() {
                 </button>
 
                 {isMessagesOpen && (
-                  <div style={{
+                  <div className="em-header-popover" role="region" aria-label="Mesajlar" style={{
                     position: 'absolute',
-                    top: '38px',
+                    top: '42px',
                     right: '0px',
-                    width: '290px',
+                    width: '320px',
                     backgroundColor: theme.bgCard,
                     border: `1px solid ${theme.border}`,
-                    borderRadius: '12px',
+                    borderRadius: '16px',
                     boxShadow: isDarkMode ? '0 10px 25px rgba(0, 0, 0, 0.6)' : '0 10px 25px rgba(0, 0, 0, 0.1)',
                     zIndex: 100,
                     overflow: 'hidden'
                   }}>
-                    <div style={{ padding: '12px 14px', borderBottom: `1px solid ${theme.border}` }}>
-                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: theme.textPrimary }}>Mesajlar</h4>
+                    <div style={{ padding: '12px 16px', borderBottom: `1px solid ${theme.border}` }}>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: theme.textPrimary }}>Mesajlar</h4>
                     </div>
-                    <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                       {messages && messages.length > 0 ? (
                         messages.map((m) => (
                           <div key={m.id} style={{ padding: '10px 14px', borderBottom: `1px solid ${theme.border}`, cursor: 'pointer' }}>
@@ -1062,10 +1081,13 @@ export default function Dashboard() {
                           </div>
                         ))
                       ) : (
-                        <EmptyState
-                          title="Mesaj yoxdur"
-                          description="Yeni mesajınız mövcud deyil."
-                        />
+                        <div role="status" style={{ padding: '18px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '7px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '11px', background: isDarkMode ? 'rgba(16,185,129,.12)' : '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <MessageSquare size={17} />
+                          </div>
+                          <strong style={{ fontSize: '13px', color: theme.textPrimary }}>Mesaj yoxdur</strong>
+                          <span style={{ fontSize: '12px', color: theme.textSecondary }}>Hazırda yeni mesajınız yoxdur.</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1118,6 +1140,7 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <ChevronDown
+                  className="em-profile-chevron"
                   size={14}
                   style={{
                     color: theme.textSecondary,
@@ -1130,6 +1153,7 @@ export default function Dashboard() {
               {/* Profile Dropdown Menu */}
               {isProfileDropdownOpen && (
                 <div
+                  className="em-header-popover"
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
@@ -1216,6 +1240,43 @@ export default function Dashboard() {
           </div>
         </header>
 
+        {isMobileSearchOpen && (
+          <div className="em-mobile-search-panel" style={{ backgroundColor: theme.bgCard, color: theme.textPrimary }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={17} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: theme.textSecondary }} />
+              <input
+                type="search"
+                aria-label="Platformada axtarış"
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Hansı bölməni axtarırsınız?"
+                style={{ padding: '12px 12px 12px 40px', borderRadius: '10px', border: `1px solid ${theme.border}`, backgroundColor: theme.bgInner, color: theme.textPrimary }}
+              />
+            </div>
+            {searchQuery.trim() && (
+              <div style={{ display: 'flex', flexDirection: 'column', paddingTop: '6px', maxHeight: '240px', overflowY: 'auto' }}>
+                {searchIndex.filter(item => item.title.toLocaleLowerCase('az').includes(searchQuery.toLocaleLowerCase('az')) ||
+                  item.keywords.some(keyword => keyword.toLocaleLowerCase('az').includes(searchQuery.toLocaleLowerCase('az'))))
+                  .map(item => (
+                    <button
+                      key={item.tabId}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(item.tabId);
+                        setSearchQuery('');
+                        setIsMobileSearchOpen(false);
+                      }}
+                      style={{ background: 'transparent', border: 'none', borderBottom: `1px solid ${theme.border}`, padding: '11px 8px', color: theme.textPrimary, textAlign: 'left', cursor: 'pointer' }}
+                    >
+                      {item.title}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Dashboard Grid View */}
         <main className="main-content flex-1" style={{ padding: '18px 22px', backgroundColor: theme.bgApp }}>
 
@@ -1295,18 +1356,10 @@ export default function Dashboard() {
                     { id: 'activity', title: 'Aktivlik', value: hasLoadedMetrics && authStatus === 'ready' ? `${activityMinutes} dəq` : '—', sub: '/ 60 dəq hədəf', color: '#3B82F6', bg: isDarkMode ? '#1E3A8A' : '#E8F0FE', icon: <Clock size={15} />, percent: Math.min(100, (activityMinutes / 60) * 100) },
                     { id: 'nutrition', title: 'Kalori', value: hasLoadedMetrics && authStatus === 'ready' ? `${caloriesCount} kkal` : '—', sub: '/ 600 kkal hədəf', color: '#8B5CF6', bg: isDarkMode ? '#581C87' : '#F3E8FF', icon: <Flame size={15} />, percent: Math.min(100, (caloriesCount / 600) * 100) },
                     { id: 'nutrition', title: 'Su qəbulu', value: hasLoadedMetrics && authStatus === 'ready' ? `${waterCount} stəkan` : '—', sub: '/ 8 stəkan hədəf', color: '#F59E0B', bg: isDarkMode ? '#78350F' : '#FEF3C7', icon: <Droplet size={15} />, percent: Math.min(100, (waterCount / 8) * 100) },
-                    { id: 'mental', title: 'Yuxu', value: authStatus === 'ready' && hasSleepRecord ? `${sleepHours} saat` : '—', sub: '/ 8 saat hədəf', color: '#06B6D4', bg: isDarkMode ? '#164E63' : '#E0F7FA', icon: <Moon size={15} />, percent: Math.min(100, (sleepHours / 8) * 100) },
-                  ].map((card, idx) => (
+                                      ].map((card, idx) => (
                     <div
                       key={idx}
-                      onClick={() => {
-                        if (card.id === 'mental') {
-                          setSleepInputValue(hasSleepRecord ? String(sleepHours) : '8');
-                          setIsSleepModalOpen(true);
-                        } else {
-                          setActiveTab(card.id);
-                        }
-                      }}
+                      onClick={() => setActiveTab(card.id)}
                       className="summary-card"
                       style={{
                         backgroundColor: theme.bgCard,
@@ -1338,6 +1391,7 @@ export default function Dashboard() {
 
                   {/* Active Campus Challenge Card */}
                   <div
+                    className="em-dashboard-challenge"
                     onClick={() => setActiveTab('challenges')}
                     style={{
                       position: 'relative',
@@ -1379,13 +1433,26 @@ export default function Dashboard() {
                     </p>
                   </div>
 
-                  <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div className="card em-dashboard-mental" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '14px' }}></span>
                         <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Mental rifah</h3>
                       </div>
-                      <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSleepInputValue(hasSleepRecord ? String(sleepHours) : '8');
+                            setIsSleepModalOpen(true);
+                          }}
+                          style={{ background: theme.bgInner, border: `1px solid ${theme.border}`, borderRadius: '8px', padding: '6px 9px', fontSize: '11px', color: theme.textPrimary, cursor: 'pointer' }}
+                          title="Yuxu vaxtını əl ilə qeyd et"
+                        >
+                          Yuxu qeydi
+                        </button>
+                        <button onClick={() => setActiveTab('mental')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
+                      </div>
                     </div>
 
                     <div className="mental-mini-grid">
@@ -1412,7 +1479,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Events Card */}
-                <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
+                <div className="card em-dashboard-events" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Calendar size={16} style={{ color: '#44766C' }} />
@@ -1453,14 +1520,14 @@ export default function Dashboard() {
               {/* Right Sidebar */}
               <div className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {hasLoadedMetrics && authStatus === 'ready' ? (
-                  <DailyScoreWidget isDarkMode={isDarkMode} />
+                  <div className="em-dashboard-score"><DailyScoreWidget isDarkMode={isDarkMode} /></div>
                 ) : (
-                  <div className="card" role="status" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.border}`, borderRadius: '14px', minHeight: '170px', color: theme.textSecondary, fontSize: '13px' }}>
+                  <div className="card em-dashboard-score" role="status" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.border}`, borderRadius: '14px', minHeight: '170px', color: theme.textSecondary, fontSize: '13px' }}>
                     Gündəlik bal hesab məlumatları yükləndikdən sonra görünəcək.
                   </div>
                 )}
 
-                <div className="card" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
+                <div className="card em-dashboard-services" style={{ backgroundColor: theme.bgCard, padding: '16px', borderRadius: '13px', border: `1px solid ${theme.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: '700', color: theme.textPrimary }}>Sağlamlıq xidmətləri</h3>
                     <button onClick={() => setActiveTab('services')} style={{ background: 'none', border: 'none', fontSize: '11.5px', color: theme.textSecondary, cursor: 'pointer' }}>Hamısına bax →</button>
@@ -1527,6 +1594,8 @@ export default function Dashboard() {
 
       {/* AI Asistent Floating Button */}
       <button
+        className="em-chat-trigger"
+        aria-label="E-Motion AI asistentini aç"
         onClick={() => setisChatOpen(!isChatOpen)}
         title="E-Motion AI Asistent"
         style={{
@@ -1540,7 +1609,7 @@ export default function Dashboard() {
           color: '#FFFFFF',
           border: 'none',
           boxShadow: '0 8px 20px rgba(68, 118, 108, 0.4)',
-          display: 'flex',
+          display: isChatOpen ? 'none' : 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
@@ -1582,7 +1651,7 @@ export default function Dashboard() {
       />
       {/* Modern Sleep Input Modal */}
       {isSleepModalOpen && (
-        <div style={{
+        <div className="em-dialog-backdrop" style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -1596,7 +1665,7 @@ export default function Dashboard() {
           zIndex: 9999,
           padding: '16px'
         }}>
-          <div style={{
+          <div className="em-dialog-card" style={{
             backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
             borderRadius: '24px',
             padding: '28px',

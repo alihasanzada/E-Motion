@@ -100,7 +100,7 @@ export default function AIChatModal({
     };
 
     return (
-        <div style={{
+        <div className="em-chat-window" style={{
             position: 'fixed', bottom: '85px', right: '24px', width: '350px', height: '460px',
             backgroundColor: '#18181b', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)',
             display: 'flex', flexDirection: 'column', zIndex: 1000, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)'

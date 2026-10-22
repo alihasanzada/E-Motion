@@ -84,7 +84,7 @@ export default function EditProfileModal({
   onUpdate,
   isDarkMode = false
 }: EditProfileModalProps) {
-  const [activeTab, setActiveTab] = useState<'personal' | 'academic' | 'health'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'academic'>('personal');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [fullname, setFullname] = useState('');
@@ -224,6 +224,7 @@ export default function EditProfileModal({
 
   return (
     <div
+      className="em-dialog-backdrop"
       onClick={onClose}
       style={{
         position: 'fixed',
@@ -239,6 +240,7 @@ export default function EditProfileModal({
       }}
     >
       <div
+        className="em-dialog-card em-profile-dialog"
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: theme.cardBg,
@@ -257,6 +259,7 @@ export default function EditProfileModal({
       >
         {/* Header */}
         <div
+          className="em-profile-header"
           style={{
             padding: '20px 24px',
             borderBottom: `1px solid ${theme.borderColor}`,
@@ -316,8 +319,9 @@ export default function EditProfileModal({
 
         {/* Canlı Profil Xülasəsi Kartı */}
         <div
+          className="em-profile-summary"
           style={{
-            margin: '16px 24px 0',
+            margin: '12px 20px 0',
             padding: '14px 18px',
             borderRadius: '14px',
             backgroundColor: theme.innerBg,
@@ -371,42 +375,11 @@ export default function EditProfileModal({
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <span
-              style={{
-                fontSize: '11px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                backgroundColor: isDarkMode ? '#2D1F23' : '#FEE2E2',
-                color: '#EF4444',
-                fontWeight: '600'
-              }}
-            >
-              <Heart size={12} /> {bloodGroup}
-            </span>
-            <span
-              style={{
-                fontSize: '11px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                backgroundColor: isDarkMode ? '#132E27' : '#DCFCE7',
-                color: '#10B981',
-                fontWeight: '600'
-              }}
-            >
-              <Sparkles size={12} /> {dailyStepGoal.toLocaleString()} addım
-            </span>
-          </div>
         </div>
 
         {/* Tab Menyu */}
         <div
+          className="em-profile-tabs"
           style={{
             display: 'flex',
             padding: '12px 24px 0',
@@ -416,8 +389,7 @@ export default function EditProfileModal({
         >
           {[
             { id: 'personal', label: 'Şəxsi Məlumat', icon: <User size={15} /> },
-            { id: 'academic', label: 'Təhsil & Əlaqə', icon: <GraduationCap size={15} /> },
-            { id: 'health', label: 'Sağlamlıq & Hədəflər', icon: <Heart size={15} /> }
+            { id: 'academic', label: 'Təhsil & Əlaqə', icon: <GraduationCap size={15} /> }
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -451,6 +423,7 @@ export default function EditProfileModal({
         {/* Form Body */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
           <div
+            className="em-profile-edit-fields"
             style={{
               padding: '20px 24px',
               overflowY: 'auto',
@@ -518,7 +491,7 @@ export default function EditProfileModal({
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
                       E-poçt Ünvanı
@@ -577,7 +550,7 @@ export default function EditProfileModal({
             {/* Təhsil & Əlaqə */}
             {activeTab === 'academic' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
                       İxtisas / Fakültə *
@@ -705,126 +678,11 @@ export default function EditProfileModal({
               </div>
             )}
 
-            {/* Sağlamlıq & Hədəflər */}
-            {activeTab === 'health' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
-                    Qan Qrupu (Tibbi Qeyd)
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <Heart size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#EF4444' }} />
-                    <select
-                      value={bloodGroup}
-                      onChange={(e) => setBloodGroup(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px 10px 38px',
-                        borderRadius: '10px',
-                        border: `1px solid ${theme.borderColor}`,
-                        backgroundColor: theme.inputBg,
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {BLOOD_GROUPS.map((bg) => (
-                        <option key={bg} value={bg}>
-                          {bg}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
-                      Gündəlik Addım Hədəfi
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <Footprints size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#10B981' }} />
-                      <input
-                        type="number"
-                        min={1000}
-                        max={50000}
-                        step={500}
-                        value={dailyStepGoal}
-                        onChange={(e) => setDailyStepGoal(Number(e.target.value))}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px 10px 38px',
-                          borderRadius: '10px',
-                          border: `1px solid ${theme.borderColor}`,
-                          backgroundColor: theme.inputBg,
-                          color: theme.textPrimary,
-                          fontSize: '13px',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
-                      />
-                    </div>
-                    <span style={{ fontSize: '11px', color: theme.textSecondary, marginTop: '3px', display: 'block' }}>
-                      Tövsiyə olunan: 8,000 - 10,000 addım
-                    </span>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', marginBottom: '6px', color: theme.textPrimary }}>
-                      Gündəlik Su Hədəfi (ml)
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <Droplet size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#06B6D4' }} />
-                      <input
-                        type="number"
-                        min={500}
-                        max={6000}
-                        step={250}
-                        value={dailyWaterGoal}
-                        onChange={(e) => setDailyWaterGoal(Number(e.target.value))}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px 10px 38px',
-                          borderRadius: '10px',
-                          border: `1px solid ${theme.borderColor}`,
-                          backgroundColor: theme.inputBg,
-                          color: theme.textPrimary,
-                          fontSize: '13px',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
-                      />
-                    </div>
-                    <span style={{ fontSize: '11px', color: theme.textSecondary, marginTop: '3px', display: 'block' }}>
-                      Məsələn: {Math.round(dailyWaterGoal / 250)} stəkan (250 ml)
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    backgroundColor: theme.primaryLight,
-                    border: `1px solid ${theme.borderColor}`,
-                    padding: '12px 14px',
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }}
-                >
-                  <Activity size={20} color={theme.primary} />
-                  <p style={{ margin: 0, fontSize: '12px', color: theme.textPrimary, lineHeight: '1.4' }}>
-                    Təyin etdiyiniz hədəflər İdarə Panelindəki irəliləyiş halqaları və bildiriş sistemi ilə avtomatik əlaqələndiriləcəkdir.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
 
           {/* Footer Buttons */}
           <div
+            className="em-profile-footer"
             style={{
               padding: '16px 24px',
               borderTop: `1px solid ${theme.borderColor}`,
