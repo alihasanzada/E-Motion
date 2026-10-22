@@ -31,3 +31,35 @@ jobs:
         run: python -m pip install -r backend/requirements.txt
       - name: Run backend smoke checks
         run: python -m unittest discover -s backend/tests -p "test_*.py" -v
+
+  postgres-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: emotion_ci
+          POSTGRES_PASSWORD: local_test_only
+          POSTGRES_DB: emotion_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U emotion_ci -d emotion_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PYTHONPATH: backend
+      DATABASE_URL: postgresql://emotion_ci:local_test_only@localhost:5432/emotion_ci
+      E_MOTION_DB_SCHEMA: ci_tests
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,https://e-motion-iota.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install backend dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Run same account and session regression tests on PostgreSQL
+        run: python -m unittest discover -s backend/tests -p "test_*.py" -v
