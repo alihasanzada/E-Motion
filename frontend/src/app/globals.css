@@ -153,6 +153,7 @@ aside {
     height: 100vh;
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     overflow: hidden;
 }
 
@@ -233,7 +234,9 @@ aside {
 .main-content {
     padding: 24px;
     width: 100%;
-    max-width: 100%;
+    max-width: 1520px;
+    min-width: 0;
+    margin-inline: auto;
     height: calc(100vh - 50px);
     overflow-y: auto;
     overflow-x: hidden;
@@ -452,7 +455,7 @@ svg circle {
     }
 
     .summary-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 12px !important;
     }
 
@@ -1230,5 +1233,34 @@ svg circle {
     }
     .em-form-grid-three > :first-child {
         grid-column: auto !important;
+    }
+}
+
+/* Keep desktop's two-column dashboard at 1366px and above.
+   At smaller laptop sizes, prevent four narrow metric tiles from competing
+   with the Daily Score sidebar for the same horizontal space. */
+@media (min-width: 1025px) and (max-width: 1199px) {
+    .dashboard-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 16px !important;
+    }
+
+    .right-sidebar {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        align-items: start !important;
+        gap: 16px !important;
+    }
+
+    .dashboard-layout .summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* Wide tablets have enough room for four metrics on one line; in portrait
+   orientation use two-by-two rather than a visually unbalanced 3 + 1. */
+@media (min-width: 900px) and (max-width: 1024px) {
+    .dashboard-layout .summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     }
 }
