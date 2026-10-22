@@ -325,8 +325,11 @@ def init_db():
 
     conn.close()
 
-# Bazanı işə salırıq
-init_db()
+# For managed Postgres, connect and initialize only AFTER the server listens
+# on Render's PORT. Blocking DB connections during app import can cause a
+# Render port-scan deployment timeout.
+if not os.getenv("DATABASE_URL"):
+    init_db()
 
 @app.route('/', methods=['GET'])
 def root():
@@ -450,7 +453,70 @@ def build_user_profile(conn, user):
 
 
 from user_data import register_user_data_routes
-register_user_data_routes(app, get_db_connection, get_authenticated_user)
+initialize_account_tables = register_user_data_routes(
+    app, get_db_connection, get_authenticated_user
+)
+
+# The first authenticated/API request prepares managed database tables.
+# A DB outage must not prevent Gunicorn from binding its web port.
+from threading import Lock
+
+_db_bootstrap_lock = Lock()
+_db_bootstrap_complete = not bool(os.getenv("DATABASE_URL"))
+
+
+def ensure_database_ready():
+    global _db_bootstrap_complete
+    if _db_bootstrap_complete:
+        return
+    with _db_bootstrap_lock:
+        if _db_bootstrap_complete:
+            return
+        init_db()
+        initialize_account_tables()
+        _db_bootstrap_complete = True
+        app.logger.info("PostgreSQL schema initialization completed.")
+
+
+@app.before_request
+def initialize_database_after_startup():
+    if (
+        not os.getenv("DATABASE_URL")
+        or request.method == "OPTIONS"
+        or request.path in {"/", "/health", "/health/database"}
+    ):
+        return None
+
+    try:
+        ensure_database_ready()
+    except Exception as exc:
+        # Do not disclose database credentials, hostname or connection strings.
+        app.logger.error(
+            "Database bootstrap unavailable; error category: %s",
+            type(exc).__name__,
+        )
+        return jsonify({
+            "status": "error",
+            "error": "Verilənlər bazasına müvəqqəti qoşulmaq mümkün olmadı."
+        }), 503
+
+
+@app.route("/health/database", methods=["GET"])
+def database_health_check():
+    try:
+        ensure_database_ready()
+        connection = get_db_connection()
+        try:
+            connection.execute("SELECT 1").fetchone()
+        finally:
+            connection.close()
+        return jsonify({"status": "ok", "database": "connected"}), 200
+    except Exception as exc:
+        app.logger.error(
+            "Database health check failed; error category: %s",
+            type(exc).__name__,
+        )
+        return jsonify({"status": "degraded", "database": "unavailable"}), 503
 
 @app.route('/api/user/profile', methods=['GET', 'POST', 'PUT', 'OPTIONS'])
 def user_profile_endpoint():
