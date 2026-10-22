@@ -129,10 +129,9 @@ DB_NAME = os.path.join(BASE_DIR, 'kuds_database.db')
 # --- DATABASE HELPER & INITIALIZATION ---
 
 def get_db_connection():
-    """Verilənlər bazası ilə əlaqə yaradır və row_factory təyin edir"""
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
+    """Use managed PostgreSQL when configured; SQLite for local development."""
+    from database import connect_database
+    return connect_database(DB_NAME)
 
 def init_db():
     """Cəvəlləri yaradır və ilkin dataları daxil edir"""
