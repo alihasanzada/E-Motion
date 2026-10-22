@@ -6,6 +6,7 @@ stored by user_id and never read from unowned legacy rows.
 
 from functools import wraps
 import hashlib
+import os
 from flask import jsonify, request
 
 
@@ -72,7 +73,7 @@ def register_user_data_routes(app, get_db_connection, get_authenticated_user):
     # On managed PostgreSQL the Flask server must bind its HTTP port before
     # opening a database connection. The app registers a request-time bootstrap
     # hook that invokes initialize_tables() exactly once per process.
-    if not __import__("os").getenv("DATABASE_URL"):
+    if not os.getenv("DATABASE_URL"):
         initialize_tables()
 
     def authenticated(handler):
