@@ -19,6 +19,10 @@ class CompatibleRow(dict):
 
 
 def _make_row_factory(cursor):
+    # Psycopg also constructs a row maker for statements with no result rows
+    # (CREATE TABLE, INSERT without RETURNING, UPDATE). 
+    if cursor.description is None:
+        return lambda values: values
     names = [item.name for item in cursor.description]
 
     def make_row(values):
